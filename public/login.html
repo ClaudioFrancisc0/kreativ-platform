@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - StudioMe</title>
+    <link rel="stylesheet" href="/css/auth.css">
+</head>
+
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <img src="/images/logo.png" alt="StudioMe" class="logo">
+                <h1>StudioMe</h1>
+                <p>Entre com suas credenciais</p>
+            </div>
+
+            <div id="alert" class="alert"></div>
+
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="seu@email.com" required
+                        autocomplete="email">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" name="password" placeholder="Sua senha" required
+                        autocomplete="current-password">
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    Entrar
+                </button>
+            </form>
+
+            <div class="auth-footer" style="margin-top: 24px; text-align: center;">
+                <p style="color: #666;">Primeiro acesso? <a href="/first-access.html"
+                        style="color: var(--brand-color);">Criar
+                        minha senha</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const alertDiv = document.getElementById('alert');
+
+        function showAlert(message, type = 'error') {
+            alertDiv.textContent = message;
+            alertDiv.className = `alert alert-${type} show`;
+            setTimeout(() => {
+                alertDiv.classList.remove('show');
+            }, 5000);
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            // Loading state
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            submitBtn.textContent = 'Entrando...';
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Salvar token e dados do usuário
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+
+                    // Verificar se precisa resetar senha
+                    if (data.user.must_reset_password) {
+                        window.location.href = '/reset-password.html';
+                    } else {
+                        window.location.href = '/agents.html';
+                    }
+                } else {
+                    showAlert(data.error || 'Erro ao fazer login', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('loading');
+                    submitBtn.textContent = 'Entrar';
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                showAlert('Erro ao conectar com o servidor', 'error');
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('loading');
+                submitBtn.textContent = 'Entrar';
+            }
+        });
+
+        // Verificar se precisa de setup
+        async function checkSetup() {
+            try {
+                const response = await fetch('/api/auth/check-setup');
+                const data = await response.json();
+
+                if (data.needsSetup) {
+                    // Precisa fazer setup inicial
+                    window.location.href = '/setup.html';
+                }
+            } catch (error) {
+                console.error('Erro ao verificar setup:', error);
+            }
+        }
+
+        // Verificar se já está logado
+        const token = localStorage.getItem('token');
+        if (token) {
+            window.location.href = '/dashboard.html';
+        } else {
+            checkSetup();
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - StudioMe</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <style>
+        /* Esconder conteúdo até verificar auth */
+        .dashboard-page {
+            display: none;
+        }
+
+        .loading-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #f8f9fa;
+        }
+
+        .loading-screen .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e0e0e0;
+            border-top-color: var(--brand-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Layout do dashboard */
+        .dashboard-page {
+            min-height: 100vh;
+            background: #f8f9fa;
+        }
+
+        .dashboard-header {
+            background: white;
+            padding: 20px 32px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background: #f0f0f0;
+            color: var(--brand-color);
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #333 0%, #666 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .header-title h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin: 0;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-email {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1px solid #ddd;
+            color: #666;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        /* Conteúdo principal */
+        .dashboard-content {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 24px;
+        }
+
+        .dashboard-card h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin: 0 0 20px;
+        }
+
+        .info-row {
+            display: flex;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 500;
+            color: #666;
+            width: 120px;
+        }
+
+        .info-value {
+            color: #1a1a1a;
+        }
+
+        .badge-admin {
+            background: var(--brand-color);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: #e6f7e6;
+            color: #22a722;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* Quick actions */
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: #f8f9fa;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #1a1a1a;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            border-color: var(--brand-color);
+            background: #e8f0ff;
+        }
+
+        .action-icon {
+            font-size: 24px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Loading screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard-page" id="dashboardPage">
+        <header class="dashboard-header">
+            <div class="header-left">
+                <a href="/agents.html" class="back-btn">
+                    ← Voltar
+                </a>
+                <div class="header-title">
+                    <div class="sidebar-logo">
+                        <img src="/images/logo.png" alt="StudioMe">
+                    </div>
+                    <h1>Dashboard</h1>
+                </div>
+            </div>
+            <div class="user-menu">
+                <span class="user-email" id="userEmail"></span>
+                <button class="logout-btn" onclick="logout()">Sair</button>
+            </div>
+        </header>
+
+        <main class="dashboard-content">
+            <div class="dashboard-card">
+                <h2>Informações da Conta</h2>
+                <div class="info-row">
+                    <span class="info-label">Email</span>
+                    <span class="info-value" id="userEmailDisplay">carregando...</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Função</span>
+                    <span class="info-value" id="userRoleDisplay">carregando...</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status</span>
+                    <span class="info-value"><span class="badge-success">Ativo</span></span>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <h2>Acesso Rápido</h2>
+                <div class="actions-grid" id="quickActions">
+                    <a href="/admin-users.html" class="action-btn">
+                        <span class="action-icon">👥</span>
+                        <span>Gerenciar Usuários</span>
+                    </a>
+                    <a href="/agents.html" class="action-btn">
+                        <span class="action-icon">🤖</span>
+                        <span>Menu de Agentes</span>
+                    </a>
+                    <a href="/settings.html" class="action-btn">
+                        <span class="action-icon">⚙️</span>
+                        <span>Configurações do Sistema</span>
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/js/auth.js"></script>
+    <script>
+        // Verificar autenticação (requer admin)
+        checkAuth(true).then(isAuth => {
+            if (isAuth) {
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.getElementById('dashboardPage').style.display = 'block';
+                loadUserInfo();
+            }
+        });
+
+        function loadUserInfo() {
+            const user = getUserData();
+            if (user) {
+                document.getElementById('userEmail').textContent = user.email;
+                document.getElementById('userEmailDisplay').textContent = user.email;
+                document.getElementById('userRoleDisplay').innerHTML =
+                    '<span class="badge-admin">Administrador</span>';
+            }
+        }
+    </script>
+</body>
+
+</html>

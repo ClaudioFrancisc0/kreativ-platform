@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Primeiro Acesso - StudioMe</title>
+    <link rel="stylesheet" href="/css/auth.css">
+</head>
+
+<body>
+    <div class="auth-container">
+        <div class="auth-box">
+            <img src="/images/logo.png" alt="StudioMe" class="logo">
+            <h1 class="auth-title">Primeiro Acesso</h1>
+            <p class="auth-subtitle">Crie sua senha para acessar a plataforma</p>
+
+            <div id="alertContainer"></div>
+
+            <form id="firstAccessForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required placeholder="seu@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Criar Senha</label>
+                    <input type="password" id="password" required placeholder="Mínimo 6 caracteres" minlength="6">
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirmar Senha</label>
+                    <input type="password" id="confirmPassword" required placeholder="Confirme sua senha" minlength="6">
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    Criar Senha
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Já possui senha? <a href="/login.html">Fazer Login</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showAlert(message, type = 'error') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+
+            const container = document.getElementById('alertContainer');
+            container.innerHTML = '';
+            container.appendChild(alertDiv);
+        }
+
+        document.getElementById('firstAccessForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Validar senhas iguais
+            if (password !== confirmPassword) {
+                showAlert('As senhas não conferem');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Criando...';
+
+            try {
+                const response = await fetch('/api/auth/first-access', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Erro ao criar senha');
+                }
+
+                showAlert('Senha criada com sucesso! Redirecionando para login...', 'success');
+
+                // Redirecionar para login após 2 segundos
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 2000);
+
+            } catch (error) {
+                showAlert(error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Criar Senha';
+            }
+        });
+    </script>
+</body>
+
+</html>

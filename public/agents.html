@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentes - StudioMe</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <style>
+        /* Esconder conteúdo até verificar auth */
+        .agents-container {
+            display: none;
+        }
+
+        .loading-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #f8f9fa;
+        }
+
+        .loading-screen .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e0e0e0;
+            border-top-color: var(--brand-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Layout do menu de agentes */
+        .agents-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 40px 20px;
+        }
+
+        .agents-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .agents-header .logo {
+            width: 120px;
+            height: auto;
+            background: transparent;
+            color: var(--brand-color);
+            /* font-size, font-weight removed as it is an image */
+            /* border-radius removed */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+
+        .agents-header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin: 0 0 8px;
+        }
+
+        .agents-header p {
+            color: #666;
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .user-greeting {
+            color: var(--brand-color);
+            font-weight: 500;
+        }
+
+        /* Grid de agentes */
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .agent-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(255, 75, 75, 0.15);
+            border-color: var(--brand-color);
+        }
+
+        .agent-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #333 0%, #666 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+
+
+        .agent-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin: 0 0 8px;
+        }
+
+        .agent-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .agent-badge {
+            display: inline-block;
+            background: #f0f0f0;
+            color: #666;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-top: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Admin overrides removed as they are now default */
+
+        /* Footer com logout */
+        .agents-footer {
+            text-align: center;
+            margin-top: 48px;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1px solid #ddd;
+            color: #666;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Loading screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Menu de Agentes -->
+    <div class="agents-container" id="agentsContainer">
+        <header class="agents-header">
+            <img src="/images/logo.png" alt="StudioMe" class="logo">
+            <h1>StudioMe</h1>
+            <p>Olá, <span class="user-greeting" id="userName">usuário</span>! Escolha um agente:</p>
+        </header>
+
+        <div class="agents-grid" id="agentsGrid">
+            <!-- Agents will be loaded dynamically -->
+        </div>
+
+        <footer class="agents-footer">
+            <button class="logout-btn" onclick="logout()">Sair da conta</button>
+        </footer>
+    </div>
+
+    <script src="/js/auth.js"></script>
+    <script>
+        // Agent definitions
+        const AVAILABLE_AGENTS = {
+            naming: {
+                id: 'naming',
+                name: 'Verificador de Naming',
+                icon: '🔍',
+                description: 'Verifique a disponibilidade de nomes para marcas, empresas e produtos em diversas bases de dados.',
+                url: '/agents/naming.html',
+                badge: 'Disponível'
+            },
+            youtube: {
+                id: 'youtube',
+                name: 'Youtube Shorts',
+                icon: '🎬',
+                description: 'Crie vídeos curtos automaticamente a partir de temas, com roteiro, narração e edição via IA.',
+                url: '/agents/youtube.html',
+                badge: 'Disponível'
+            },
+            trade_facil: {
+                id: 'trade_facil',
+                name: 'Trade Fácil / Delta Stats',
+                icon: '📊',
+                description: 'Análise de dados e estatísticas para trading de forma fácil e intuitiva.',
+                url: '/agents/trade_facil.html',
+                badge: 'Disponível'
+            }
+        };
+
+        // Verificar autenticação antes de mostrar conteúdo
+        checkAuth().then(isAuth => {
+            if (isAuth) {
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.getElementById('agentsContainer').style.display = 'block';
+                loadUserInfo();
+                loadAvailableAgents();
+            }
+        });
+
+        function loadUserInfo() {
+            const user = getUserData();
+            if (user) {
+                const emailParts = user.email.split('@');
+                document.getElementById('userName').textContent = emailParts[0];
+            }
+        }
+
+        async function loadAvailableAgents() {
+            try {
+                const user = getUserData();
+                const response = await apiRequest('/api/agents/available');
+                const enabledAgents = response.enabled_agents || [];
+
+                const grid = document.getElementById('agentsGrid');
+                grid.innerHTML = ''; // Clear loading message
+
+                // Render enabled agents
+                enabledAgents.forEach(agentId => {
+                    const agent = AVAILABLE_AGENTS[agentId];
+                    if (agent) {
+                        grid.innerHTML += `
+                            <a href="${agent.url}" class="agent-card">
+                                <div class="agent-icon">${agent.icon}</div>
+                                <h2 class="agent-title">${agent.name}</h2>
+                                <p class="agent-description">${agent.description}</p>
+                                <span class="agent-badge">${agent.badge}</span>
+                            </a>
+                        `;
+                    }
+                });
+
+                // Add Dashboard card for admins
+                if (user && user.role === 'admin') {
+                    grid.innerHTML += `
+                        <a href="/dashboard.html" class="agent-card">
+                            <div class="agent-icon">⚙️</div>
+                            <h2 class="agent-title">Dashboard</h2>
+                            <p class="agent-description">Gerencie usuários, visualize métricas e configure a plataforma.</p>
+                            <span class="agent-badge">Administração</span>
+                        </a>
+                    `;
+                }
+
+            } catch (error) {
+                console.error('Erro ao carregar agentes:', error);
+                document.getElementById('agentsGrid').innerHTML = `
+                    <p style="text-align: center; color: #666;">Erro ao carregar agentes. Tente novamente.</p>
+                `;
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade Fácil / Delta Stats - StudioMe</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --brand-color: #FF4B4B;
+            --brand-hover: #FF0000;
+            --buy-color: #28a745;
+            --sell-color: #dc3545;
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .header {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(12px);
+            padding: 16px 32px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo-img {
+            height: 32px;
+            width: auto;
+        }
+
+        .back-btn {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .back-btn:hover {
+            color: var(--text-main);
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 40px;
+        }
+
+        .filters-section {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 32px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            margin-bottom: 32px;
+        }
+
+        .mode-selector {
+            display: inline-flex;
+            background: #0f172a;
+            padding: 4px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .mode-btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            background: transparent;
+            color: var(--text-dim);
+        }
+
+        .mode-btn.active.buy {
+            background: var(--buy-color);
+            color: white;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        .mode-btn.active.sell {
+            background: var(--sell-color);
+            color: white;
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            margin-top: 15px;
+            flex-wrap: nowrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .filter-group label {
+            display: block;
+            font-size: 10px;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .input-control {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .input-control:focus {
+            border-color: var(--brand-color);
+            box-shadow: 0 0 0 2px rgba(255, 59, 48, 0.1);
+        }
+
+        /* Progress Bar Styles */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--brand-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .category-tags {
+            display: flex;
+            gap: 6px;
+        }
+
+        .tag-btn {
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            color: var(--text-dim);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tag-btn.active {
+            border-color: var(--brand-color);
+            color: var(--brand-color);
+            background: rgba(255, 75, 75, 0.1);
+        }
+
+        .apply-btn {
+            background: var(--brand-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .apply-btn:hover {
+            background: var(--brand-hover);
+            transform: translateY(-2px);
+        }
+
+        .results-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 16px;
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        th.sorted-col {
+            color: #1a1a2e;
+            font-weight: 700;
+        }
+
+        td {
+            padding: 16px;
+            font-size: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .txt-up {
+            color: var(--buy-color);
+            font-weight: 600;
+        }
+
+        .txt-down {
+            color: var(--sell-color);
+            font-weight: 600;
+        }
+
+        .star-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 18px;
+            transition: color 0.2s;
+        }
+
+        .star-btn.active {
+            color: #fbbf24;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--brand-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Favorites Styling */
+        .fav-section {
+            margin-top: 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .fav-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        .fav-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        /* New section header for Favorites */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 60px;
+            /* Increased spacing */
+            margin-bottom: 24px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        #copyStatus {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--brand-color);
+            margin-left: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .copy-area {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px;
+            color: var(--text-main);
+            font-family: monospace;
+            font-size: 12px;
+            min-height: 60px;
+            margin-bottom: 15px;
+            resize: none;
+        }
+
+        .btn-copy {
+            background: var(--border-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-copy:hover {
+            background: var(--brand-color);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>Processando estatísticas...</p>
+    </div>
+
+    <header class="header">
+        <div class="header-left">
+            <a href="/agents.html" class="back-btn"><i class="fas fa-arrow-left"></i> Voltar</a>
+            <img src="/images/logo.png" alt="StudioMe" class="logo-img">
+            <div style="font-weight: 700; font-size: 18px; color: white; letter-spacing: 0.5px;">TRADE FÁCIL</div>
+        </div>
+        <div class="user-info">
+            <span onclick="handleVersionClick()" style="font-size: 10px; color: var(--text-dim); background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; margin-right: 15px; cursor: pointer;">v1.3.1-debug</span>
+            <span id="userEmail" style="font-size: 14px; color: var(--text-dim);"></span>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <div class="filters-section" style="padding: 20px 32px; margin-bottom: 24px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div class="agent-icon" style="width: 40px; height: 40px; margin-bottom: 0; font-size: 20px;">📅
+                    </div>
+                    <div>
+                        <div
+                            style="font-size: 11px; text-transform: uppercase; color: var(--text-dim); font-weight: 600;">
+                            Status da Base B3</div>
+                        <div id="lastUpdateText" style="font-size: 16px; font-weight: 700; color: white;">Carregando...
+                        </div>
+                    </div>
+                </div>
+                <button class="tag-btn" id="syncBtn" onclick="syncAllData()"
+                    style="padding: 10px 20px; border-color: var(--brand-color); color: var(--brand-color);">
+                    <i class="fas fa-sync-alt"></i> Atualizar Dados Agora
+                </button>
+            </div>
+            <div class="sync-progress-container" style="display: none; margin-top: 15px;">
+                <div class="progress-container"
+                    style="height: 6px; background: #0f172a; border-radius: 3px; overflow: hidden;">
+                    <div class="progress-fill"
+                        style="width: 0%; height: 100%; background: var(--brand-color); transition: width 0.3s;"></div>
+                </div>
+                <div class="progress-text"
+                    style="font-size: 10px; color: var(--text-dim); margin-top: 6px; text-align: right; line-height: 1.4;">
+                    Aguardando...
+                </div>
+            </div>
+
+            <!-- Debug Dashboard (Hidden by default, triggered by 3 clicks on Version) -->
+            <div id="debugDashboard" style="margin-top: 24px; padding: 20px; background: rgba(239, 68, 68, 0.05); border: 1px dashed rgba(239, 68, 68, 0.3); border-radius: 12px; display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 10px;">
+                    <h3 style="margin: 0; font-size: 14px; color: #ef4444;"><i class="fas fa-bug"></i> Painel de Diagnóstico</h3>
+                    <div style="display: flex; gap: 4px;">
+                        <input type="text" id="debugTickerInput" placeholder="Ex: HBSA3" style="background: #000; border: 1px solid #ef4444; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 11px; width: 80px;">
+                        <button class="btn-copy" onclick="checkDbIntegrity()" style="background: #ef4444; padding: 4px 12px;">Verificar</button>
+                        <button class="btn-copy" onclick="forceSyncTicker()" style="background: #3b82f6; padding: 4px 12px; border-color: #3b82f6;">Forçar Sincronização</button>
+                    </div>
+                </div>
+                <div id="debugOutput" style="font-family: monospace; font-size: 11px; color: #fca5a5; line-height: 1.4; max-height: 400px; overflow-y: auto; background: #000; padding: 10px; border-radius: 6px;">
+                    Clique para verificar o estado real do banco no servidor...
+                </div>
+            </div>
+
+            <!-- Sync Status / Monitor -->
+            <div id="syncMonitor" style="display: none; margin-top: 24px; padding: 16px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 12px;">
+                <div id="syncLogContainer" style="font-family: monospace; font-size: 10px; color: #94a3b8; max-height: 100px; overflow-y: auto;">
+                    Logs do servidor aparecerão aqui...
+                </div>
+            </div>
+        </div>
+
+        <div class="filters-section">
+            <div class="mode-selector">
+                <button class="mode-btn buy active" onclick="setMode('BUY')">COMPRA (REVERSÃO)</button>
+                <button class="mode-btn sell" onclick="setMode('SELL')">VENDA (REVERSÃO)</button>
+            </div>
+
+            <div class="filter-row">
+                <div class="filter-group" style="flex: 1.4;">
+                    <label>Período</label>
+                    <select id="months" class="input-control">
+                        <option value="3" selected>3 Meses</option>
+                        <option value="6">6 Meses</option>
+                        <option value="12">12 Meses</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Var %</label>
+                    <div style="display: flex; gap: 4px; align-items: center;">
+                        <input type="number" id="variation" class="input-control" value="1.5" step="0.1">
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>No. de Trades</label>
+                    <div style="display: flex; gap: 4px; align-items: center;">
+                        <input type="number" id="filterTrades" class="input-control" value="8">
+                        <input type="checkbox" id="toggleTrades" checked onchange="toggleFilterHighlight()"
+                            style="accent-color: var(--brand-color);">
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>Vencedores %</label>
+                    <div style="display: flex; gap: 4px; align-items: center;">
+                        <input type="number" id="filterGanhoHits" class="input-control" value="60">
+                        <input type="checkbox" id="toggleGanhoHits" checked onchange="toggleFilterHighlight()"
+                            style="accent-color: var(--brand-color);">
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>Perda Max %</label>
+                    <div style="display: flex; gap: 4px; align-items: center;">
+                        <input type="number" id="filterPerdaMax" class="input-control" value="-5" step="0.1">
+                        <input type="checkbox" id="togglePerdaMax" checked onchange="toggleFilterHighlight()"
+                            style="accent-color: var(--brand-color);">
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>Ganho Médio %</label>
+                    <div style="display: flex; gap: 4px; align-items: center;">
+                        <input type="number" id="filterGanhoMedio" class="input-control" value="0.2" step="0.1">
+                        <input type="checkbox" id="toggleGanhoMedio" checked onchange="toggleFilterHighlight()"
+                            style="accent-color: var(--brand-color);">
+                    </div>
+                </div>
+                <div class="filter-group" style="flex: 1.2;">
+                    <label>Volume Médio (K)</label>
+                    <div style="display: flex; gap: 4px; align-items: center;">
+                        <input type="number" id="filterVolume" class="input-control" value="800">
+                        <input type="checkbox" id="toggleVolume" checked onchange="toggleFilterHighlight()"
+                            style="accent-color: var(--brand-color);">
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-row" style="margin-top: 20px; justify-content: space-between;">
+                <div class="filter-group" style="flex: none;">
+                    <label>Categorias</label>
+                    <div class="category-tags">
+                        <button class="tag-btn active" onclick="toggleTag(this, 'stocks')"
+                            style="padding: 8px 15px; font-size: 12px;">Ações</button>
+                        <button class="tag-btn active" onclick="toggleTag(this, 'bdrs')"
+                            style="padding: 8px 15px; font-size: 12px;">BDRs</button>
+                        <button class="tag-btn active" onclick="toggleTag(this, 'etfs')"
+                            style="padding: 8px 15px; font-size: 12px;">ETFs</button>
+                    </div>
+                </div>
+                <button class="apply-btn" id="filterBtn" onclick="runAnalysis()"
+                    style="height: 42px; padding: 0 40px; font-size: 14px; margin-top: 0;"><i class="fas fa-filter"></i>
+                    Filtrar</button>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <h2>Resultados da Análise</h2>
+        </div>
+
+        <div class="results-card">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th onclick="sortTable('results', 1)" style="cursor: pointer;">ATIVO <span
+                                    id="sort_results_1"></span></th>
+                            <th onclick="sortTable('results', 2)" style="cursor: pointer;">TRADES<br>VENCEDORES <span
+                                    id="sort_results_2"></span></th>
+                            <th onclick="sortTable('results', 3)" style="cursor: pointer;">VENCEDORES (%) <span
+                                    id="sort_results_3"></span></th>
+                            <th onclick="sortTable('results', 4)" style="cursor: pointer;">TRADES<br>PERDEDORES <span
+                                    id="sort_results_4"></span></th>
+                            <th onclick="sortTable('results', 5)" style="cursor: pointer;">PERDEDORES (%) <span
+                                    id="sort_results_5"></span></th>
+                            <th onclick="sortTable('results', 6)" style="cursor: pointer;">Nº DE TRADES <span
+                                    id="sort_results_6"></span></th>
+                            <th onclick="sortTable('results', 7)" style="cursor: pointer;">RESULTADO <span
+                                    id="sort_results_7"></span></th>
+                            <th onclick="sortTable('results', 8)" style="cursor: pointer;">PERDA MÁX <span
+                                    id="sort_results_8"></span></th>
+                            <th onclick="sortTable('results', 9)" style="cursor: pointer;">GANHO MÁX <span
+                                    id="sort_results_9"></span></th>
+                            <th onclick="sortTable('results', 10)" style="cursor: pointer;">GANHO MÉDIO <span
+                                    id="sort_results_10"></span></th>
+                            <th onclick="sortTable('results', 11)" style="cursor: pointer; text-align: right;">VOLUME
+                                MÉDIO<br>EM K R$ <span id="sort_results_11"></span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsTable">
+                        <tr>
+                            <td colspan="12" style="text-align: center; color: var(--text-dim); padding: 50px;">
+                                Configure os filtros e inicie a análise.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <h2>⭐ Ativos Estrelados (Favoritos) <span id="copyStatus"></span></h2>
+            <div class="header-actions">
+                <button class="tag-btn" id="clearFavBtn"
+                    style="border-color: var(--sell-color); color: var(--sell-color); margin-right: 20px;"
+                    onclick="handleClearFavorites()">
+                    <i class="fas fa-trash"></i> Limpar Tudo
+                </button>
+                <button class="tag-btn" onclick="copyTickers('BUY')"
+                    style="border-color: var(--buy-color); color: var(--buy-color);">
+                    <i class="fas fa-copy"></i> Copiar Compras
+                </button>
+                <button class="tag-btn" onclick="copyTickers('SELL')"
+                    style="border-color: var(--sell-color); color: var(--sell-color);">
+                    <i class="fas fa-copy"></i> Copiar Vendas
+                </button>
+            </div>
+        </div>
+
+        <div class="results-card">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable('fav', 0)" style="cursor: pointer;"><span id="fav_header_label">ATIVO
+                                    / SETUP</span><span id="sort_fav_0"></span></th>
+                            <th>PERÍODO</th>
+                            <th>VAR %</th>
+                            <th>TRADES<br>VENCEDORES</th>
+                            <th>VENCEDORES (%)</th>
+                            <th>TRADES<br>PERDEDORES</th>
+                            <th>PERDEDORES (%)</th>
+                            <th>Nº DE TRADES</th>
+                            <th>RESULTADO</th>
+                            <th>PERDA MÁX</th>
+                            <th>GANHO MÁX</th>
+                            <th>GANHO MÉDIO</th>
+                            <th style="text-align: right;">VOLUME MÉDIO<br>EM K R$</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="favoritesTable">
+                        <tr>
+                            <td colspan="14" style="text-align: center; color: var(--text-dim); padding: 50px;">
+                                Seus favoritos aparecerão aqui com dados detalhados.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/auth.js"></script>
+    <script>
+        let currentMode = 'BUY';
+        let selectedTags = ['stocks', 'bdrs', 'etfs'];
+        let syncState = { isSyncing: false }; // Global sync state
+        let bgPollInterval = null; // Background polling interval (pausable)
+        let isAnalysisRunning = false; // Flag to pause polling during analysis
+        let currentResults = []; // Store current analysis data for sorting
+        let currentFavorites = []; // Store current favorites data for sorting
+        let lastDeletedFavorites = []; // Safety buffer for recovery
+        let sortState = { results: { col: 3, dir: 'desc' }, fav: { col: 0, dir: 'setup-buy' } };
+        let logInterval = null;
+        let versionClicks = 0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = getUserData();
+            if (user) document.getElementById('userEmail').textContent = user.email;
+            updateLastUpdate();
+            refreshFavorites();
+        });
+
+        function handleVersionClick() {
+            versionClicks++;
+            if (versionClicks >= 3) {
+                document.getElementById('debugDashboard').style.display = 'block';
+                console.log("[Debug] Dashboard Enabled");
+            }
+        }
+
+        async function checkDbIntegrity() {
+            const out = document.getElementById('debugOutput');
+            const ticker = document.getElementById('debugTickerInput').value.trim().toUpperCase();
+            out.innerHTML = `Verificando registros${ticker ? ' para ' + ticker : ''}...`;
+            try {
+                const url = `/trade-facil-api/api/debug-db${ticker ? '?ticker=' + ticker : ''}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                
+                if (data.length === 0) {
+                    out.innerHTML = `Nenhum registro encontrado${ticker ? ' para ' + ticker : ''}.`;
+                    return;
+                }
+
+                let html = '<table style="width:100%; text-align:left;"><tr><th>Ativo</th><th>Início</th><th>Fim</th><th>Registros</th></tr>';
+                data.forEach(r => {
+                    html += `<tr><td>${r.ticker}</td><td>${r.start}</td><td>${r.end}</td><td>${r.count}</td></tr>`;
+                });
+                html += '</table>';
+                out.innerHTML = html;
+            } catch (err) {
+                out.innerHTML = "Erro ao verificar: " + err.message;
+            }
+        }
+
+        async function forceSyncTicker() {
+            const ticker = document.getElementById('debugTickerInput').value.trim().toUpperCase();
+            if (!ticker) {
+                alert("Digite um ativo para sincronizar (Ex: HBSA3)");
+                return;
+            }
+            
+            const out = document.getElementById('debugOutput');
+            out.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Forçando sincronização de 2 anos para <b>${ticker}</b>... Aguarde alguns segundos.`;
+            
+            try {
+                const res = await fetch(`/trade-facil-api/api/force-sync?ticker=${ticker}`);
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    out.innerHTML = `<span style="color:#4ade80">Sincronização concluída com sucesso para <b>${ticker}</b>!</span>`;
+                    // Auto-verify after sync
+                    setTimeout(checkDbIntegrity, 1000);
+                } else {
+                    out.innerHTML = `<span style="color:#f87171">Falha: ${data.error || 'Erro desconhecido'}</span>`;
+                }
+            } catch (err) {
+                out.innerHTML = `<span style="color:#f87171">Erro ao sincronizar: ${err.message}</span>`;
+            }
+        }
+
+        async function updateLastUpdate() {
+            try {
+                const res = await fetch('/trade-facil-api/api/last-update');
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    document.getElementById('lastUpdateText').textContent = data.error || `Erro ${res.status}`;
+                    return;
+                }
+                const data = await res.json();
+                document.getElementById('lastUpdateText').textContent = data.last_update || "Sem dados";
+                if (data.count !== undefined) {
+                    const small = document.createElement('small');
+                    small.style.display = 'block';
+                    small.style.fontSize = '10px';
+                    small.style.color = 'var(--text-dim)';
+                    small.style.fontWeight = '400';
+                    small.textContent = `${data.count.toLocaleString()} registros encontrados`;
+                    document.getElementById('lastUpdateText').appendChild(small);
+                }
+            } catch (err) {
+                console.error('Erro ao buscar status:', err);
+                document.getElementById('lastUpdateText').textContent = "Serviço Offline";
+            }
+        }
+
+        let syncInterval = null;
+
+        async function syncAllData() {
+            if (syncState.isSyncing) return;
+
+            const btn = document.getElementById('syncBtn');
+            const progressContainer = document.querySelector('.sync-progress-container');
+            const progressFill = document.querySelector('.progress-fill');
+            const progressText = document.querySelector('.progress-text');
+            const syncMonitor = document.getElementById('syncMonitor'); // Get the new monitor div
+
+            try {
+                syncState.isSyncing = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando...';
+                btn.style.opacity = '0.7';
+
+                const response = await fetch(`/trade-facil-api/api/start-sync`, { method: 'POST' });
+                const data = await response.json();
+
+                progressContainer.style.display = 'block';
+                syncMonitor.style.display = 'block'; // Show the sync monitor
+
+                // Show "Background" notice
+                progressText.innerHTML = `Conectando ao servidor...`;
+
+                // Start polling
+                if (syncInterval) clearInterval(syncInterval);
+                syncInterval = setInterval(pollSyncStatus, 2000);
+
+            } catch (error) {
+                console.error('Erro ao iniciar sincronização:', error);
+                alert('Erro ao conectar com o servidor para sincronização.');
+                syncState.isSyncing = false;
+                btn.innerHTML = '<i class="fas fa-sync"></i> Atualizar Agora';
+                btn.style.opacity = '1';
+            }
+        }
+
+        async function pollSyncStatus() {
+            try {
+                const response = await fetch(`/trade-facil-api/api/sync-status`);
+                const status = await response.json();
+
+                const btn = document.getElementById('syncBtn');
+                const progressFill = document.querySelector('.progress-fill');
+                const progressText = document.querySelector('.progress-text');
+                const progressContainer = document.querySelector('.sync-progress-container');
+                const syncMonitor = document.getElementById('syncMonitor'); // Get the new monitor div
+
+                if (status.in_progress) {
+                    syncState.isSyncing = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Ocupado...';
+                    btn.classList.add('syncing');
+
+                    const percent = Math.round((status.current / status.total) * 100);
+                    progressFill.style.width = `${percent}%`;
+                    progressText.innerHTML = `${status.current} / ${status.total} ativos <br><small style="opacity:0.7; font-size:10px;">Rodando em segundo plano: ${status.last_ticker}</small>`;
+                    progressContainer.style.display = 'block';
+                    syncMonitor.style.display = 'block'; // Ensure monitor is visible
+
+                    // Update logs
+                    if (status.logs && status.logs.length > 0) {
+                        const logBox = document.getElementById('syncLogContainer');
+                        logBox.innerHTML = status.logs.map(log => `<div>${log}</div>`).join('');
+                        logBox.scrollTop = logBox.scrollHeight;
+                    }
+                } else {
+                    if (syncState.isSyncing) {
+                        // Just finished
+                        progressFill.style.width = `100%`;
+                        progressText.innerHTML = `Sincronização concluída!`;
+                        btn.innerHTML = '<i class="fas fa-sync"></i> Atualizar Agora';
+                        btn.classList.remove('syncing');
+                        btn.style.opacity = '1';
+                        syncState.isSyncing = false;
+                        clearInterval(syncInterval);
+                        
+                        // Final log message
+                        document.getElementById('syncLogContainer').innerHTML += '<div>--- Sincronização Finalizada ---</div>';
+
+                        updateLastUpdate(); // Auto-reload after sync
+                        // If there's an active analysis, refresh it
+                        if (document.getElementById('resultsTable').innerHTML.indexOf('Nenhum') === -1 && document.getElementById('resultsTable').innerHTML.indexOf('Configure') === -1) {
+                            runAnalysis();
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn('Erro ao pollar status:', e);
+            }
+        }
+
+        // Initialize polling on load in case a sync is already running
+        // Use a controllable interval so we can pause during analysis
+        function startBgPolling() {
+            if (bgPollInterval) return;
+            bgPollInterval = setInterval(() => {
+                if (!isAnalysisRunning) pollSyncStatus();
+            }, 5000);
+        }
+        function stopBgPolling() {
+            if (bgPollInterval) { clearInterval(bgPollInterval); bgPollInterval = null; }
+        }
+        startBgPolling();
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            toggleFilterHighlight();
+        }
+
+        function toggleFilterHighlight() {
+            const btn = document.getElementById('filterBtn');
+            btn.style.boxShadow = '0 0 20px rgba(255, 75, 75, 0.6)';
+            btn.style.transform = 'scale(1.05)';
+            btn.innerHTML = '<i class="fas fa-filter"></i> Filtrar *';
+        }
+
+        // Add auto-highlight on input/select/checkbox changes
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputs = ['months', 'variation', 'filterTrades', 'filterGanhoHits', 'filterPerdaMax', 'filterGanhoMedio', 'filterVolume'];
+            const checkboxes = ['toggleTrades', 'toggleGanhoHits', 'togglePerdaMax', 'toggleGanhoMedio', 'toggleVolume'];
+
+            [...inputs, ...checkboxes].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('change', toggleFilterHighlight);
+            });
+        });
+
+        function toggleTag(btn, tag) {
+            btn.classList.toggle('active');
+            if (btn.classList.contains('active')) {
+                if (!selectedTags.includes(tag)) selectedTags.push(tag);
+            } else {
+                selectedTags = selectedTags.filter(t => t !== tag);
+            }
+        }
+
+        async function runAnalysis() {
+            const filterBtn = document.getElementById('filterBtn');
+            filterBtn.style.boxShadow = 'none';
+            filterBtn.style.transform = 'none';
+            filterBtn.innerHTML = '<i class="fas fa-filter"></i> Filtrar';
+
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.style.display = 'flex';
+
+            const months = parseInt(document.getElementById('months').value);
+            const endDate = new Date().toISOString().split('T')[0];
+            const startDate = new Date();
+            startDate.setMonth(startDate.getMonth() - months);
+            const startDateStr = startDate.toISOString().split('T')[0];
+
+            // Pause background polling to free up Flask threads
+            isAnalysisRunning = true;
+
+            try {
+                const listRes = await fetch('/trade-facil-api/api/list-tickers');
+                const listData = await listRes.json();
+
+                let tickers = [];
+                if (selectedTags.includes('stocks')) tickers = tickers.concat(listData.stocks || []);
+                if (selectedTags.includes('bdrs')) tickers = tickers.concat(listData.bdrs || []);
+                if (selectedTags.includes('etfs')) tickers = tickers.concat(listData.etfs || []);
+
+                if (tickers.length === 0) {
+                    overlay.style.display = 'none';
+                    isAnalysisRunning = false;
+                    alert("Nenhuma categoria selecionada ou lista de ativos vazia.");
+                    return;
+                }
+
+                // Use AbortController with 90s timeout
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 90000);
+
+                const response = await fetch('/trade-facil-api/api/stats', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    signal: controller.signal,
+                    body: JSON.stringify({
+                        tickers,
+                        start_date: startDateStr,
+                        end_date: endDate,
+                        variation: document.getElementById('variation').value,
+                        mode: currentMode
+                    })
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || "Server error");
+                }
+
+                const data = await response.json();
+                currentResults = data;
+                renderTable();
+            } catch (err) {
+                console.error(err);
+                if (err.name === 'AbortError') {
+                    alert("A análise demorou mais de 90 segundos e foi cancelada. Tente com menos categorias.");
+                } else {
+                    alert("Erro ao processar: " + err.message + "\n\nVerifique se o serviço de agentes está online no Railway.");
+                }
+            } finally {
+                overlay.style.display = 'none';
+                isAnalysisRunning = false;
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('resultsTable');
+            tbody.innerHTML = '';
+
+            if (!currentResults || currentResults.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; color: var(--text-dim); padding: 50px;">Configure os filtros e inicie a análise.</td></tr>';
+                return;
+            }
+
+            const fGanhoHits = parseFloat(document.getElementById('filterGanhoHits').value) || 0;
+            const fTrades = parseFloat(document.getElementById('filterTrades').value) || 0;
+            const fPerdaMax = parseFloat(document.getElementById('filterPerdaMax').value) || -100;
+            const fGanhoMedio = parseFloat(document.getElementById('filterGanhoMedio').value) || -100;
+            const fVolume = parseFloat(document.getElementById('filterVolume').value) || 0;
+
+            const useTrades = document.getElementById('toggleTrades').checked;
+            const useGanhoHits = document.getElementById('toggleGanhoHits').checked;
+            const usePerdaMax = document.getElementById('togglePerdaMax').checked;
+            const useGanhoMedio = document.getElementById('toggleGanhoMedio').checked;
+            const useVolume = document.getElementById('toggleVolume').checked;
+
+            let filtered = currentResults.filter(item => {
+                const volK = (item.volume_medio || 0) / 1000;
+                const matchTrades = !useTrades || (item.trades || 0) >= fTrades;
+                const matchHits = !useGanhoHits || (item.ganho_pct || 0) >= fGanhoHits;
+                const matchPerda = !usePerdaMax || (item.perda_max || 0) >= fPerdaMax;
+                const matchGanhoMedio = !useGanhoMedio || (item.ganho_medio || 0) >= fGanhoMedio;
+                const matchVolume = !useVolume || volK >= fVolume;
+
+                return matchTrades && matchHits && matchPerda && matchGanhoMedio && matchVolume;
+            });
+
+            // Robust Sorting Logic
+            const col = sortState.results.col;
+            const dir = sortState.results.dir === 'asc' ? 1 : -1;
+
+            filtered.sort((a, b) => {
+                let vA, vB;
+                switch (col) {
+                    case 1: vA = String(a.ticker || ''); vB = String(b.ticker || ''); break;
+                    case 2: vA = Number(a.ganhos) || 0; vB = Number(b.ganhos) || 0; break;
+                    case 3: vA = Number(a.ganho_pct) || 0; vB = Number(b.ganho_pct) || 0; break;
+                    case 4: vA = Number(a.perdas) || 0; vB = Number(b.perdas) || 0; break;
+                    case 5: vA = Number(a.perda_pct) || 0; vB = Number(b.perda_pct) || 0; break;
+                    case 6: vA = Number(a.trades) || 0; vB = Number(b.trades) || 0; break;
+                    case 7: vA = Number(a.resultado) || 0; vB = Number(b.resultado) || 0; break;
+                    case 8: vA = Number(a.perda_max) || 0; vB = Number(b.perda_max) || 0; break;
+                    case 9: vA = Number(a.ganho_max) || 0; vB = Number(b.ganho_max) || 0; break;
+                    case 10: vA = Number(a.ganho_medio) || 0; vB = Number(b.ganho_medio) || 0; break;
+                    case 11: vA = Number(a.volume_medio) || 0; vB = Number(b.volume_medio) || 0; break;
+                    default: vA = String(a.ticker || ''); vB = String(b.ticker || '');
+                }
+
+                if (vA < vB) return -1 * dir;
+                if (vA > vB) return 1 * dir;
+                return 0;
+            });
+
+            updateSortIndicators('results');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 40px;">Nenhum ativo atende aos filtros.</td></tr>';
+                return;
+            }
+
+            // Reverse-check: determine which items are already favorited
+            const curVar = parseFloat(document.getElementById('variation').value) || 0;
+            const curMonths = parseInt(document.getElementById('months').value) || 3;
+
+            filtered.forEach(item => {
+                const volumeK = Math.round((item.volume_medio || 0) / 1000);
+                // Check if this item matches a favorite (same ticker, mode, variation, period)
+                const isFav = currentFavorites.some(f =>
+                    f.ticker === item.ticker &&
+                    f.requested_mode === currentMode &&
+                    parseFloat(f.requested_variation) === curVar &&
+                    (f.requested_period || 12) === curMonths
+                );
+                const starClass = isFav ? 'star-btn active' : 'star-btn';
+                const starIcon = isFav ? 'fas fa-star' : 'far fa-star';
+                const expectedDays = curMonths * 21;
+                let warningIcon = '';
+                if (item.trading_days && item.trading_days < expectedDays * 0.7) {
+                    warningIcon = ` <i class="fas fa-exclamation-triangle" style="color: #f59e0b; font-size: 11px; cursor: help;" title="Aviso: Solicitado ${curMonths}M, mas o banco possui apenas ~${Math.round(item.trading_days/21)}M de dados (${item.trading_days} pregões)."></i>`;
+                }
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><button class="${starClass}" onclick="toggleStar(this, '${item.ticker}')"><i class="${starIcon}"></i></button></td>
+                        <td style="white-space: nowrap;">
+                            <div style="display: inline-flex; align-items: center; gap: 4px;">
+                                <strong>${item.ticker}</strong>${warningIcon}
+                            </div>
+                        </td>
+                        <td class="txt-up">${item.ganhos || 0}</td>
+                        <td class="txt-up">${(item.ganho_pct || 0).toFixed(1)}%</td>
+                        <td class="txt-down">${item.perdas || 0}</td>
+                        <td class="txt-down">${(item.perda_pct || 0).toFixed(1)}%</td>
+                        <td>${item.trades || 0}</td>
+                        <td class="${(item.resultado || 0) >= 0 ? 'txt-up' : 'txt-down'}">${(item.resultado || 0).toFixed(2)}%</td>
+                        <td style="${(item.perda_max || 0) < 0 ? 'color: var(--sell-color)' : 'color: var(--text-dim)'}">${(item.perda_max || 0).toFixed(2)}%</td>
+                        <td style="${(item.ganho_max || 0) > 0 ? 'color: var(--buy-color)' : 'color: var(--text-dim)'}">${(item.ganho_max || 0).toFixed(2)}%</td>
+                        <td>${(item.ganho_medio || 0).toFixed(2)}%</td>
+                        <td style="text-align: right;">${volumeK.toLocaleString('pt-BR')}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function toggleStar(btn, ticker) {
+            const icon = btn.querySelector('i');
+            const isActive = btn.classList.contains('active'); // Current state before toggle
+
+            // UI Feedback
+            btn.classList.toggle('active');
+            const newIsActive = btn.classList.contains('active');
+            icon.className = newIsActive ? 'fas fa-star' : 'far fa-star';
+
+            const variation = document.getElementById('variation').value;
+            const period = parseInt(document.getElementById('months').value) || 3;
+            console.log(`[ToggleStar] ${ticker} | Active: ${newIsActive} | Var: ${variation} | Period: ${period} | Mode: ${currentMode}`);
+
+            try {
+                if (newIsActive) {
+                    const res = await fetch('/trade-facil-api/api/favorites', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            ticker,
+                            variation,
+                            mode: currentMode,
+                            period
+                        })
+                    });
+                    if (!res.ok) {
+                        let errMsg = `Status: ${res.status} ${res.statusText}`;
+                        try {
+                            const errData = await res.json().catch(() => ({}));
+                            if (errData.error) errMsg += ` - ${errData.error}`;
+                        } catch (e) {
+                            const text = await res.text().catch(() => "");
+                            errMsg += ` - Body: ${text.substring(0, 100)}`;
+                        }
+                        throw new Error(errMsg);
+                    }
+                } else {
+                    const res = await fetch(`/trade-facil-api/api/favorites?ticker=${ticker}&variation=${variation}&mode=${currentMode}&period=${period}`, {
+                        method: 'DELETE'
+                    });
+                    if (!res.ok) {
+                        let errMsg = `Status: ${res.status} ${res.statusText}`;
+                        try {
+                            const errData = await res.json().catch(() => ({}));
+                            if (errData.error) errMsg += ` - ${errData.error}`;
+                        } catch (e) {
+                            const text = await res.text().catch(() => "");
+                            errMsg += ` - Body: ${text.substring(0, 100)}`;
+                        }
+                        throw new Error(errMsg);
+                    }
+                }
+
+                // Reset the "Clear All" button if it was in "Recover" mode
+                const clearBtn = document.getElementById('clearFavBtn');
+                if (clearBtn) {
+                    clearBtn.innerHTML = '<i class="fas fa-trash"></i> Limpar Tudo';
+                    clearBtn.style.borderColor = 'var(--sell-color)';
+                    clearBtn.style.color = 'var(--sell-color)';
+                    clearBtn.onclick = handleClearFavorites;
+                    lastDeletedFavorites = [];
+                }
+
+                // Refresh favorites list immediately
+                refreshFavorites();
+            } catch (err) {
+                console.error("Star toggle error:", err);
+                // Revert UI if failed
+                btn.classList.toggle('active');
+                icon.className = !newIsActive ? 'fas fa-star' : 'far fa-star';
+                alert("Erro ao atualizar favorito: " + err.message);
+            }
+        }
+
+        async function handleClearFavorites() {
+            if (currentFavorites.length === 0) return;
+            if (!confirm("Tem certeza que deseja apagar todos os favoritos?")) return;
+
+            // Store metadata for recovery before clearing
+            lastDeletedFavorites = currentFavorites.map(f => ({
+                ticker: f.ticker,
+                variation: f.requested_variation,
+                mode: f.requested_mode,
+                period: f.requested_period || 12
+            }));
+
+            try {
+                const res = await fetch('/trade-facil-api/api/favorites?confirm_all=true', { method: 'DELETE' });
+                if (res.ok) {
+                    const btn = document.getElementById('clearFavBtn');
+                    btn.innerHTML = '<i class="fas fa-undo"></i> Recuperar Favoritos';
+                    btn.style.borderColor = '#f59e0b'; // Amber/Orange color
+                    btn.style.color = '#f59e0b';
+                    btn.onclick = recoverFavorites;
+
+                    refreshFavorites();
+                }
+            } catch (err) {
+                console.error("Clear Error:", err);
+            }
+        }
+
+        async function recoverFavorites() {
+            if (lastDeletedFavorites.length === 0) return;
+
+            const btn = document.getElementById('clearFavBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Restaurando...';
+            btn.style.opacity = '0.7';
+
+            try {
+                // Restore each item
+                for (const fav of lastDeletedFavorites) {
+                    await fetch('/trade-facil-api/api/favorites', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(fav)
+                    });
+                }
+
+                // Reset button
+                btn.innerHTML = '<i class="fas fa-trash"></i> Limpar Tudo';
+                btn.style.borderColor = 'var(--sell-color)';
+                btn.style.color = 'var(--sell-color)';
+                btn.style.opacity = '1';
+                btn.onclick = handleClearFavorites;
+                lastDeletedFavorites = [];
+
+                refreshFavorites();
+            } catch (err) {
+                console.error("Recovery Error:", err);
+                alert("Erro ao recuperar favoritos.");
+            }
+        }
+
+        function copyTickers(mode) {
+            const tickers = currentFavorites
+                .filter(f => f.requested_mode === mode)
+                .map(f => f.ticker)
+                .filter((v, i, a) => a.indexOf(v) === i) // Uniq
+                .join(", ");
+
+            if (!tickers) {
+                alert(`Nenhum ativo de ${mode === 'BUY' ? 'COMPRA' : 'VENDA'} nos favoritos.`);
+                return;
+            }
+
+            navigator.clipboard.writeText(tickers).then(() => {
+                const status = document.getElementById('copyStatus');
+                const label = mode === 'BUY' ? 'Compras' : 'Vendas';
+                status.innerText = `${label} copiadas OK!`;
+                status.style.opacity = '1';
+                setTimeout(() => {
+                    status.style.opacity = '0';
+                }, 3000);
+            }).catch(err => {
+                console.error('Copy Failed:', err);
+                alert("Erro ao copiar para a área de transferência.");
+            });
+        }
+
+        async function removeFavorite(ticker, variation, mode, period) {
+            if (!confirm(`Remover ${ticker} (${mode} ${variation}%) dos favoritos?`)) return;
+            
+            const p = period || 12;
+
+            try {
+                const res = await fetch(`/trade-facil-api/api/favorites?ticker=${ticker}&variation=${variation}&mode=${mode}&period=${p}`, {
+                    method: 'DELETE'
+                });
+                if (res.ok) {
+                    refreshFavorites();
+                } else {
+                    alert("Erro ao remover favorito.");
+                }
+            } catch (err) {
+                alert("Erro de conexão ao tentar remover.");
+            }
+        }
+
+        async function refreshFavorites() {
+            console.log("[RefreshFavorites] Loading...");
+            const tbody = document.getElementById('favoritesTable');
+            // Show loading hint only if table is currently empty or has old data
+            if (tbody.children.length <= 1) {
+                tbody.innerHTML = '<tr><td colspan="14" style="text-align: center; color: var(--text-dim); padding: 30px;"><i class="fas fa-spinner fa-spin"></i> Atualizando...</td></tr>';
+            }
+
+            try {
+                const res = await fetch('/trade-facil-api/api/favorites');
+                const favorites = await res.json();
+                console.log("[RefreshFavorites] Data:", favorites);
+
+                if (favorites.length === 0) {
+                    console.log("[RefreshFavorites] No favorites found. Clearing UI.");
+                    tbody.innerHTML = '<tr><td colspan="14" style="text-align: center; color: var(--text-dim); padding: 50px;">Nenhum favorito salvo.</td></tr>';
+                    currentFavorites = [];
+                    // Even if empty, we MUST update the main table to clear any lingering stars
+                    if (currentResults && currentResults.length > 0) {
+                        console.log("[RefreshFavorites] Updating main table stars (should be none)");
+                        renderTable();
+                    }
+                    return;
+                }
+
+                // 2. Prepare Batch Stats Request - use each favorite's own period
+                const endDate = new Date().toISOString().split('T')[0];
+
+                const batchItems = favorites.map(f => {
+                    const months = f.period || 12;
+                    const sd = new Date();
+                    sd.setMonth(sd.getMonth() - months);
+                    return {
+                        ticker: f.ticker,
+                        variation: f.variation,
+                        mode: f.mode,
+                        period: months,
+                        start_date: sd.toISOString().split('T')[0],
+                        end_date: endDate
+                    };
+                });
+
+                // 3. Fetch Stats in Batch
+                const statsRes = await fetch('/trade-facil-api/api/stats-batch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ items: batchItems })
+                });
+                const statsData = await statsRes.json();
+                console.log("[RefreshFavorites] Stats received:", statsData);
+                currentFavorites = statsData;
+
+                // 4. Render Grouped View
+                renderFavoritesTable();
+
+                // 5. Update main results table stars
+                if (currentResults && currentResults.length > 0) {
+                    renderTable();
+                }
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = '<tr><td colspan="14" style="text-align: center; color: var(--sell-color); padding: 50px;">Erro ao carregar dados dos favoritos.</td></tr>';
+            }
+        }
+
+        function renderFavoritesTable() {
+            const tbody = document.getElementById('favoritesTable');
+            tbody.innerHTML = '';
+
+            const data = [...currentFavorites];
+
+            // 3 sorting states:
+            // setup-buy (default): BUY first, then SELL. Within each group: ticker ASC, then period ASC
+            // setup-sell: SELL first, then BUY. Within each group: ticker ASC, then period ASC
+            // asc: ticker ASC, within each ticker: BUY then SELL, then period ASC
+            const dir = sortState.fav.dir;
+
+            data.sort((a, b) => {
+                if (dir === 'setup-buy') {
+                    // BUY before SELL (BUY < SELL alphabetically)
+                    if (a.requested_mode < b.requested_mode) return -1;
+                    if (a.requested_mode > b.requested_mode) return 1;
+                    if (a.ticker < b.ticker) return -1;
+                    if (a.ticker > b.ticker) return 1;
+                    return (a.requested_period || 12) - (b.requested_period || 12);
+                } else if (dir === 'setup-sell') {
+                    // SELL before BUY
+                    if (a.requested_mode > b.requested_mode) return -1;
+                    if (a.requested_mode < b.requested_mode) return 1;
+                    if (a.ticker < b.ticker) return -1;
+                    if (a.ticker > b.ticker) return 1;
+                    return (a.requested_period || 12) - (b.requested_period || 12);
+                } else {
+                    // asc: by ticker, then BUY before SELL, then period
+                    if (a.ticker < b.ticker) return -1;
+                    if (a.ticker > b.ticker) return 1;
+                    if (a.requested_mode < b.requested_mode) return -1;
+                    if (a.requested_mode > b.requested_mode) return 1;
+                    return (a.requested_period || 12) - (b.requested_period || 12);
+                }
+            });
+            updateSortIndicators('fav');
+
+            data.forEach((item) => {
+                const volumeK = Math.round((item.volume_medio || 0) / 1000);
+                const periodLabel = (item.requested_period || 12) + 'M';
+                
+                let periodHtml = `<span style="color: var(--text-dim); font-size: 13px;">${periodLabel}</span>`;
+                const expectedDays = (item.requested_period || 12) * 21;
+                if (item.trading_days && item.trading_days < expectedDays * 0.7) {
+                    periodHtml = `
+                        <div style="display: flex; align-items: center; gap: 4px; color: #f59e0b; cursor: help;" 
+                             title="Aviso: Solicitado ${periodLabel}, mas o banco possui apenas ~${Math.round(item.trading_days/21)}M de dados (${item.trading_days} pregões).">
+                            <span style="font-size: 13px; font-weight: 600;">${periodLabel}</span>
+                            <i class="fas fa-exclamation-triangle" style="font-size: 10px;"></i>
+                        </div>
+                    `;
+                }
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>
+                            <div style="display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
+                                <strong>${item.ticker}</strong>
+                            </div>
+                            <div style="font-size: 11px; margin-top: 4px;">
+                                <span class="agent-badge" style="background: ${item.requested_mode === 'BUY' ? 'rgba(40, 167, 69, 0.15)' : 'rgba(220, 53, 69, 0.15)'}; color: ${item.requested_mode === 'BUY' ? 'var(--buy-color)' : 'var(--sell-color)'}; font-size: 8px; padding: 2px 6px;">
+                                    ${item.requested_mode}
+                                </span>
+                            </div>
+                        </td>
+                        <td>${periodHtml}</td>
+                        <td><span style="color: var(--text-main); font-weight: 600;">${item.requested_variation}%</span></td>
+                        <td class="txt-up">${item.ganhos || 0}</td>
+                        <td class="txt-up">${(item.ganho_pct || 0).toFixed(1)}%</td>
+                        <td class="txt-down">${item.perdas || 0}</td>
+                        <td class="txt-down">${(item.perda_pct || 0).toFixed(1)}%</td>
+                        <td>${item.trades || 0}</td>
+                        <td class="${(item.resultado || 0) >= 0 ? 'txt-up' : 'txt-down'}">${(item.resultado || 0).toFixed(2)}%</td>
+                        <td style="${(item.perda_max || 0) < 0 ? 'color: var(--sell-color)' : 'color: var(--text-dim)'}">${(item.perda_max || 0).toFixed(2)}%</td>
+                        <td style="${(item.ganho_max || 0) > 0 ? 'color: var(--buy-color)' : 'color: var(--text-dim)'}">${(item.ganho_max || 0).toFixed(2)}%</td>
+                        <td>${(item.ganho_medio || 0).toFixed(2)}%</td>
+                        <td style="text-align: right;">${volumeK.toLocaleString('pt-BR')}</td>
+                        <td>
+                            <button class="star-btn active" onclick="removeFavorite('${item.ticker}', ${item.requested_variation}, '${item.requested_mode}', ${item.requested_period || 12})">
+                                <i class="fas fa-trash" style="font-size: 14px; color: var(--text-dim)"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function sortTable(type, col) {
+            if (type === 'fav') {
+                // 3 States for Fav: setup-buy -> setup-sell -> asc -> setup-buy
+                if (sortState.fav.dir === 'setup-buy') sortState.fav.dir = 'setup-sell';
+                else if (sortState.fav.dir === 'setup-sell') sortState.fav.dir = 'asc';
+                else sortState.fav.dir = 'setup-buy';
+                renderFavoritesTable();
+                return;
+            }
+
+            if (sortState[type].col === col) {
+                sortState[type].dir = sortState[type].dir === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortState[type].col = col;
+                // Default numeric columns to descending for better UX (highest results first). Text columns default to asc.
+                if (type === 'results') {
+                    sortState[type].dir = (col === 1) ? 'asc' : 'desc';
+                }
+            }
+
+            if (type === 'results') renderTable();
+        }
+
+        function updateSortIndicators(type) {
+            // Clear all sorted-col classes from ALL table headers
+            document.querySelectorAll('.results-card table thead th').forEach(th => th.classList.remove('sorted-col'));
+
+            // Clear all sort indicator spans
+            for (let i = 0; i <= 11; i++) {
+                const el = document.getElementById(`sort_${type}_${i}`);
+                if (el) el.innerHTML = '';
+            }
+
+            const state = sortState[type];
+
+            if (type === 'results') {
+                const el = document.getElementById(`sort_results_${state.col}`);
+                if (el) el.innerHTML = state.dir === 'asc' ? ' <i class="fas fa-caret-up"></i>' : ' <i class="fas fa-caret-down"></i>';
+                // Highlight the sorted column header
+                const headerRow = document.querySelector('.results-card table thead tr');
+                if (headerRow && headerRow.children[state.col]) {
+                    headerRow.children[state.col].classList.add('sorted-col');
+                }
+            } else {
+                // Update favorites header label with bold on ATIVO or SETUP
+                const headerLabel = document.getElementById('fav_header_label');
+                const sortSpan = document.getElementById('sort_fav_0');
+                if (headerLabel && sortSpan) {
+                    if (state.dir === 'asc') {
+                        headerLabel.innerHTML = '<strong style="color: #1a1a2e;">ATIVO</strong> / SETUP';
+                        sortSpan.innerHTML = '';
+                    } else if (state.dir === 'setup-buy') {
+                        headerLabel.innerHTML = 'ATIVO / <strong style="color: #1a1a2e;">SETUP</strong>';
+                        sortSpan.innerHTML = ' <i class="fas fa-caret-down"></i>';
+                    } else {
+                        headerLabel.innerHTML = 'ATIVO / <strong style="color: #1a1a2e;">SETUP</strong>';
+                        sortSpan.innerHTML = ' <i class="fas fa-caret-up"></i>';
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações - StudioMe</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <style>
+        .settings-page {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .config-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+
+        .config-card h2 {
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--brand-color);
+        }
+
+        .btn-save {
+            background: var(--brand-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-save:hover {
+            background: #FF0000;
+        }
+
+        .status-msg {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .status-success {
+            background: #e6f7e6;
+            color: #22a722;
+        }
+
+        .status-error {
+            background: #ffe6e6;
+            color: #d32f2f;
+        }
+
+        .dashboard-header {
+            background: white;
+            padding: 20px 32px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .helper-text {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .helper-link {
+            color: var(--brand-color);
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loadingScreen" style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+        Carregando...</div>
+
+    <div id="settingsPage" style="display: none; background: #f8f9fa; min-height: 100vh;">
+        <header class="dashboard-header">
+            <div>
+                <a href="/dashboard.html" class="back-btn">← Voltar</a>
+                <h1 style="margin: 10px 0 0 0; font-size: 1.5rem;">Configurações do Sistema</h1>
+            </div>
+            <button onclick="logout()"
+                style="border:1px solid #ddd; background:transparent; padding:8px 16px; border-radius:6px; cursor:pointer;">Sair</button>
+        </header>
+
+        <main class="settings-page">
+
+            <!-- INPI Config -->
+            <div class="config-card">
+                <h2>🔍 Verificador de Nomes - Configuração INPI</h2>
+                <p class="helper-text" style="margin-bottom: 20px;">Utilizadas para login automático no portal do INPI.
+                </p>
+
+                <div class="form-group">
+                    <label>Usuário (Login)</label>
+                    <input type="text" id="inpiUser" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Senha</label>
+                    <input type="password" id="inpiPass" class="form-control">
+                </div>
+                <button class="btn-save" onclick="saveInpi()">Salvar INPI</button>
+                <div id="inpiMsg" class="status-msg"></div>
+            </div>
+
+            <!-- Google API Config -->
+            <div class="config-card">
+                <h2>🌍 Verificador de Nomes - Google Search API</h2>
+                <p class="helper-text" style="margin-bottom: 20px;">
+                    Necessário para buscar disponibilidade de nomes no Google sem bloqueios.
+                    <a href="https://developers.google.com/custom-search/v1/overview" target="_blank"
+                        class="helper-link">Obter Chaves</a>
+                </p>
+
+                <div class="form-group">
+                    <label>API Key</label>
+                    <input type="text" id="googleApiKey" class="form-control" placeholder="AIza...">
+                </div>
+                <div class="form-group">
+                    <label>Search Engine ID (CX)</label>
+                    <input type="text" id="googleCx" class="form-control" placeholder="0123456789...">
+                </div>
+                <button class="btn-save" onclick="saveGoogle()">Salvar Google</button>
+                <div id="googleMsg" class="status-msg"></div>
+            </div>
+
+            <!-- YouTube Automation Config -->
+            <div class="config-card">
+                <h2>🎬 Youtube Shorts</h2>
+                <p class="helper-text" style="margin-bottom: 20px;">
+                    Chaves para geração de conteúdo e upload.
+                </p>
+
+                <div class="form-group">
+                    <label>Gemini API Key (IA Generativa)</label>
+                    <input type="text" id="geminiApiKey" class="form-control" placeholder="AIza...">
+                    <p class="helper-text">Usada para gerar roteiros e imagens.</p>
+                </div>
+
+                <div class="form-group">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="margin-bottom: 0;">YouTube Client Secrets (JSON)</label>
+                        <button onclick="autoFillSecrets()" class="btn-save"
+                            style="padding: 4px 10px; font-size: 12px; display: flex; align-items: center; gap: 5px;"
+                            title="Preencher com configuração padrão">
+                            🪄 Sugerir Padrão
+                        </button>
+                    </div>
+                    <textarea id="youtubeSecrets" class="form-control" rows="10"
+                        placeholder='{"web":{"client_id":"...","project_id":"...","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"...","redirect_uris":["http://localhost"],"javascript_origins":["http://localhost"]}}'></textarea>
+                    <p class="helper-text">Cole o conteúdo <strong>completo</strong> do arquivo
+                        <code>client_secrets.json</code> baixado do Google Cloud Console.
+                        <br>⚠️ O JSON deve conter os campos <code>redirect_uris</code> e
+                        <code>client_secret</code>.
+                    </p>
+                </div>
+
+                <button class="btn-save" onclick="saveYoutube()">Salvar Youtube Shorts Config</button>
+                <div id="youtubeMsg" class="status-msg"></div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="/js/auth.js"></script>
+    <script>
+        checkAuth(true).then(isAuth => {
+            if (isAuth) {
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.getElementById('settingsPage').style.display = 'block';
+                loadConfigs();
+            }
+        });
+
+        async function loadConfigs() {
+            try {
+                // Load INPI
+                const inpi = await apiRequest('/api/admin/config/inpi');
+                if (inpi.username) document.getElementById('inpiUser').value = inpi.username;
+                if (inpi.password) document.getElementById('inpiPass').value = inpi.password;
+
+                // Load Google
+                const google = await apiRequest('/api/admin/config/google');
+                if (google.apiKey) document.getElementById('googleApiKey').value = google.apiKey;
+                if (google.searchEngineId) document.getElementById('googleCx').value = google.searchEngineId;
+
+                // Load YouTube Automation
+                const youtube = await apiRequest('/api/admin/config/youtube');
+                if (youtube.geminiApiKey) document.getElementById('geminiApiKey').value = youtube.geminiApiKey;
+
+                // Prettify JSON if it exists, otherwise auto-fill suggestion
+                const secretsEl = document.getElementById('youtubeSecrets');
+                if (youtube.youtubeClientSecrets) {
+                    try {
+                        const parsed = JSON.parse(youtube.youtubeClientSecrets);
+                        secretsEl.value = JSON.stringify(parsed, null, 2);
+                    } catch (e) {
+                        secretsEl.value = youtube.youtubeClientSecrets;
+                    }
+                } else {
+                    // Automagically suggest default on first access if empty
+                    autoFillSecrets(true);
+                }
+
+            } catch (e) {
+                console.error('Erro ao carregar configs', e);
+            }
+        }
+
+        function autoFillSecrets(isFirstLoad = false) {
+            // Placeholder for user to fill in their own secrets
+            const defaultSecrets = { 
+                "installed": { 
+                    "client_id": "YOUR_CLIENT_ID.apps.googleusercontent.com", 
+                    "project_id": "YOUR_PROJECT_ID", 
+                    "auth_uri": "https://accounts.google.com/o/oauth2/auth", 
+                    "token_uri": "https://oauth2.googleapis.com/token", 
+                    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs", 
+                    "client_secret": "YOUR_CLIENT_SECRET", 
+                    "redirect_uris": ["http://localhost"] 
+                } 
+            };
+            const secretsEl = document.getElementById('youtubeSecrets');
+
+            if (isFirstLoad) {
+                console.log('✨ Sugerindo configuração padrão de YouTube Secrets...');
+            }
+
+            secretsEl.value = JSON.stringify(defaultSecrets, null, 2);
+
+            if (!isFirstLoad) {
+                secretsEl.style.borderColor = '#28a745';
+                setTimeout(() => secretsEl.style.borderColor = '', 2000);
+            }
+        }
+
+        async function saveInpi() {
+            const username = document.getElementById('inpiUser').value;
+            const password = document.getElementById('inpiPass').value;
+            const msg = document.getElementById('inpiMsg');
+
+            try {
+                await apiRequest('/api/admin/config/inpi', {
+                    method: 'POST',
+                    body: JSON.stringify({ username, password })
+                });
+                showMsg(msg, 'Salvo com sucesso!', 'success');
+            } catch (e) {
+                showMsg(msg, 'Erro: ' + e.message, 'error');
+            }
+        }
+
+        async function saveGoogle() {
+            const apiKey = document.getElementById('googleApiKey').value;
+            const searchEngineId = document.getElementById('googleCx').value;
+            const msg = document.getElementById('googleMsg');
+
+            try {
+                await apiRequest('/api/admin/config/google', {
+                    method: 'POST',
+                    body: JSON.stringify({ apiKey, searchEngineId })
+                });
+                showMsg(msg, 'Salvo com sucesso!', 'success');
+            } catch (e) {
+                showMsg(msg, 'Erro: ' + e.message, 'error');
+            }
+        }
+
+        async function saveYoutube() {
+            const geminiApiKey = document.getElementById('geminiApiKey').value.trim();
+            let youtubeClientSecrets = document.getElementById('youtubeSecrets').value.trim();
+            const msg = document.getElementById('youtubeMsg');
+
+            // Basic validation
+            if (youtubeClientSecrets) {
+                try {
+                    // Minify JSON before saving
+                    youtubeClientSecrets = JSON.stringify(JSON.parse(youtubeClientSecrets));
+                } catch (e) {
+                    showMsg(msg, 'Erro: JSON do Youtube Shorts inválido', 'error');
+                    return;
+                }
+            }
+
+            try {
+                await apiRequest('/api/admin/config/youtube', {
+                    method: 'POST',
+                    body: JSON.stringify({ geminiApiKey, youtubeClientSecrets })
+                });
+                showMsg(msg, 'Salvo com sucesso! Reinicie o app para aplicar.', 'success');
+            } catch (e) {
+                showMsg(msg, 'Erro: ' + e.message, 'error');
+            }
+        }
+
+        function showMsg(el, text, type) {
+            el.textContent = text;
+            el.className = 'status-msg ' + (type === 'success' ? 'status-success' : 'status-error');
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 3000);
+        }
+    </script>
+</body>
+
+</html>
