@@ -18,6 +18,7 @@
     --card-bg: #FFFFFF;
     --border-color: #E5E5E5;
     --logo-filter: none;
+    --logo-blend: multiply;
     --btn-text: #FFFFFF;
     --error-color: #dc3545;
     --success-color: #28a745;
@@ -35,7 +36,8 @@
         --bg-secondary: #121212;
         --card-bg: #1A1A1A;
         --border-color: #2A2A2A;
-        --logo-filter: invert(1) brightness(2);
+        --logo-filter: invert(1);
+        --logo-blend: screen;
         --btn-text: #000000;
     }
 }
@@ -164,6 +166,93 @@ body {
     flex: 1;
     padding: 40px;
     overflow-y: auto;
+}
+
+/* Unified Page Header */
+.page-header-unified {
+    background: transparent;
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.header-logo {
+    height: 22px;
+    object-fit: contain;
+    filter: var(--logo-filter);
+    mix-blend-mode: var(--logo-blend);
+}
+
+.header-separator {
+    width: 2px;
+    height: 22px;
+    background: var(--border-color);
+}
+
+.header-title h1 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-email {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.logout-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+    border-color: var(--text-primary);
+    color: var(--text-primary);
+    background: var(--bg-secondary);
+}
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+    background: var(--bg-secondary);
+    color: var(--brand-color);
 }
 
 .page-header {

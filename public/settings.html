@@ -135,12 +135,19 @@
         Carregando...</div>
 
     <div id="settingsPage" style="display: none; background: transparent; min-height: 100vh;">
-        <header class="dashboard-header">
-            <div>
+        <header class="page-header-unified">
+            <div class="header-left">
                 <a href="/dashboard.html" class="back-btn">← Voltar</a>
-                <h1 style="margin: 10px 0 0 0; font-size: 1.5rem;">Configurações do Sistema</h1>
+                <div class="header-title">
+                    <img src="/images/logo-wordmark.png" alt="Kreativ" class="header-logo">
+                    <span class="header-separator"></span>
+                    <h1>Configurações</h1>
+                </div>
             </div>
-            <button class="btn btn-secondary" onclick="logout()">Sair</button>
+            <div class="user-menu">
+                <span class="user-email" id="userEmail"></span>
+                <button class="logout-btn" onclick="logout()">Sair</button>
+            </div>
         </header>
 
         <main class="settings-page">
@@ -167,6 +174,8 @@
             if (isAuth) {
                 document.getElementById('loadingScreen').style.display = 'none';
                 document.getElementById('settingsPage').style.display = 'block';
+                const user = getUserData();
+                if (user) document.getElementById('userEmail').textContent = user.email;
                 loadConfigs();
             }
         });

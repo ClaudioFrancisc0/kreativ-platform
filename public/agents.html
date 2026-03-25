@@ -39,7 +39,6 @@
         .agents-container {
             min-height: 100vh;
             background: transparent;
-            padding: 40px 20px;
         }
 
         .agents-header {
@@ -176,18 +175,29 @@
 
     <!-- Menu de Agentes -->
     <div class="agents-container" id="agentsContainer">
-        <header class="agents-header">
-            <img src="/images/logo-wordmark.png" alt="Kreativ" class="logo" style="height: 60px; width: auto;">
-            <p>Olá, <span class="user-greeting" id="userName">usuário</span>! Escolha uma automação:</p>
+        <header class="page-header-unified">
+            <div class="header-left">
+                <div class="header-title">
+                    <img src="/images/logo-wordmark.png" alt="Kreativ" class="header-logo">
+                    <span class="header-separator"></span>
+                    <h1>Agentes</h1>
+                </div>
+            </div>
+            <div class="user-menu">
+                <span class="user-email" id="userNameHeader"></span>
+                <button class="logout-btn" onclick="logout()">Sair</button>
+            </div>
         </header>
 
-        <div class="agents-grid" id="agentsGrid">
-            <!-- Agents will be loaded dynamically -->
-        </div>
+        <main class="agents-main" style="padding: 40px 20px;">
+            <div style="text-align: center; margin-bottom: 40px;">
+                <p style="color: var(--text-secondary); font-size: 16px; margin: 0;">Olá, <span class="user-greeting" id="userName">usuário</span>! Escolha uma automação abaixo:</p>
+            </div>
 
-        <footer class="agents-footer">
-            <button class="logout-btn" onclick="logout()">Sair da conta</button>
-        </footer>
+            <div class="agents-grid" id="agentsGrid">
+                <!-- Agents will be loaded dynamically -->
+            </div>
+        </main>
     </div>
 
     <script src="/js/auth.js"></script>
@@ -219,6 +229,7 @@
             if (user) {
                 const emailParts = user.email.split('@');
                 document.getElementById('userName').textContent = emailParts[0];
+                document.getElementById('userNameHeader').textContent = user.email;
             }
         }
 
