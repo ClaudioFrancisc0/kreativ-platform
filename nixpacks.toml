@@ -22,10 +22,7 @@ nixPkgs = [
 ]
 
 [phases.build]
-cmds = [
-    "python3 -m venv --system-site-packages apps/youtube-shorts/venv && . apps/youtube-shorts/venv/bin/activate && pip install --no-cache-dir -r apps/youtube-shorts/requirements.txt",
-    "python3 -m venv --system-site-packages apps/trade-facil/venv && . apps/trade-facil/venv/bin/activate && pip install --no-cache-dir -r apps/trade-facil/requirements.txt"
-]
+cmds = []
 
 [start]
 cmd = "npm start"
