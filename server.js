@@ -12,39 +12,6 @@ console.log('🔧 Iniciando servidor...');
 console.log('📦 NODE_ENV:', process.env.NODE_ENV || 'development');
 console.log('🔌 PORT:', PORT);
 
-// 1. Proxies FIRST (before body parsers consume the stream)
-const { createProxyMiddleware } = require('http-proxy-middleware');
-
-// Proxy para o app YouTube (Streamlit)
-app.use('/youtube-app', createProxyMiddleware({
-    target: 'http://127.0.0.1:8501',
-    changeOrigin: true,
-    ws: true,
-    onError: (err, req, res) => {
-        console.error('Erro no proxy YouTube:', err);
-        res.status(502).json({
-            error: 'O app de automação ainda está iniciando.',
-            details: err.message
-        });
-    }
-}));
-
-// Proxy para o app Trade Fácil (Flask)
-app.use('/trade-facil-api', createProxyMiddleware({
-    target: 'http://127.0.0.1:5001',
-    changeOrigin: true,
-    pathRewrite: { '^/trade-facil-api': '' },
-    timeout: 120000,
-    proxyTimeout: 120000,
-    onError: (err, req, res) => {
-        console.error('Erro no proxy Trade Fácil:', err);
-        res.status(502).json({
-            error: 'O serviço de estatísticas não está respondendo.',
-            details: err.message
-        });
-    }
-}));
-
 // 2. Body Parsers (for internal routes)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -65,9 +32,7 @@ app.use('/api/naming', namingRoutes);
 app.use('/api/agents', agentsRoutes);
 app.use('/api/admin', require('./routes/admin'));
 
-// Python Services
-const pythonService = require('./services/pythonService');
-const tradeStatsService = require('./services/tradeStatsService');
+// API Routes
 
 // Redirecionar raiz para login (login.html verifica se precisa de setup automaticamente)
 app.get('/', (req, res) => {
@@ -142,12 +107,8 @@ app.use((err, req, res, next) => {
 
 // Start server
 const server = app.listen(PORT, HOST, async () => {
-    console.log(`🚀 StudioMe Platform rodando na porta ${PORT}`);
+    console.log(`🚀 Kreativ Platform rodando na porta ${PORT}`);
     console.log(`✅ Servidor pronto para receber requisições`);
-
-    // Iniciar serviços Python de forma assíncrona
-    pythonService.start().catch(err => console.error('Erro ao iniciar YouTube Service:', err));
-    tradeStatsService.start().catch(err => console.error('Erro ao iniciar Trade Stats Service:', err));
 });
 
 // Graceful shutdown

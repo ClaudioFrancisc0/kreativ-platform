@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - StudioMe</title>
+    <title>Dashboard - Kreativ</title>
     <link rel="stylesheet" href="/css/dashboard.css">
     <style>
         /* Esconder conteúdo até verificar auth */
@@ -17,13 +17,13 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background: #f8f9fa;
+            background: var(--bg-primary);
         }
 
         .loading-screen .spinner {
             width: 40px;
             height: 40px;
-            border: 3px solid #e0e0e0;
+            border: 3px solid var(--border-color);
             border-top-color: var(--brand-color);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
@@ -35,16 +35,15 @@
             }
         }
 
-        /* Layout do dashboard */
         .dashboard-page {
             min-height: 100vh;
-            background: #f8f9fa;
+            background: transparent;
         }
 
         .dashboard-header {
-            background: white;
+            background: var(--bg-primary);
             padding: 20px 32px;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -60,7 +59,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            color: #666;
+            color: var(--text-secondary);
             text-decoration: none;
             font-size: 14px;
             padding: 8px 12px;
@@ -69,7 +68,7 @@
         }
 
         .back-btn:hover {
-            background: #f0f0f0;
+            background: var(--bg-secondary);
             color: var(--brand-color);
         }
 
@@ -93,7 +92,7 @@
         .header-title h1 {
             font-size: 20px;
             font-weight: 600;
-            color: #1a1a1a;
+            color: var(--text-primary);
             margin: 0;
         }
 
@@ -104,14 +103,14 @@
         }
 
         .user-email {
-            color: #666;
+            color: var(--text-secondary);
             font-size: 14px;
         }
 
         .logout-btn {
             background: transparent;
-            border: 1px solid #ddd;
-            color: #666;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
             padding: 8px 16px;
             border-radius: 6px;
             cursor: pointer;
@@ -120,8 +119,9 @@
         }
 
         .logout-btn:hover {
-            border-color: #ff4444;
-            color: #ff4444;
+            border-color: var(--text-primary);
+            color: var(--text-primary);
+            background: var(--bg-secondary);
         }
 
         /* Conteúdo principal */
@@ -132,24 +132,25 @@
         }
 
         .dashboard-card {
-            background: white;
+            background: var(--bg-primary);
             border-radius: 16px;
             padding: 32px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            box-shadow: var(--shadow-sm);
             margin-bottom: 24px;
+            border: 1px solid var(--border-color);
         }
 
         .dashboard-card h2 {
             font-size: 20px;
             font-weight: 600;
-            color: #1a1a1a;
+            color: var(--text-primary);
             margin: 0 0 20px;
         }
 
         .info-row {
             display: flex;
             padding: 12px 0;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .info-row:last-child {
@@ -158,17 +159,17 @@
 
         .info-label {
             font-weight: 500;
-            color: #666;
+            color: var(--text-secondary);
             width: 120px;
         }
 
         .info-value {
-            color: #1a1a1a;
+            color: var(--text-primary);
         }
 
         .badge-admin {
             background: var(--brand-color);
-            color: white;
+            color: var(--brand-text);
             padding: 4px 10px;
             border-radius: 20px;
             font-size: 12px;
@@ -176,7 +177,7 @@
         }
 
         .badge-success {
-            background: #e6f7e6;
+            background: rgba(34, 167, 34, 0.1);
             color: #22a722;
             padding: 4px 10px;
             border-radius: 20px;
@@ -196,18 +197,18 @@
             align-items: center;
             gap: 12px;
             padding: 16px 20px;
-            background: #f8f9fa;
+            background: var(--bg-secondary);
             border: 2px solid transparent;
             border-radius: 12px;
             text-decoration: none;
-            color: #1a1a1a;
+            color: var(--text-primary);
             font-weight: 500;
             transition: all 0.2s ease;
         }
 
         .action-btn:hover {
             border-color: var(--brand-color);
-            background: #e8f0ff;
+            background: var(--bg-primary);
         }
 
         .action-icon {
@@ -231,7 +232,7 @@
                 </a>
                 <div class="header-title">
                     <div class="sidebar-logo">
-                        <img src="/images/logo.png" alt="StudioMe">
+                        <img src="/images/logo-wordmark.png" alt="Kreativ" class="logo-filter">
                     </div>
                     <h1>Dashboard</h1>
                 </div>

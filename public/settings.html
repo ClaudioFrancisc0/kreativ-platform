@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configurações - StudioMe</title>
+    <title>Configurações - Kreativ</title>
     <link rel="stylesheet" href="/css/dashboard.css">
     <style>
         .settings-page {
@@ -14,10 +14,11 @@
         }
 
         .config-card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 16px;
             padding: 32px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
             margin-bottom: 30px;
         }
 
@@ -27,7 +28,8 @@
             align-items: center;
             gap: 10px;
             font-size: 1.5rem;
-            border-bottom: 1px solid #eee;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
             padding-bottom: 15px;
             margin-bottom: 20px;
         }
@@ -40,13 +42,15 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 500;
-            color: #333;
+            color: var(--text-primary);
         }
 
         .form-control {
             width: 100%;
             padding: 12px;
-            border: 2px solid #e0e0e0;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
             border-radius: 8px;
             font-size: 16px;
             transition: border-color 0.2s;
@@ -60,18 +64,18 @@
 
         .btn-save {
             background: var(--brand-color);
-            color: white;
+            color: var(--brand-text);
             border: none;
             padding: 12px 24px;
             border-radius: 8px;
             font-size: 16px;
             font-weight: 500;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.2s;
         }
 
         .btn-save:hover {
-            background: #FF0000;
+            opacity: 0.9;
         }
 
         .status-msg {
@@ -92,9 +96,9 @@
         }
 
         .dashboard-header {
-            background: white;
+            background: var(--card-bg);
             padding: 20px 32px;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -102,11 +106,15 @@
 
         .back-btn {
             text-decoration: none;
-            color: #666;
+            color: var(--text-secondary);
             font-weight: 500;
             display: inline-flex;
             align-items: center;
             gap: 5px;
+        }
+        
+        .back-btn:hover {
+            color: var(--brand-color);
         }
 
         .helper-text {
@@ -126,91 +134,28 @@
     <div id="loadingScreen" style="display: flex; justify-content: center; align-items: center; height: 100vh;">
         Carregando...</div>
 
-    <div id="settingsPage" style="display: none; background: #f8f9fa; min-height: 100vh;">
+    <div id="settingsPage" style="display: none; background: transparent; min-height: 100vh;">
         <header class="dashboard-header">
             <div>
                 <a href="/dashboard.html" class="back-btn">← Voltar</a>
                 <h1 style="margin: 10px 0 0 0; font-size: 1.5rem;">Configurações do Sistema</h1>
             </div>
-            <button onclick="logout()"
-                style="border:1px solid #ddd; background:transparent; padding:8px 16px; border-radius:6px; cursor:pointer;">Sair</button>
+            <button class="btn btn-secondary" onclick="logout()">Sair</button>
         </header>
 
         <main class="settings-page">
 
-            <!-- INPI Config -->
+            <!-- RB Podcast Config -->
             <div class="config-card">
-                <h2>🔍 Verificador de Nomes - Configuração INPI</h2>
-                <p class="helper-text" style="margin-bottom: 20px;">Utilizadas para login automático no portal do INPI.
-                </p>
-
-                <div class="form-group">
-                    <label>Usuário (Login)</label>
-                    <input type="text" id="inpiUser" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label>Senha</label>
-                    <input type="password" id="inpiPass" class="form-control">
-                </div>
-                <button class="btn-save" onclick="saveInpi()">Salvar INPI</button>
-                <div id="inpiMsg" class="status-msg"></div>
-            </div>
-
-            <!-- Google API Config -->
-            <div class="config-card">
-                <h2>🌍 Verificador de Nomes - Google Search API</h2>
+                <h2>🎙️ RB Podcast</h2>
                 <p class="helper-text" style="margin-bottom: 20px;">
-                    Necessário para buscar disponibilidade de nomes no Google sem bloqueios.
-                    <a href="https://developers.google.com/custom-search/v1/overview" target="_blank"
-                        class="helper-link">Obter Chaves</a>
+                    Configurações para a automação do RB Podcast.
                 </p>
-
                 <div class="form-group">
-                    <label>API Key</label>
-                    <input type="text" id="googleApiKey" class="form-control" placeholder="AIza...">
+                    <label>API Key de Teste</label>
+                    <input type="text" id="rbApiKey" class="form-control" placeholder="Aguardando definição...">
                 </div>
-                <div class="form-group">
-                    <label>Search Engine ID (CX)</label>
-                    <input type="text" id="googleCx" class="form-control" placeholder="0123456789...">
-                </div>
-                <button class="btn-save" onclick="saveGoogle()">Salvar Google</button>
-                <div id="googleMsg" class="status-msg"></div>
-            </div>
-
-            <!-- YouTube Automation Config -->
-            <div class="config-card">
-                <h2>🎬 Youtube Shorts</h2>
-                <p class="helper-text" style="margin-bottom: 20px;">
-                    Chaves para geração de conteúdo e upload.
-                </p>
-
-                <div class="form-group">
-                    <label>Gemini API Key (IA Generativa)</label>
-                    <input type="text" id="geminiApiKey" class="form-control" placeholder="AIza...">
-                    <p class="helper-text">Usada para gerar roteiros e imagens.</p>
-                </div>
-
-                <div class="form-group">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <label style="margin-bottom: 0;">YouTube Client Secrets (JSON)</label>
-                        <button onclick="autoFillSecrets()" class="btn-save"
-                            style="padding: 4px 10px; font-size: 12px; display: flex; align-items: center; gap: 5px;"
-                            title="Preencher com configuração padrão">
-                            🪄 Sugerir Padrão
-                        </button>
-                    </div>
-                    <textarea id="youtubeSecrets" class="form-control" rows="10"
-                        placeholder='{"web":{"client_id":"...","project_id":"...","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"...","redirect_uris":["http://localhost"],"javascript_origins":["http://localhost"]}}'></textarea>
-                    <p class="helper-text">Cole o conteúdo <strong>completo</strong> do arquivo
-                        <code>client_secrets.json</code> baixado do Google Cloud Console.
-                        <br>⚠️ O JSON deve conter os campos <code>redirect_uris</code> e
-                        <code>client_secret</code>.
-                    </p>
-                </div>
-
-                <button class="btn-save" onclick="saveYoutube()">Salvar Youtube Shorts Config</button>
-                <div id="youtubeMsg" class="status-msg"></div>
+                <button class="btn-save" onclick="alert('Configuração em breve')">Salvar RB Podcast</button>
             </div>
 
         </main>

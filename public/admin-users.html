@@ -17,7 +17,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background: #f8f9fa;
+            background: var(--bg-primary);
         }
 
         .loading-screen .spinner {
@@ -38,13 +38,13 @@
         /* Layout */
         .admin-page {
             min-height: 100vh;
-            background: #f8f9fa;
+            background: transparent;
         }
 
         .admin-header {
-            background: white;
+            background: var(--card-bg);
             padding: 20px 32px;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -93,7 +93,7 @@
         .header-title h1 {
             font-size: 20px;
             font-weight: 600;
-            color: #1a1a1a;
+            color: var(--text-primary);
             margin: 0;
         }
 
@@ -110,8 +110,8 @@
 
         .logout-btn {
             background: transparent;
-            border: 1px solid #ddd;
-            color: #666;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
             padding: 8px 16px;
             border-radius: 6px;
             cursor: pointer;
@@ -120,8 +120,9 @@
         }
 
         .logout-btn:hover {
-            border-color: #ff4444;
-            color: #ff4444;
+            border-color: var(--text-primary);
+            color: var(--text-primary);
+            background: var(--bg-secondary);
         }
 
         /* Conteúdo */
@@ -132,17 +133,18 @@
         }
 
         .admin-card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 16px;
             padding: 32px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
             margin-bottom: 24px;
         }
 
         .admin-card h2 {
             font-size: 20px;
             font-weight: 600;
-            color: #1a1a1a;
+            color: var(--text-primary);
             margin: 0 0 8px;
         }
 
@@ -164,7 +166,7 @@
             display: block;
             font-size: 14px;
             font-weight: 500;
-            color: #333;
+            color: var(--text-primary);
             margin-bottom: 6px;
         }
 
@@ -173,7 +175,9 @@
             width: 100%;
             padding: 12px 14px;
             font-size: 14px;
-            border: 2px solid #e0e0e0;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
             border-radius: 8px;
             transition: border-color 0.2s ease;
             box-sizing: border-box;
@@ -185,116 +189,10 @@
             border-color: var(--brand-color);
         }
 
-        .btn-primary {
-            background: var(--brand-color);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 14px;
-            font-weight: 500;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-
-        .btn-primary:hover {
-            background: #FF0000;
-        }
-
-        .btn-primary:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
-        /* Table */
-        .table-container {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th,
-        td {
-            text-align: left;
-            padding: 14px 12px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        th {
-            font-weight: 600;
-            color: #666;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        td {
-            color: #1a1a1a;
-            font-size: 14px;
-        }
-
-        .badge-admin {
-            background: #f0f0f0;
-            color: #666;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 500;
-        }
-
-        .badge-success {
-            background: #e6f7e6;
-            color: #22a722;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 500;
-        }
-
-        .badge-danger {
-            background: #ffe6e6;
-            color: #d32f2f;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 500;
-        }
-
         .action-btns {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
-        }
-
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-secondary {
-            background: #f0f0f0;
-            border: none;
-            color: #333;
-        }
-
-        .btn-secondary:hover {
-            background: #e0e0e0;
-        }
-
-        .btn-danger {
-            background: #ffe6e6;
-            border: none;
-            color: #d32f2f;
-        }
-
-        .btn-danger:hover {
-            background: #ffd0d0;
         }
 
         /* Alert */
@@ -303,16 +201,6 @@
             border-radius: 10px;
             margin-bottom: 20px;
             font-size: 14px;
-        }
-
-        .alert-success {
-            background: #e6f7e6;
-            color: #22a722;
-        }
-
-        .alert-error {
-            background: #ffe6e6;
-            color: #d32f2f;
         }
     </style>
 </head>
@@ -465,7 +353,7 @@
                         </td>
                         <td>
                             <span style="font-size: 12px; color: #666;">
-                                ${(user.enabled_agents || ['naming']).join(', ')}
+                                ${(user.enabled_agents || ['rb_podcast']).join(', ')}
                             </span>
                         </td>
                         <td>${createdDate}</td>
@@ -482,7 +370,7 @@
                                             onclick="toggleActive(${user.id}, ${!user.is_active})">
                                         ${user.is_active ? '❌ Desativar' : '✅ Ativar'}
                                     </button>
-                                    <button class="btn-sm btn-secondary" onclick="manageAgents(${user.id}, ${JSON.stringify(user.enabled_agents || ['naming']).replace(/"/g, '&quot;')})">
+                                    <button class="btn-sm btn-secondary" onclick="manageAgents(${user.id}, ${JSON.stringify(user.enabled_agents || ['rb_podcast']).replace(/"/g, '&quot;')})">
                                         🎯 Agentes
                                     </button>
                                 </div>
@@ -567,9 +455,7 @@
 
         async function manageAgents(userId, currentAgents) {
             const availableAgents = {
-                naming: 'Verificador de Nomes',
-                youtube: 'Youtube Shorts',
-                trade_facil: 'Trade Fácil / Delta Stats'
+                rb_podcast: 'RB Podcast'
             };
 
             const agentMsg = Object.keys(availableAgents)
@@ -577,7 +463,7 @@
                 .join('\n');
 
             const input = prompt(
-                `Agentes habilitados:\n\n${agentMsg}\n\nDigite os IDs dos agentes separados por vírgula.\nExemplo: naming,youtube`,
+                `Agentes habilitados:\n\n${agentMsg}\n\nDigite os IDs dos agentes separados por vírgula.\nExemplo: rb_podcast`,
                 currentAgents.join(',')
             );
 

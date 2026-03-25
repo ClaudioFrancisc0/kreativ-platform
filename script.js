@@ -14,5 +14,5 @@ document.addEventListener('mousemove', (e) => {
 });
 
 // Console easter egg
-console.log('%c🚀 Nirin Platform', 'font-size: 24px; font-weight: bold; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;');
-console.log('%cEm breve, agentes inteligentes ao seu alcance!', 'font-size: 14px; color: #667eea;');
+console.log('%c🚀 Kreativ Platform', 'font-size: 24px; font-weight: bold; background: linear-gradient(135deg, #007AFF 0%, #B9E5FB 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;');
+console.log('%cEm breve, agentes inteligentes ao seu alcance!', 'font-size: 14px; color: #007AFF;');

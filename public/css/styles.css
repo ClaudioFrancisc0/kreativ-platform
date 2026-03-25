@@ -5,19 +5,37 @@
     box-sizing: border-box;
 }
 
-/* Design Tokens - Nirin Brand */
+/* Design Tokens - Kreativ Brand */
 :root {
-    --brand-color: #ED1C24;
-    --text-primary: #333333;
+    --brand-color: #007AFF; /* Apple Blue for Light Background */
+    --brand-text: #FFFFFF;
+    --text-primary: #000000;
     --text-secondary: #666666;
-    --bg-white: #FFFFFF;
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F8F9FA;
     --border-color: #E5E5E5;
+    --logo-filter: none;
+    --btn-text: #FFFFFF;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --brand-color: #B9E5FB; /* Sky Blue for Dark Background */
+        --brand-text: #000000;
+        --text-primary: #FFFFFF;
+        --text-secondary: #A0A0A0;
+        --bg-primary: #0A0A0A;
+        --bg-secondary: #1A1A1A;
+        --border-color: #333333;
+        --logo-filter: invert(1) brightness(2);
+        --btn-text: #000000;
+    }
 }
 
 /* Base Styles */
 body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    background: var(--bg-white);
+    background: var(--bg-primary);
     color: var(--text-primary);
     line-height: 1.6;
     min-height: 100vh;
@@ -57,6 +75,7 @@ body {
     height: 60px;
     width: auto;
     margin-bottom: 1rem;
+    filter: var(--logo-filter);
 }
 
 .tagline {
