@@ -86,7 +86,8 @@
 
         .form-group input[type="text"],
         .form-group input[type="number"],
-        .form-group select {
+        .form-group select,
+        .form-group textarea {
             width: 100%;
             padding: 12px 14px;
             font-size: 14px;
@@ -99,7 +100,8 @@
         }
 
         .form-group input:focus,
-        .form-group select:focus {
+        .form-group select:focus,
+        .form-group textarea:focus {
             outline: none;
             border-color: var(--brand-color);
         }
@@ -240,7 +242,7 @@
                 <div class="form-row" style="grid-template-columns: 1fr;">
                     <div class="form-group">
                         <label>Assunto Principal (Pode ser uma frase longa)</label>
-                        <input type="text" id="podSubject" placeholder="Ex: Inteligência Artificial e o Futuro do Trabalho" required>
+                        <textarea id="podSubject" placeholder="Ex: Inteligência Artificial e o Futuro do Trabalho" rows="2" style="resize: vertical; font-family: inherit;" required></textarea>
                     </div>
                 </div>
             </div>
