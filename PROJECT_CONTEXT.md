@@ -17,7 +17,7 @@ Official Website/Instagram: [we_are_kreativ](https://www.instagram.com/we_are_kr
     - **Light Mode**: Use high-contrast dark text on light backgrounds and white text on dark buttons (--brand-color: #007AFF).
     - **Dark Mode**: Use light text on dark backgrounds and dark text (#000000) on light-colored buttons/highlights (--brand-color: #B9E5FB).
 - **Adaptive Logos**: Use CSS filters (`filter: invert(1)` or `filter: brightness(0) invert(1)`) for monochrome logos to ensure visibility across themes.
-- **Unified Headers**: All app pages must use `<header class="page-header-unified">` directly from `dashboard.css` to guarantee dark mode harmony. Do not write custom header CSS.
+- **Unified Headers**: All app pages must use `<header class="page-header-unified">` directly from `dashboard.css` to guarantee dark mode harmony. Do not write custom header CSS. Furthermore, the `header-left` section MUST ALWAYS contain the client's `logo-wordmark.png` followed by a separator and the page title/icon, to ensure the logo is permanently fixed in the top-left corner across all internal apps.
 
 ## Architecture
 - **Backend:** Node.js + Express
