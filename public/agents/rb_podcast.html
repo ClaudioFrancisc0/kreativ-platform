@@ -296,28 +296,32 @@
                 <h2>1. Dados do Episódio</h2>
                 <p class="subtitle">Preencha as informações do podcast atual</p>
 
-                <div class="form-row">
+                <div class="form-row" style="grid-template-columns: 120px 1fr;">
                     <div class="form-group">
-                        <label>Número do Podcast</label>
-                        <input type="number" id="podNumber" placeholder="Ex: 105" required>
+                        <label>Nº do Podcast</label>
+                        <input type="number" id="podNumber" placeholder="105" required>
                     </div>
-                    <div class="form-group">
-                        <label>Gênero do Convidado</label>
-                        <select id="podGender" required>
-                            <option value="M">Masculino (Convidado)</option>
-                            <option value="F">Feminino (Convidada)</option>
-                        </select>
-                    </div>
+                    <div></div>
                 </div>
 
-                <div class="form-row">
+                <div class="form-row" style="grid-template-columns: 3fr 1fr;">
                     <div class="form-group">
                         <label>Nome do Speaker</label>
                         <input type="text" id="podName" placeholder="Ex: João Silva" required>
                     </div>
                     <div class="form-group">
-                        <label>Assunto Principal</label>
-                        <input type="text" id="podSubject" placeholder="Ex: Inteligência Artificial" required>
+                        <label>Gênero</label>
+                        <select id="podGender" required>
+                            <option value="M">Masculino</option>
+                            <option value="F">Feminino</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row" style="grid-template-columns: 1fr;">
+                    <div class="form-group">
+                        <label>Assunto Principal (Pode ser uma frase longa)</label>
+                        <input type="text" id="podSubject" placeholder="Ex: Inteligência Artificial e o Futuro do Trabalho" required>
                     </div>
                 </div>
             </div>
@@ -380,6 +384,14 @@
                 document.getElementById('podcastContainer').style.display = 'block';
                 const user = getUserData();
                 if (user) document.getElementById('userEmail').textContent = user.email;
+                
+                // Initialize Podcast Number from localStorage
+                const lastPodNumber = localStorage.getItem('last_rb_podcast_number');
+                if (lastPodNumber) {
+                    document.getElementById('podNumber').value = parseInt(lastPodNumber) + 1;
+                } else {
+                    document.getElementById('podNumber').value = 1;
+                }
             }
         });
 
@@ -466,6 +478,9 @@
                     console.log('Dados do formulário prontos para envio:', {
                         number, gender, name, subject, audioFile, blob
                     });
+                    
+                    // Save the last utilized number
+                    localStorage.setItem('last_rb_podcast_number', number);
                     
                     alert('Os dados e a foto recortada foram processados no frontend com sucesso! Aguardando endpoint do servidor / Layouts.');
                     
