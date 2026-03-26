@@ -18,7 +18,7 @@
     --card-bg: #FFFFFF;
     --border-color: #E5E5E5;
     --logo-filter: none;
-    --logo-blend: multiply;
+    --logo-blend: normal;
     --btn-text: #FFFFFF;
     --error-color: #dc3545;
     --success-color: #28a745;
@@ -36,8 +36,8 @@
         --bg-secondary: #121212;
         --card-bg: #1A1A1A;
         --border-color: #2A2A2A;
-        --logo-filter: invert(1);
-        --logo-blend: screen;
+        --logo-filter: invert(1) brightness(1.5);
+        --logo-blend: normal;
         --btn-text: #000000;
     }
 }
