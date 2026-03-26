@@ -1,6 +1,32 @@
 const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../middleware/auth');
+const db = require('../database/db');
+
+/**
+ * GET /api/agents/rb_podcast/number
+ */
+router.get('/rb_podcast/number', verifyToken, (req, res) => {
+    db.get('SELECT value FROM settings WHERE key = ?', ['last_rb_podcast_number'], (err, row) => {
+        if (err) return res.status(500).json({ error: 'Erro no bd' });
+        res.json({ number: row ? parseInt(row.value) : 0 });
+    });
+});
+
+/**
+ * POST /api/agents/rb_podcast/number
+ */
+router.post('/rb_podcast/number', verifyToken, express.json(), (req, res) => {
+    const { number } = req.body;
+    db.run(
+        'INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = ?',
+        ['last_rb_podcast_number', number.toString(), number.toString()],
+        (err) => {
+            if (err) return res.status(500).json({ error: 'Erro ao salvar' });
+            res.json({ success: true });
+        }
+    );
+});
 
 /**
  * GET /api/agents/available

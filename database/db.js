@@ -90,9 +90,23 @@ const updateAdminAgents = () => {
     );
 };
 
+const createSettingsTable = () => {
+    const sql = `
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    )
+  `;
+    db.run(sql, (err) => {
+        if (err) console.error('❌ Erro ao criar tabela settings:', err);
+        else console.log('✅ Tabela settings criada/verificada com sucesso');
+    });
+};
+
 // Inicializar banco de dados
 const initDatabase = () => {
     createUsersTable();
+    createSettingsTable();
 };
 
 // Inicializar automaticamente
