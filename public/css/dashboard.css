@@ -17,7 +17,7 @@
     --bg-secondary: #F8F9FA;
     --card-bg: #FFFFFF;
     --border-color: #E5E5E5;
-    --logo-filter: none;
+    --logo-filter: invert(1); /* Logo is white, invert for light mode */
     --logo-blend: normal;
     --btn-text: #FFFFFF;
     --error-color: #dc3545;
@@ -36,7 +36,7 @@
         --bg-secondary: #121212;
         --card-bg: #1A1A1A;
         --border-color: #2A2A2A;
-        --logo-filter: invert(1) brightness(1.5);
+        --logo-filter: none; /* Logo is native white, perfect for dark mode */
         --logo-blend: normal;
         --btn-text: #000000;
     }
