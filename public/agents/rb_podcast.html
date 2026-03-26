@@ -44,22 +44,23 @@
         }
 
         .podcast-card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 16px;
             padding: 32px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
             margin-bottom: 24px;
         }
 
         .podcast-card h2 {
             font-size: 20px;
             font-weight: 600;
-            color: #1a1a1a;
+            color: var(--text-primary);
             margin: 0 0 8px;
         }
 
         .podcast-card .subtitle {
-            color: #666;
+            color: var(--text-secondary);
             font-size: 14px;
             margin: 0 0 24px;
         }
@@ -79,7 +80,7 @@
             display: block;
             font-size: 14px;
             font-weight: 500;
-            color: #333;
+            color: var(--text-primary);
             margin-bottom: 8px;
         }
 
@@ -89,39 +90,39 @@
             width: 100%;
             padding: 12px 14px;
             font-size: 14px;
-            border: 2px solid #e0e0e0;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             box-sizing: border-box;
             transition: border-color 0.2s ease;
-            background: white;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
         }
 
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
-            border-color: var(--brand-color, #007bff);
+            border-color: var(--brand-color);
         }
 
         /* File Upload Areas */
         .upload-area {
-            border: 2px dashed #ddd;
+            border: 2px dashed var(--border-color);
             border-radius: 12px;
             padding: 24px;
             text-align: center;
             transition: all 0.2s ease;
             cursor: pointer;
             position: relative;
-            background: #fcfcfc;
+            background: var(--bg-secondary);
         }
 
         .upload-area:hover {
-            border-color: var(--brand-color, #007bff);
-            background: #f0f4ff;
+            border-color: var(--brand-color);
+            background: var(--card-bg);
         }
 
         .upload-area.has-file {
-            border-color: #22a722;
-            background: #f0fff0;
+            border-color: var(--success-color, #28a745);
         }
 
         .upload-area input[type="file"] {
@@ -196,10 +197,11 @@
     <div class="podcast-container" id="podcastContainer">
         <header class="page-header-unified">
             <div class="header-left">
-                <a href="/agents.html" class="back-btn">← Voltar</a>
                 <div class="header-title">
-                    <div class="header-icon">🎙️</div>
-                    <h1>RB Podcast Automação</h1>
+                    <img src="/images/logo-wordmark.png" alt="Kreativ" class="header-logo">
+                    <span class="header-separator"></span>
+                    <a href="/agents.html" class="back-btn" style="margin-right: 8px;">← Voltar</a>
+                    <h1 style="font-size: 20px;">🎙️ RB Podcast</h1>
                 </div>
             </div>
             <div class="user-menu">
