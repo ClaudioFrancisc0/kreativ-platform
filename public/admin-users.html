@@ -249,9 +249,7 @@
                             </select>
                         </div>
                     </div>
-                    <button type="submit" class="btn-primary" id="createBtn">
-                        ➕ Criar Usuário
-                    </button>
+                    <button type="submit" class="btn btn-primary" id="createBtn">➕ Criar Usuário</button>
                 </form>
             </div>
 
@@ -359,17 +357,17 @@
                         <td>
                             ${!isCurrentUser ? `
                                 <div class="action-btns">
-                                    <button class="btn-sm btn-secondary" onclick="toggleRole(${user.id}, '${user.role}')">
+                                    <button class="btn btn-sm btn-secondary" onclick="toggleRole(${user.id}, '${user.role}')">
                                         ${user.role === 'admin' ? '👤 Remover Admin' : '🔑 Tornar Admin'}
                                     </button>
-                                    <button class="btn-sm btn-secondary" onclick="resetPassword(${user.id})">
+                                    <button class="btn btn-sm btn-secondary" onclick="resetPassword(${user.id})">
                                         🔒 Resetar Senha
                                     </button>
-                                    <button class="btn-sm ${user.is_active ? 'btn-danger' : 'btn-secondary'}" 
+                                    <button class="btn btn-sm ${user.is_active ? 'btn-danger' : 'btn-secondary'}" 
                                             onclick="toggleActive(${user.id}, ${!user.is_active})">
                                         ${user.is_active ? '❌ Desativar' : '✅ Ativar'}
                                     </button>
-                                    <button class="btn-sm btn-secondary" onclick="manageAgents(${user.id}, ${JSON.stringify(user.enabled_agents || ['rb_podcast']).replace(/"/g, '&quot;')})">
+                                    <button class="btn btn-sm btn-secondary" onclick="manageAgents(${user.id}, ${JSON.stringify(user.enabled_agents || ['rb_podcast']).replace(/"/g, '&quot;')})">
                                         🎯 Agentes
                                     </button>
                                 </div>
