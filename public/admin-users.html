@@ -202,6 +202,103 @@
             margin-bottom: 20px;
             font-size: 14px;
         }
+
+        /* Modal for Agents */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 32px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-card h3 {
+            margin: 0 0 24px;
+            color: var(--text-primary);
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .agents-checkbox-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .agent-checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-primary);
+            font-size: 15px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .agent-checkbox-item:hover {
+            background: var(--bg-secondary);
+        }
+
+        .agent-checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--brand-color);
+            cursor: pointer;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .modal-actions .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .btn-cancel:hover {
+            background: var(--bg-secondary);
+        }
+
+        .btn-save {
+            background: var(--brand-color);
+            border: none;
+            color: white;
+        }
+
+        .btn-save:hover {
+            opacity: 0.9;
+        }
     </style>
 </head>
 
@@ -279,6 +376,18 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Modal for Agents -->
+    <div id="agentsModal" class="modal-overlay" style="display: none;">
+        <div class="modal-card">
+            <h3>Gerenciar Agentes</h3>
+            <div id="agentsCheckboxContainer" class="agents-checkbox-list"></div>
+            <div class="modal-actions">
+                <button class="btn btn-cancel" onclick="closeAgentsModal()">Cancelar</button>
+                <button class="btn btn-save" id="saveAgentsBtn">Salvar</button>
+            </div>
+        </div>
     </div>
 
     <script src="/js/auth.js"></script>
@@ -450,41 +559,72 @@
             }
         }
 
-        async function manageAgents(userId, currentAgents) {
-            const availableAgents = {
-                rb_podcast: 'RB Podcast'
-            };
+        const availableAgents = {
+            rb_podcast: '🎙️ RB Podcast',
+            trade_facil: '📈 Trade Fácil',
+            youtube: '🎬 Youtube Shorts',
+            naming: '🔍 Verificador Naming'
+        };
 
-            const agentMsg = Object.keys(availableAgents)
-                .map(id => `${currentAgents.includes(id) ? '☑' : '☐'} ${availableAgents[id]} (${id})`)
-                .join('\n');
+        let currentEditingUserId = null;
 
-            const input = prompt(
-                `Agentes habilitados:\n\n${agentMsg}\n\nDigite os IDs dos agentes separados por vírgula.\nExemplo: rb_podcast`,
-                currentAgents.join(',')
-            );
+        function manageAgents(userId, currentAgents) {
+            currentEditingUserId = userId;
+            const container = document.getElementById('agentsCheckboxContainer');
+            container.innerHTML = '';
+            
+            Object.keys(availableAgents).forEach(id => {
+                const label = document.createElement('label');
+                label.className = 'agent-checkbox-item';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = id;
+                checkbox.checked = currentAgents.includes(id);
+                
+                const span = document.createElement('span');
+                span.textContent = availableAgents[id];
+                
+                label.appendChild(checkbox);
+                label.appendChild(span);
+                container.appendChild(label);
+            });
+            
+            document.getElementById('agentsModal').style.display = 'flex';
+        }
 
-            if (input === null) return;
+        function closeAgentsModal() {
+            document.getElementById('agentsModal').style.display = 'none';
+            currentEditingUserId = null;
+        }
 
-            const selectedAgents = input.split(',').map(a => a.trim()).filter(a => a);
-
-            const invalid = selectedAgents.filter(a => !Object.keys(availableAgents).includes(a));
-            if (invalid.length > 0) {
-                alert(`Agentes inválidos: ${invalid.join(',')}`);
-                return;
-            }
-
+        document.getElementById('saveAgentsBtn').addEventListener('click', async () => {
+            if (!currentEditingUserId) return;
+            
+            const checkboxes = document.querySelectorAll('#agentsCheckboxContainer input[type="checkbox"]:checked');
+            const selectedAgents = Array.from(checkboxes).map(cb => cb.value);
+            
             try {
-                await apiRequest(`/api/users/${userId}/agents`, {
+                const btn = document.getElementById('saveAgentsBtn');
+                btn.disabled = true;
+                btn.textContent = 'Salvando...';
+
+                await apiRequest(`/api/users/${currentEditingUserId}/agents`, {
                     method: 'PATCH',
                     body: JSON.stringify({ enabled_agents: selectedAgents })
                 });
+                
                 showAlert('Agentes atualizados com sucesso!', 'success');
+                closeAgentsModal();
                 loadUsers();
             } catch (error) {
                 showAlert(error.message || 'Erro ao atualizar agentes', 'error');
+            } finally {
+                const btn = document.getElementById('saveAgentsBtn');
+                btn.disabled = false;
+                btn.textContent = 'Salvar';
             }
-        }
+        });
     </script>
 </body>
 
