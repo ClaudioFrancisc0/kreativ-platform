@@ -23,12 +23,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 // API Routes
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
-const namingRoutes = require('./routes/naming');
 const agentsRoutes = require('./routes/agents');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/naming', namingRoutes);
 app.use('/api/agents', agentsRoutes);
 app.use('/api/admin', require('./routes/admin'));
 
@@ -60,33 +58,11 @@ app.get('/api/config', (req, res) => {
 
 // Diag endpoint for cloud debugging
 app.get('/api/diag', async (req, res) => {
-    const fs = require('fs');
-    const path = require('path');
-
     const diag = {
         node_env: process.env.NODE_ENV,
         platform: process.platform,
-        python_services: {
-            youtube: pythonService.process ? `PID: ${pythonService.process.pid}` : 'Offline',
-            trade: tradeStatsService.process ? `PID: ${tradeStatsService.process.pid}` : 'Offline'
-        },
-        checks: {
-            youtube_dir: fs.existsSync(path.join(__dirname, 'apps/youtube-shorts')),
-            youtube_venv: fs.existsSync(path.join(__dirname, 'apps/youtube-shorts/venv/bin/python')),
-            trade_dir: fs.existsSync(path.join(__dirname, 'apps/trade-facil')),
-            trade_venv: fs.existsSync(path.join(__dirname, 'apps/trade-facil/venv/bin/python')),
-            trade_db: fs.existsSync('/data/trade_facil.db')
-                ? `${(fs.statSync('/data/trade_facil.db').size / 1024 / 1024).toFixed(2)} MB`
-                : 'Not found in /data'
-        },
         env: {
-            LD_LIBRARY_PATH: process.env.LD_LIBRARY_PATH,
-            PATH: process.env.PATH,
             DATABASE_PATH: process.env.DATABASE_PATH
-        },
-        logs: {
-            youtube: pythonService.logBuffer,
-            trade: tradeStatsService.logBuffer
         },
         timestamp: new Date().toISOString()
     };
@@ -116,9 +92,6 @@ process.on('SIGTERM', () => {
     console.log('⏹️ SIGTERM recebido. Encerrando servidor...');
     server.close(() => {
         console.log('✅ Servidor NODE encerrado com sucesso');
-        // Encerrar serviços Python
-        pythonService.stop();
-        tradeStatsService.stop();
         process.exit(0);
     });
 });
@@ -127,9 +100,6 @@ process.on('SIGINT', () => {
     console.log('⏹️ SIGINT recebido. Encerrando servidor...');
     server.close(() => {
         console.log('✅ Servidor NODE encerrado com sucesso');
-        // Encerrar serviços Python
-        pythonService.stop();
-        tradeStatsService.stop();
         process.exit(0);
     });
 });

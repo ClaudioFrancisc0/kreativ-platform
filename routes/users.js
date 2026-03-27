@@ -27,7 +27,7 @@ router.get('/', verifyToken, requireAdmin, async (req, res) => {
             role: user.role,
             is_active: user.is_active === 1,
             must_reset_password: user.must_reset_password === 1,
-            enabled_agents: user.enabled_agents || ['naming'],
+            enabled_agents: user.enabled_agents || ['rb_podcast'],
             created_at: user.created_at
         }));
 
@@ -210,7 +210,7 @@ router.patch('/:id/agents', [
             return res.status(404).json({ error: 'Usuário não encontrado' });
         }
 
-        const validAgents = ['naming', 'youtube'];
+        const validAgents = ['rb_podcast'];
         const invalidAgents = enabled_agents.filter(a => !validAgents.includes(a));
         if (invalidAgents.length > 0) {
             return res.status(400).json({

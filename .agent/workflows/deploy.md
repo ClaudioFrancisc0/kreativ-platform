@@ -17,7 +17,7 @@ git push origin develop
 ```
 
 ## 2. Production Deployment (Requires User OK)
-When the user explicitly asks to deployment to production or Railway, and ONLY when they ask, run the following:
+When the user EXPLICITLY asks to deploy to Production OR main branch, run the following:
 ```bash
 git checkout main
 git pull origin main

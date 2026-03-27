@@ -41,14 +41,14 @@ router.get('/available', verifyToken, (req, res) => {
             enabledAgents = JSON.parse(enabledAgents);
         }
 
-        // Default para naming se não houver configuração
+        // Default para rb_podcast se não houver configuração
         if (!enabledAgents || !Array.isArray(enabledAgents)) {
-            enabledAgents = ['naming'];
+            enabledAgents = ['rb_podcast'];
         }
 
         // Admins têm acesso a tudo
         if (req.user.role === 'admin') {
-            enabledAgents = ['naming', 'youtube', 'trade_facil'];
+            enabledAgents = ['rb_podcast'];
         }
 
         res.json({ enabled_agents: enabledAgents });
