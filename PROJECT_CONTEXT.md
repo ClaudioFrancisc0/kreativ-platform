@@ -26,6 +26,7 @@ Official Website/Instagram: [we_are_kreativ](https://www.instagram.com/we_are_kr
 - **User Management Maintenance:** When creating new future agents, you must update the `availableAgents` dictionary inside `/public/admin-users.html` to ensure the new agents can be managed and assigned to users via the Admin dashboard.
 
 ## Development & Deployment Workflow
-- **Branch `develop` (Safe Zone):** ALL programming, bug fixes, tests, and new features MUST be created and committed to the `develop` branch.
-- **Automated Pushing:** After completing a batch of changes, the agent MUST automatically commit and push the code to `origin develop` on GitHub for backup/visibility.
-- **Branch `main` (Production):** The `main` branch is tied directly to **Railway Auto-Deploy**. You MUST NEVER merge or push to `main` without explicit user permission. Deployments only happen when the user gives the "OK" to promote `develop` into `main`.
+- **NO LOCAL TESTING:** The project is strictly cloud-tested. Do not start the server locally (`npm run dev`) or rely on a local `database.sqlite` for testing purposes. All testing happens in the Railway `develop` environment.
+- **Branch `develop` (Safe Zone):** ALL programming, bug fixes, and new features MUST be created and committed to the `develop` branch.
+- **Automated Pushing:** After completing a batch of code changes, you MUST automatically commit and push the code directly to `origin develop` on GitHub. This is the only way to test modifications.
+- **Branch `main` (Production):** The `main` branch is the production environment. You MUST NEVER merge or push to `main` without explicit user permission. Production deployments only happen when the user specifically asks to deploy.
