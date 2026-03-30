@@ -1,0 +1,62 @@
+[
+  {
+    "name": "BannerOrbita_1920x1080.png",
+    "cx": 1435,
+    "cy": 542,
+    "radius": 412,
+    "minX": 1023,
+    "minY": 130,
+    "maxX": 1847,
+    "maxY": 954,
+    "imgW": 1920,
+    "imgH": 1080
+  },
+  {
+    "name": "BannerSite_1440x780.png",
+    "cx": 975,
+    "cy": 397,
+    "radius": 355,
+    "minX": 620,
+    "minY": 43,
+    "maxX": 1329,
+    "maxY": 751,
+    "imgW": 1440,
+    "imgH": 780
+  },
+  {
+    "name": "CapaPodcast_1080x1080.png",
+    "cx": 537,
+    "cy": 551,
+    "radius": 322,
+    "minX": 215,
+    "minY": 229,
+    "maxX": 859,
+    "maxY": 872,
+    "imgW": 1080,
+    "imgH": 1080
+  },
+  {
+    "name": "CapaReels_1920x1080.png",
+    "cx": 540,
+    "cy": 950,
+    "radius": 290,
+    "minX": 250,
+    "minY": 661,
+    "maxX": 829,
+    "maxY": 1239,
+    "imgW": 1080,
+    "imgH": 1920
+  },
+  {
+    "name": "Story_1920x1080.png",
+    "cx": 540,
+    "cy": 958,
+    "radius": 375,
+    "minX": 165,
+    "minY": 583,
+    "maxX": 915,
+    "maxY": 1332,
+    "imgW": 1080,
+    "imgH": 1920
+  }
+]

@@ -30,3 +30,18 @@ Official Website/Instagram: [we_are_kreativ](https://www.instagram.com/we_are_kr
 - **Branch `develop` (Safe Zone):** ALL programming, bug fixes, and new features MUST be created and committed to the `develop` branch.
 - **Automated Pushing:** After completing a batch of code changes, you MUST automatically commit and push the code directly to `origin develop` on GitHub. This is the only way to test modifications.
 - **Branch `main` (Production):** The `main` branch is the production environment. You MUST NEVER merge or push to `main` without explicit user permission. Production deployments only happen when the user specifically asks to deploy.
+
+## RB Podcast — Art Generation Module
+
+The **RB Podcast** agent includes a Node.js art generation engine (`generate_arts.js`) that produces all social media layout images automatically from a single guest photo.
+
+- **Config file:** `templates_config.json` — single source of truth for all element positions, font sizes, and layout parameters.
+- **Full layout documentation:** See [`PODCAST_LAYOUTS.md`](./PODCAST_LAYOUTS.md) for the complete reference of all 5 approved layouts.
+- **Approved layouts (all calibrated against PSD benchmarks):**
+  - `BannerOrbita_1920x1080` — Landscape banner
+  - `BannerSite_1440x780` — Website banner
+  - `CapaPodcast_1080x1080` — Square podcast cover
+  - `CapaReels_1920x1080` — Portrait 9:16 Reels (split layout: name left / quote right)
+  - `Story_1920x1080` — Portrait 9:16 Stories (stacked layout: all left-aligned)
+- **Key technical note:** `ctx.letterSpacing` is NOT supported by node-canvas. Letter spacing is implemented via character-by-character rendering in `drawTextInBox()`.
+- **Run:** `node generate_arts.js` — outputs all 5 JPGs to `output/` at 95% quality.

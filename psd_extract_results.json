@@ -1,0 +1,237 @@
+{
+  "BannerOrbita_1920x1080": {
+    "dimensions": {
+      "width": 1920,
+      "height": 1080
+    },
+    "textLayers": [
+      {
+        "name": "N° 899",
+        "text": "N° 899",
+        "left": 121,
+        "top": 105,
+        "right": 267,
+        "bottom": 139,
+        "width": 146,
+        "height": 34,
+        "fontName": null,
+        "fontSize": null,
+        "color": null,
+        "justification": "left"
+      },
+      {
+        "name": "Convidado:",
+        "text": "Convidado:",
+        "left": 79,
+        "top": 268,
+        "right": 339,
+        "bottom": 297,
+        "width": 260,
+        "height": 29,
+        "fontName": null,
+        "fontSize": null,
+        "color": null,
+        "justification": "left"
+      },
+      {
+        "name": "Ricardo  Galvão",
+        "text": "Ricardo \nGalvão",
+        "left": 75,
+        "top": 330,
+        "right": 442,
+        "bottom": 513,
+        "width": 367,
+        "height": 183,
+        "fontName": null,
+        "fontSize": null,
+        "color": null,
+        "justification": "left"
+      },
+      {
+        "name": "Direito à Previdência: um marco na valorização da pesquisa cien",
+        "text": "Direito à Previdência: um marco na valorização\nda pesquisa científica no Brasil.\"",
+        "left": 80,
+        "top": 737,
+        "right": 889,
+        "bottom": 831,
+        "width": 809,
+        "height": 94,
+        "fontName": null,
+        "fontSize": null,
+        "color": null,
+        "justification": "left"
+      }
+    ]
+  },
+  "BannerSite_1440x780": {
+    "dimensions": {
+      "width": 1440,
+      "height": 780
+    },
+    "textLayers": []
+  },
+  "CapaPodcast_1080x1080": {
+    "dimensions": {
+      "width": 1080,
+      "height": 1080
+    },
+    "textLayers": [
+      {
+        "name": "N° 899",
+        "text": "N° 899",
+        "left": 113,
+        "top": 100,
+        "right": 237,
+        "bottom": 129,
+        "width": 124,
+        "height": 29,
+        "fontName": null,
+        "fontSize": null,
+        "color": null,
+        "justification": "left"
+      },
+      {
+        "name": "Ricardo Galvão",
+        "text": "Ricardo Galvão",
+        "left": 188,
+        "top": 901,
+        "right": 893,
+        "bottom": 981,
+        "width": 705,
+        "height": 80,
+        "fontName": null,
+        "fontSize": null,
+        "color": null,
+        "justification": "left"
+      }
+    ]
+  },
+  "CapaReels_1920x1080": {
+    "dimensions": {
+      "width": 1080,
+      "height": 1920
+    },
+    "textLayers": [
+      {
+        "name": "N° 899",
+        "text": "N° 899",
+        "left": 101,
+        "top": 480,
+        "right": 186,
+        "bottom": 500,
+        "width": 85,
+        "height": 20,
+        "fontName": null,
+        "fontSize": null,
+        "color": null,
+        "justification": "left"
+      },
+      {
+        "name": "Convidado:",
+        "text": "Convidado:",
+        "left": 79,
+        "top": 1324,
+        "right": 315,
+        "bottom": 1348,
+        "width": 236,
+        "height": 24,
+        "fontName": null,
+        "fontSize": null,
+        "color": null,
+        "justification": "left"
+      },
+      {
+        "name": "Direito à Previdência:  um marco na valorização da pesquisa cie",
+        "text": "Direito à Previdência: \num marco na valorização\nda pesquisa científica \nno Brasil.”",
+        "left": 574,
+        "top": 1373,
+        "right": 1005,
+        "bottom": 1569,
+        "width": 431,
+        "height": 196,
+        "fontName": null,
+        "fontSize": null,
+        "color": null,
+        "justification": "right"
+      },
+      {
+        "name": "Ricardo  Galvão",
+        "text": "Ricardo \nGalvão",
+        "left": 81,
+        "top": 1383,
+        "right": 344,
+        "bottom": 1513,
+        "width": 263,
+        "height": 130,
+        "fontName": null,
+        "fontSize": null,
+        "color": null,
+        "justification": "left"
+      }
+    ]
+  },
+  "Story_1920x1080": {
+    "dimensions": {
+      "width": 1080,
+      "height": 1920
+    },
+    "textLayers": [
+      {
+        "name": "N° 899",
+        "text": "N° 899",
+        "left": 109,
+        "top": 221,
+        "right": 236,
+        "bottom": 251,
+        "width": 127,
+        "height": 30,
+        "fontName": null,
+        "fontSize": null,
+        "color": null,
+        "justification": "left"
+      },
+      {
+        "name": "Convidado:",
+        "text": "Convidado:",
+        "left": 71,
+        "top": 1395,
+        "right": 357,
+        "bottom": 1424,
+        "width": 286,
+        "height": 29,
+        "fontName": null,
+        "fontSize": null,
+        "color": null,
+        "justification": "left"
+      },
+      {
+        "name": "Ricardo Galvão",
+        "text": "Ricardo Galvão",
+        "left": 71,
+        "top": 1461,
+        "right": 668,
+        "bottom": 1529,
+        "width": 597,
+        "height": 68,
+        "fontName": null,
+        "fontSize": null,
+        "color": null,
+        "justification": "left"
+      },
+      {
+        "name": "Direito à Previdência: um marco  na valorização da pesquisa cie",
+        "text": "Direito à Previdência: um marco \nna valorização da pesquisa científica \nno Brasil.\"",
+        "left": 73,
+        "top": 1657,
+        "right": 726,
+        "bottom": 1803,
+        "width": 653,
+        "height": 146,
+        "fontName": null,
+        "fontSize": null,
+        "color": null,
+        "justification": "left"
+      }
+    ]
+  }
+}
