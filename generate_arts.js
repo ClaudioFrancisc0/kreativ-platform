@@ -36,12 +36,7 @@ function fontToCss(fontKey, size) {
 
 const config = JSON.parse(fs.readFileSync(path.join(__dirname, 'templates_config.json'), 'utf-8'));
 
-const podcastData = {
-    number: "N\u00b0 900",
-    guestLabel: "Convidado:",
-    guestName: "Juliano Cezar",
-    title: "As novas tend\u00eancias do mercado imobili\u00e1rio de S\u00e3o Paulo sob o ponto de vista financeiro"
-};
+
 
 // Mede largura de texto considerando letter-spacing manual
 function measureWithSpacing(ctx, text, spacing) {
@@ -154,11 +149,14 @@ function drawTextInBox(ctx, text, boxConfig) {
     }
 }
 
-(async () => {
-    if (!fs.existsSync('output')) fs.mkdirSync('output');
-    const photo = await loadImage(path.join(ASSETS, 'foto.jpg'));
+async function generateAllLayouts(podcastData, photoBufferOrPath, outputDir, onProgress) {
+    if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+    
+    // Suporta passar o buffer da imagem ao invés do caminho completo se necessário
+    const photo = await loadImage(photoBufferOrPath);
 
     for (const templateName of Object.keys(config)) {
+        if (onProgress) onProgress('Processando ' + templateName);
         console.log('Montando: ' + templateName);
         const tmpl = config[templateName];
         const canvas = createCanvas(tmpl.width, tmpl.height);
@@ -200,7 +198,7 @@ function drawTextInBox(ctx, text, boxConfig) {
             if (textToDraw) drawTextInBox(ctx, textToDraw, boxCfg);
         }
 
-        const outPath = path.join(__dirname, 'output', templateName + '_Generated.jpg');
+        const outPath = path.join(outputDir, templateName + '_Generated.jpg');
         await new Promise((resolve, reject) => {
             const out = fs.createWriteStream(outPath);
             canvas.createJPEGStream({ quality: 0.95 }).pipe(out);
@@ -208,5 +206,20 @@ function drawTextInBox(ctx, text, boxConfig) {
             out.on('error', reject);
         });
     }
-    console.log('\nConcluido!');
-})();
+    console.log('\nArtes concluídas em: ' + outputDir);
+}
+
+// Mantém suporte para teste local standalone rodando `node generate_arts.js`
+if (require.main === module) {
+    const testData = {
+        number: "N° 900",
+        guestLabel: "Convidado:",
+        guestName: "Juliano Cezar",
+        title: "As novas tendências do mercado imobiliário"
+    };
+    generateAllLayouts(testData, path.join(__dirname, 'assets', 'foto.jpg'), path.join(__dirname, 'output'))
+        .then(() => console.log('Teste concluído.'))
+        .catch(console.error);
+}
+
+module.exports = { generateAllLayouts };

@@ -18,7 +18,13 @@ nixPkgs = [
     "gnumake",
     "pkg-config",
     "openssl",
-    "libffi"
+    "libffi",
+    "cairo",
+    "pango",
+    "libjpeg",
+    "giflib",
+    "librsvg",
+    "pixman"
 ]
 
 [phases.build]

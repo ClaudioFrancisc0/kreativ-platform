@@ -288,6 +288,14 @@
                 <button class="btn-start" id="startBtn" onclick="generatePodcastFiles()">
                     🚀 Gerar Materiais de Divulgação
                 </button>
+
+                <!-- Barra de Progresso Real-time -->
+                <div id="progressContainer" style="display: none; margin-top: 20px; text-align: center;">
+                    <div style="width: 100%; background-color: var(--border-color); border-radius: 8px; overflow: hidden; height: 8px;">
+                        <div id="progressBar" style="width: 0%; height: 100%; background-color: var(--brand-color); transition: width 0.3s ease;"></div>
+                    </div>
+                    <p id="progressText" style="margin-top: 10px; font-size: 14px; font-weight: 500; color: var(--text-primary);"></p>
+                </div>
             </div>
         </main>
     </div>
@@ -399,13 +407,7 @@
                     formData.append('audioFile', audioFile);
                     formData.append('photoFile', blob, 'speaker_cropped.png');
 
-                    // NOTE: Endpoint ainda a ser integrado. 
-                    // Simulando envio para validação do frontend.
-                    console.log('Dados do formulário prontos para envio:', {
-                        number, gender, name, subject, audioFile, blob
-                    });
-                    
-                    // Save the last utilized number to Cloud DB
+                    // Salva último número
                     fetch('/api/agents/rb_podcast/number', {
                         method: 'POST',
                         headers: {
@@ -415,12 +417,90 @@
                         body: JSON.stringify({ number })
                     }).catch(console.error);
                     
-                    alert('Os dados e a foto recortada foram processados no frontend com sucesso! Aguardando endpoint do servidor / Layouts.');
-                    
-                    // TODO: Fazer fetch para '/api/agents/rb_podcast/generate' aqui.
-                    
-                    btn.disabled = false;
-                    btn.innerHTML = '🚀 Gerar Materiais de Divulgação';
+                    try {
+                        const token = localStorage.getItem('token');
+                        const response = await fetch('/api/agents/rb_podcast/generate', {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${token}` },
+                            body: formData
+                        });
+                        
+                        if (!response.ok) {
+                            let errorMsg = 'Erro ao iniciar job.';
+                            try {
+                                const errorData = await response.json();
+                                errorMsg = errorData.error || errorMsg;
+                            } catch (e) { }
+                            throw new Error(errorMsg);
+                        }
+                        
+                        const initData = await response.json();
+                        const jobId = initData.jobId;
+
+                        const progressContainer = document.getElementById('progressContainer');
+                        const progressBar = document.getElementById('progressBar');
+                        const progressText = document.getElementById('progressText');
+                        
+                        progressContainer.style.display = 'block';
+                        progressText.textContent = 'Iniciando o processo de geração...';
+                        progressBar.style.width = '10%';
+
+                        // Polling de acompanhamento de status
+                        const pollInterval = setInterval(async () => {
+                            try {
+                                const statusRes = await fetch(`/api/agents/rb_podcast/status/${jobId}`, {
+                                    headers: { 'Authorization': `Bearer ${token}` }
+                                });
+                                if (!statusRes.ok) throw new Error('Falha ao checar status do servidor');
+                                
+                                const job = await statusRes.json();
+                                progressText.textContent = job.message;
+
+                                // Simulando avanço da barra para dar feedback legal ao usuário
+                                if (job.message.includes('BannerOrbita')) progressBar.style.width = '25%';
+                                if (job.message.includes('BannerSite')) progressBar.style.width = '40%';
+                                if (job.message.includes('CapaPodcast')) progressBar.style.width = '55%';
+                                if (job.message.includes('CapaReels')) progressBar.style.width = '70%';
+                                if (job.message.includes('Story') || job.message.includes('vídeo')) progressBar.style.width = '85%';
+                                if (job.message.includes('Zipando')) progressBar.style.width = '95%';
+
+                                if (job.status === 'done') {
+                                    clearInterval(pollInterval);
+                                    progressBar.style.width = '100%';
+                                    progressText.textContent = 'Processo Concluído! Download iniciado...';
+                                    
+                                    // Direciona o navegador para download
+                                    setTimeout(() => {
+                                        window.location.href = job.downloadUrl;
+                                        
+                                        // Reset UI após sucesso
+                                        setTimeout(() => {
+                                            progressContainer.style.display = 'none';
+                                            btn.disabled = false;
+                                            btn.innerHTML = '🚀 Gerar Materiais de Divulgação';
+                                        }, 4000);
+                                    }, 500);
+
+                                } else if (job.status === 'error') {
+                                    clearInterval(pollInterval);
+                                    throw new Error(job.message);
+                                }
+                            } catch (err) {
+                                clearInterval(pollInterval);
+                                console.error('Error polling status:', err);
+                                alert('Erro durante processamento: ' + err.message);
+                                progressContainer.style.display = 'none';
+                                btn.disabled = false;
+                                btn.innerHTML = '🚀 Gerar Materiais de Divulgação';
+                            }
+                        }, 800);
+
+                    } catch (fetchErr) {
+                        console.error('Erro na requisição Backend:', fetchErr);
+                        alert(fetchErr.message);
+                        btn.disabled = false;
+                        btn.innerHTML = '🚀 Gerar Materiais de Divulgação';
+                    }
                 }, 'image/png');
 
             } catch (error) {
