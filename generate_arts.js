@@ -5,16 +5,20 @@ const path = require('path');
 const ASSETS = path.join(__dirname, 'assets');
 
 // === NEW HIGHWAY — todas as 10 variantes ===
-registerFont(path.join(ASSETS, 'New-Highway-Light.otf'),          { family: 'New-Highway', weight: '300' });
-registerFont(path.join(ASSETS, 'New-Highway-Light-Italic.otf'),   { family: 'New-Highway', weight: '300', style: 'italic' });
-registerFont(path.join(ASSETS, 'New-Highway-Regular.otf'),        { family: 'New-Highway', weight: '400' });
-registerFont(path.join(ASSETS, 'New-Highway-Regular-Italic.otf'), { family: 'New-Highway', weight: '400', style: 'italic' });
-registerFont(path.join(ASSETS, 'New-Highway-Medium.otf'),         { family: 'New-Highway', weight: '500' });
-registerFont(path.join(ASSETS, 'New-Highway-Medium-Italic.otf'),  { family: 'New-Highway', weight: '500', style: 'italic' });
-registerFont(path.join(ASSETS, 'New-Highway-Semi-Bold.otf'),      { family: 'New-Highway', weight: '600' });
-registerFont(path.join(ASSETS, 'New-Highway-Semi-Bold-Italic.otf'),{ family: 'New-Highway', weight: '600', style: 'italic' });
-registerFont(path.join(ASSETS, 'New-Highway-Bold.otf'),           { family: 'New-Highway', weight: '700' });
-registerFont(path.join(ASSETS, 'New-Highway-Bold-Italic.otf'),    { family: 'New-Highway', weight: '700', style: 'italic' });
+try {
+    registerFont(path.join(ASSETS, 'New-Highway-Light.otf'),          { family: 'New-Highway', weight: '300' });
+    registerFont(path.join(ASSETS, 'New-Highway-Light-Italic.otf'),   { family: 'New-Highway', weight: '300', style: 'italic' });
+    registerFont(path.join(ASSETS, 'New-Highway-Regular.otf'),        { family: 'New-Highway', weight: '400' });
+    registerFont(path.join(ASSETS, 'New-Highway-Regular-Italic.otf'), { family: 'New-Highway', weight: '400', style: 'italic' });
+    registerFont(path.join(ASSETS, 'New-Highway-Medium.otf'),         { family: 'New-Highway', weight: '500' });
+    registerFont(path.join(ASSETS, 'New-Highway-Medium-Italic.otf'),  { family: 'New-Highway', weight: '500', style: 'italic' });
+    registerFont(path.join(ASSETS, 'New-Highway-Semi-Bold.otf'),      { family: 'New-Highway', weight: '600' });
+    registerFont(path.join(ASSETS, 'New-Highway-Semi-Bold-Italic.otf'),{ family: 'New-Highway', weight: '600', style: 'italic' });
+    registerFont(path.join(ASSETS, 'New-Highway-Bold.otf'),           { family: 'New-Highway', weight: '700' });
+    registerFont(path.join(ASSETS, 'New-Highway-Bold-Italic.otf'),    { family: 'New-Highway', weight: '700', style: 'italic' });
+} catch (e) {
+    console.error('⚠️ [Aviso] Fontes .otf não encontradas na pasta assets. A geração de imagens pode falhar.', e.message);
+}
 
 // Mapeia font keys para CSS font string
 function fontToCss(fontKey, size) {
