@@ -8,23 +8,23 @@ Este arquivo foi criado para que o próximo Agente Inteligente, ao assumir a con
 2. **Exceção no `PROJECT_CONTEXT.md`:** A regra "NO LOCAL TESTING" ganhou uma ressalva oficial. Agora, scripts gráficos standalone (como `generate_arts.js` ou testadores de `ffmpeg`) PODEM ser iterados localmente no console para calibragem de pixels.
 3. **Refatoração do Motor Canvas:** Alteramos o antigo arquivo fechado `generate_arts.js` para ser um módulo que exporta a função assíncrona `generateAllLayouts`, aceitando dicionários com os dados do podcast e suportando buffers dinâmicos (evitando escrita de discos rígidos em `/assets`). Além disso, o motor avisa seu progresso.
 4. **Endpoint Express Full-Stack:** Adicionamos as bibliotecas `multer` (para forms) e `archiver` (para zips) e criamos a engrenagem de geração em `/routes/agents.js`.
-5. **Barra de Progresso (Polling Job):** A rota backend não segura a conexão para evitar *timeout*. Ao dar POST em `/api/agents/rb_podcast/generate`, o sistema fornece um `jobId` UUID, inicia o processamento dos JPGs e das máscaras da foto em _background_, e permite que o frontend faça *polling* (`setInterval`) de um em um segundo no painel `/status/:jobId` para animar a **barra de progresso**. Quando o array termina e os JPGs mudam para o ZIP final (com nome dinâmico `RB_XXX_Podcast_View.zip`), o browser recebe a URL e baixa instantaneamente, fechando a etapa.
+5. **Barra de Progresso (Polling Job):** A rota backend não segura a conexão para evitar *timeout*. Ao dar POST em `/api/agents/rb_podcast/generate`, o sistema processa JPGs e máscaras via _background_, fornecendo *polling* no painel `/status/:jobId` para animar a barra. Quando as imagens mudam para o ZIP final (`RB_XXX_Podcast_View.zip`), o browser baixa instantaneamente. Tudo já com *push* na nuvem da Railway!
 
-## ⛔ Onde Paramos (BLOQUEIO ATUAL)
+## ⛔ Onde Paramos (BLOQUEIOS E PRÓXIMA FASE)
 
 Chegamos na última fase do RB Podcast, que é o gerador do **Reels Animado MP4**.
-Descobrimos que a animação original vinha de projetos do After Effects (`.aep` / `.prproj`).
-**Limitação Técnica da Nuvem:** A nossa máquina Linux no Railway (e NodeJS) não roda pacotes da Adobe.
+A nossa máquina Linux no Railway não roda projetos originais da Adobe (AE), portanto nós migramos o workflow para um **Motor Híbrido**. Para o *benchmark*, o usuário enviou o vídeo de referência do episódio 37 (`Reels Animado_podcast_896_02_legendado.mp4`), confirmando que queremos um "Fly-In" fluido das fotos da abertura que param estáticos acompanhados das legendas e onda sonora.
 
-**✅ Solução Aprovada (Opção 1): Motor FFmpeg + Cama.**
-Entramos num acordo em que o usuário (Cláudio) irá extrair o vídeo original do After Effects como um `.mp4` "cama" — totalmente limpo e em loop, **sem** textos, **sem** foto presencial e **sem** a curva das ondas de áudio desenhadas.
-Assim, nós apenas "salpicaremos" a foto circular e os textos em cima deste vídeo usando `ffmpeg` de trás pra frente no servidor.
+A estratégia Híbrida será: O Node Canvas gera PNGs frame-a-frame suavizados de entrada; e o FFmpeg usa o filtro `showwaves` para colocar o audigrama animado e as legendas `.srt`, em cima de um arquivo de "Vídeo Cama".
 
-### 👉 O que o Próximo Agente deve fazer:
+### 👉 O que o Próximo Agente deve fazer (Quando Retomarem o Chat):
 
-1. **Receber o Arquivo "Cama" e Referências:** Peça ao usuário (se ele já não enviou) o arquivo de vídeo do fundo congelado, bem como a referência perfeita ("Benchmark") para você analisar e ver em quais locais em (X,Y) o Texto, a Foto e o Audiograma/Ondas precisam aparecer;
-2. **Criar o `generate_video.js` Local:** Construa um script igualzinho ao das imagens. Ele vai receber o arquivo bruto `foto.jpg / cortado`, o `audio.mp3` e o texto do episódio. E injetar tudo na Cama usando **FFmpeg filters** (para sobrepor fotos no vídeo, text-outline, fade ins e etc);
-3. **Testar e Calibrar o Visual:** Exporte o resultado diversas vezes batendo com a tela do benchmark, testando o `letter-spacing` e os enquadramentos, salvando tudo na pasta `/Artes_Geradas_Teste` como manda a regra do `task.md`;
-4. **Refatorar para Produção:** Quando a saída ficar perfeita (fase 2 validada), engate a função `generateVideoLayout()` dentro da nossa máquina mestre no `routes/agents.js`, adicione o novo arquivo criado à compilação do `archiver` Zip que construímos hoje para o usuário, e suba tudo na Railway!
+Paramos exatamente aqui hoje porque existem **dois pré-requisitos pendentes** para que a engrenagem de Vídeo seja codificada:
 
-Boa sorte! Estamos a um passo de deixar todo o pipeline mágico 100% autônomo. ☁️🚀
+1. **O Arquivo de Cama Faltante:** O usuário da Kreativ ainda não possui o MP4 "Cama Limpo" do After Effects. Antes de testar qualquer FFmpeg filter, aguarde-o fornecer o vídeo vazio rodando apenas o fundo num ciclo looping e meça suas proporções.
+2. **Nova Pipeline de Interface de Rever/Transcrever Áudio (Inteligência Artificial):** Como as legendas não virão em formato .srt prontas na mão do usuário, acordamos em criar uma Feature extra no frontend. Precisaremos:
+    - **Fase A:** No formulário da UI, quando subir a entrevista da pessoa, o servidor usará uma ponte (ex: requisição web para API do Whisper/OpenAI) para gerar a transcrição do áudio enviado.
+    - **Fase B:** Adicionar no Frontend `public/agents/rb_podcast.html` um painel/modal que mostre a "Caixa de Texto Editável" juntamente com um Player de Áudio incorporado para o usuário escutar as falas, ler as legendas extraídas e corrigir palavras erradas/apontar quebras manuais na revisão humana.
+    - **Fase C:** Após a aprovação e clique por parte do usuário neste widget, essa String corrigida vai oficialmente para o backend Node criar o `.srt` e o motor gráfico empacotar tudo no `ffmpeg` que expele o vídeo MP4 final.
+
+**Siga essas Tasks rigidamente quando o usuário te entregar os arquivos base. Sucesso na continuidade e programação das rotas de Transcrição de Áudio! ☁️🚀**
