@@ -11,35 +11,84 @@ const TOTAL_FRAMES = FPS * DURATION_INTRO_SEC;
 const CANVAS_W = 1080;
 const CANVAS_H = 1920;
 
-// Exemplo de easing simples (easeOutCubic)
-function easeOutCubic(t) {
-    return 1 - Math.pow(1 - t, 3);
+// Easing que começa lento (mais acentuado) e acelera (EaseInQuart)
+function easeInQuart(t) {
+    return t * t * t * t;
 }
 
-// Emula um blur tosco no canvas. Para mais intensidade, desenhamos com baixa opacidade multiplas vezes offsetadas.
+// Física de "Pouso em Pluma" inspirada na Animação de UI/AfterEffects:
+// A aceleração ocorre violentamente apenas nos primeiros 20% da animação.
+// Nos 80% do tempo restante, a velocidade só freia, derrapando e perdendo inércia
+// para criar aquela encostada macia e demorada lá no fundo.
+function landingEase(t) {
+    const inflection = 0.15; // Acelera absurdamente em apenas 15% do tempo!
+    if (t < inflection) {
+        let norm = t / inflection;
+        return Math.pow(norm, 3) * 0.5; // Gasta logo 50% do trajeto nessa arrancada
+    } else {
+        let norm = (t - inflection) / (1 - inflection);
+        // Nos 85% do vídeo finais, ele freia os 50% restantes usando POTÊNCIA 7 (Septic). 
+        // Isso quer dizer que o último milímetro leva 10x mais tempo pra completar, flutuando como mágica!
+        return 0.5 + (1 - Math.pow(1 - norm, 7)) * 0.5; 
+    }
+}
+
+// Motor Kawase Blur (Upsampling Iterativo) puramente nativo em Javasript.
+// Desvenda o mistério: a função 'ctx.filter' do seu Canvas de fato ignora comandos de blur devido aos 
+// binários Cairo do Windows! Isso que deixava as v13 e v14 nítidas no centro.
+// O algoritmo abaixo reduz a imagem à quase pó e usa iterativamente 4 passadas de micro offset
+// enquanto cresce novamente. Isso gera um Gaussian sólido insano, zero pixels visíveis e sem ajuda de engine de placa!
 function drawImageWithBlur(ctx, image, x, y, w, h, blurAmount) {
-    if (blurAmount <= 0.1) {
+    if (blurAmount <= 1.0) {
+        ctx.globalAlpha = 1.0;
         ctx.drawImage(image, x, y, w, h);
         return;
     }
-    // Implementacao manual de motion blur esférico leve (radial-like):
-    // Desenharemos a imagem repetidas vezes mudando a opacidade em passadas.
-    // Usar o ctx.filter puramente Node-Canvas as vezes falha ou engasga a CPU, 
-    // mas a versao nativa do Canvas 3.x de fato interpreta "blur(Xpx)"? Se o seu anterior n funcionou, faremos offsets.
     
-    // Fallback nativo:
-    ctx.filter = `blur(${Math.floor(blurAmount)}px)`;
-    ctx.drawImage(image, x, y, w, h);
-    ctx.filter = 'none';
+    // O blur real é o nível de esmagamento (shrinkFactor).
+    const shrinkFactor = Math.max(1, blurAmount / 18);
+    
+    let currentW = Math.max(2, Math.floor(w / shrinkFactor));
+    let currentH = Math.max(2, Math.floor(h / shrinkFactor));
+    
+    let currentCanvas = createCanvas(currentW, currentH);
+    let tCtx = currentCanvas.getContext('2d');
+    tCtx.imageSmoothingEnabled = true;
+    tCtx.drawImage(image, 0, 0, currentW, currentH);
+    
+    // Mip-Map Upstage:
+    while (currentW < w && currentW < 800) {
+        let nextW = Math.min(w, Math.floor(currentW * 1.5));
+        let nextH = Math.min(h, Math.floor(currentH * 1.5));
+        
+        let upCanvas = createCanvas(nextW, nextH);
+        let uCtx = upCanvas.getContext('2d');
+        uCtx.imageSmoothingEnabled = true;
 
-    // Para forçar o peso, se o blur amount for gigante, metemos uma opacidade e dobramos o traçado:
-    if (blurAmount > 10) {
-        ctx.globalAlpha = 0.5;
-        ctx.filter = `blur(${Math.floor(blurAmount/2)}px)`;
-        ctx.drawImage(image, x - blurAmount/4, y - blurAmount/4, w + blurAmount/2, h + blurAmount/2);
-        ctx.globalAlpha = 1.0;
-        ctx.filter = 'none';
+        // O SEGREDO DA OPACIDADE TOTAL: A matemática de Alpha do Canvas não soma 0.25 + 0.25! 
+        // 4 camadas de 0.25 num canvas vazio resultam em uma imagem final 68% transparente! 
+        // Para garantir 100% de IMPENETRABILIDADE, usamos a média algébrica perfeita:
+        uCtx.globalAlpha = 1.0;
+        uCtx.drawImage(currentCanvas, 0, 0, currentW, currentH, 0, 0, nextW, nextH);
+        
+        uCtx.globalAlpha = 0.5; // (Mistura 50/50 com o fundo opaco)
+        uCtx.drawImage(currentCanvas, 0, 0, currentW, currentH, -1, 0, nextW + 1, nextH);
+        
+        uCtx.globalAlpha = 0.333; // (Mistura 1/3 novo, 2/3 fundo opaco)
+        uCtx.drawImage(currentCanvas, 0, 0, currentW, currentH, 0, -1, nextW, nextH + 1);
+        
+        uCtx.globalAlpha = 0.25; // (Mistura 1/4 novo, 3/4 fundo opaco)
+        uCtx.drawImage(currentCanvas, 0, 0, currentW, currentH, 1, 1, nextW - 1, nextH - 1);
+        
+        currentW = nextW;
+        currentH = nextH;
+        currentCanvas = upCanvas;
     }
+    
+    // Desenha na tela master! Sedoso e totalmente denso!
+    ctx.imageSmoothingEnabled = true;
+    ctx.globalAlpha = 1.0;
+    ctx.drawImage(currentCanvas, 0, 0, currentW, currentH, x, y, w, h);
 }
 
 async function renderFrame(frameNumber, photoImg, outputDir) {
@@ -50,29 +99,34 @@ async function renderFrame(frameNumber, photoImg, outputDir) {
     let t = frameNumber / TOTAL_FRAMES;
     if (t > 1) t = 1;
 
-    let easedT = easeOutCubic(t);
+    // Calculamos o easing físico principal do Pouso (Ataque da Roda)
+    // Alterado para focar num Pouso Longo (estilo "encostar" elemento lateral)
+    let easedZoomT = landingEase(t);
+    let easedBlurT = landingEase(t);
 
     ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
 
     // ====== 1. FOTO DO CONVIDADO (O "Ataque da Roda") ======
-    // O raio original final desejado é 380px.
-    const finalRadius = 380; 
+    // Retornamos ao radius 300.
+    const finalRadius = 300; 
     
     // O raio inicial DEVE ocupar toda a tela. (1920 / 2) = 960!
     // Para nao ver cantos pretos, o raio inicial pode bater uns ~1200.
     const startRadius = 1300; 
     
-    // O Radius (Tamanho do buraco da máscara visível) cai de 1300 pra 380
-    const currentMaskRadius = startRadius - ((startRadius - finalRadius) * easedT);
+    // O Radius (Tamanho do buraco da máscara visível) cai de 1300 pra 300
+    const currentMaskRadius = startRadius - ((startRadius - finalRadius) * easedZoomT);
 
-    // O Scale da imagem DESABA junto do início para dar ideia de superzoom!
-    const startScale = 4.0; 
+    // O Scale precisa ser proporcional ao radius
+    // Aumentamos o Scale inicial (de 0.5 para 2.5) a seu pedido para gerar 
+    // um Crop muito mais fechado/aproximado durante a descida!
+    const startScale = (startRadius / finalRadius) + 2.5; 
     const finalScale = 1.0;
-    const currentScale = startScale - ((startScale - finalScale) * easedT);
+    const currentScale = startScale - ((startScale - finalScale) * easedZoomT);
 
-    // E o Blur despenca dramaticamente. Max Blur: 100px.
-    const maxBlur = 120;
-    const currentBlur = Math.max(0, maxBlur - (maxBlur * easedT));
+    // O borrão agora atinge o limite cósmico sugerido de 1000px!
+    const maxBlur = 1000;
+    const currentBlur = Math.max(0, maxBlur - (maxBlur * easedBlurT));
 
     const cx = CANVAS_W / 2;
     const cy = CANVAS_H / 2;
@@ -128,15 +182,21 @@ async function runTest() {
     console.log('🖼️ Carregando assets...');
     const photoImg = await loadImage(path.join(__dirname, 'assets', 'foto.jpg'));
 
-    console.log(`🎬 Renderizando ${TOTAL_FRAMES} frames da foto...`);
-    for (let f = 1; f <= TOTAL_FRAMES; f++) {
+    const TEST_FRAMES = 90; // Gerar 3 segundos plenos de overlay
+    console.log(`🎬 Renderizando ${TEST_FRAMES} frames da foto...`);
+    for (let f = 1; f <= TEST_FRAMES; f++) {
         await renderFrame(f, photoImg, outputDir);
     }
 
     console.log('🎥 Gerando o Vídeo Sandbox MP4 usando FFmpeg e fundo Cama...');
     const ffPath = ffmpeg.path;
     const camaPath = path.join(__dirname, 'assets', 'cama_sem_mic.mp4');
-    const outFile = path.join(__dirname, 'output_teste.mp4');
+    // Destino exato requisitado pelo usuário, usando v2 para evitar cache
+    const destDir = 'C:\\Users\\claud\\Desktop\\Kreativ\\Artes_Geradas_Teste';
+    if (!fs.existsSync(destDir)) {
+        fs.mkdirSync(destDir, { recursive: true });
+    }
+    const outFile = path.join(destDir, 'output_teste_v23.mp4');
 
     if (fs.existsSync(outFile)) {
         fs.rmSync(outFile);
@@ -153,7 +213,7 @@ async function runTest() {
     const cmd = `"${ffPath}" -y \
         -i "${camaPath}" \
         -framerate ${FPS} -i "${outputDir}/frame_%03d.png" \
-        -filter_complex "[0:v][1:v]overlay=x=0:y=0:eof_action=pass[out]" \
+        -filter_complex "[0:v][1:v]overlay=x=0:y=0[out]" \
         -map "[out]" -t 3 -c:v libx264 -pix_fmt yuv420p "${outFile}"`;
 
     try {

@@ -1,0 +1,163 @@
+🖼️ Carregando assets...
+🎬 Renderizando 90 frames da foto...
+Frame 1/45 > MaskRadius: 1234px | ImgScale: 3.80x | Blur: 467px
+Frame 2/45 > MaskRadius: 1172px | ImgScale: 3.62x | Blur: 436px
+Frame 3/45 > MaskRadius: 1113px | ImgScale: 3.44x | Blur: 406px
+Frame 4/45 > MaskRadius: 1056px | ImgScale: 3.27x | Blur: 378px
+Frame 5/45 > MaskRadius: 1002px | ImgScale: 3.11x | Blur: 351px
+Frame 6/45 > MaskRadius: 950px | ImgScale: 2.95x | Blur: 325px
+Frame 7/45 > MaskRadius: 902px | ImgScale: 2.81x | Blur: 301px
+Frame 8/45 > MaskRadius: 855px | ImgScale: 2.67x | Blur: 277px
+Frame 9/45 > MaskRadius: 812px | ImgScale: 2.54x | Blur: 256px
+Frame 10/45 > MaskRadius: 770px | ImgScale: 2.41x | Blur: 235px
+Frame 11/45 > MaskRadius: 731px | ImgScale: 2.29x | Blur: 215px
+Frame 12/45 > MaskRadius: 694px | ImgScale: 2.18x | Blur: 197px
+Frame 13/45 > MaskRadius: 659px | ImgScale: 2.08x | Blur: 179px
+Frame 14/45 > MaskRadius: 626px | ImgScale: 1.98x | Blur: 163px
+Frame 15/45 > MaskRadius: 596px | ImgScale: 1.89x | Blur: 148px
+Frame 16/45 > MaskRadius: 567px | ImgScale: 1.80x | Blur: 133px
+Frame 17/45 > MaskRadius: 540px | ImgScale: 1.72x | Blur: 120px
+Frame 18/45 > MaskRadius: 516px | ImgScale: 1.65x | Blur: 108px
+Frame 19/45 > MaskRadius: 492px | ImgScale: 1.58x | Blur: 96px
+Frame 20/45 > MaskRadius: 471px | ImgScale: 1.51x | Blur: 85px
+Frame 21/45 > MaskRadius: 451px | ImgScale: 1.46x | Blur: 75px
+Frame 22/45 > MaskRadius: 433px | ImgScale: 1.40x | Blur: 66px
+Frame 23/45 > MaskRadius: 416px | ImgScale: 1.35x | Blur: 58px
+Frame 24/45 > MaskRadius: 401px | ImgScale: 1.30x | Blur: 50px
+Frame 25/45 > MaskRadius: 387px | ImgScale: 1.26x | Blur: 43px
+Frame 26/45 > MaskRadius: 375px | ImgScale: 1.23x | Blur: 37px
+Frame 27/45 > MaskRadius: 364px | ImgScale: 1.19x | Blur: 32px
+Frame 28/45 > MaskRadius: 353px | ImgScale: 1.16x | Blur: 26px
+Frame 29/45 > MaskRadius: 344px | ImgScale: 1.13x | Blur: 22px
+Frame 30/45 > MaskRadius: 337px | ImgScale: 1.11x | Blur: 18px
+Frame 31/45 > MaskRadius: 330px | ImgScale: 1.09x | Blur: 15px
+Frame 32/45 > MaskRadius: 324px | ImgScale: 1.07x | Blur: 12px
+Frame 33/45 > MaskRadius: 318px | ImgScale: 1.06x | Blur: 9px
+Frame 34/45 > MaskRadius: 314px | ImgScale: 1.04x | Blur: 7px
+Frame 35/45 > MaskRadius: 310px | ImgScale: 1.03x | Blur: 5px
+Frame 36/45 > MaskRadius: 308px | ImgScale: 1.02x | Blur: 4px
+Frame 37/45 > MaskRadius: 305px | ImgScale: 1.02x | Blur: 2px
+Frame 38/45 > MaskRadius: 303px | ImgScale: 1.01x | Blur: 1px
+Frame 39/45 > MaskRadius: 302px | ImgScale: 1.01x | Blur: 1px
+Frame 40/45 > MaskRadius: 301px | ImgScale: 1.00x | Blur: 0px
+Frame 41/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 42/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 43/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 44/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 45/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 46/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 47/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 48/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 49/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 50/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 51/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 52/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 53/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 54/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 55/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 56/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 57/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 58/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 59/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 60/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 61/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 62/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 63/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 64/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 65/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 66/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 67/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 68/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 69/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 70/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 71/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 72/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 73/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 74/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 75/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 76/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 77/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 78/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 79/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 80/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 81/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 82/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 83/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 84/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 85/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 86/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 87/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 88/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 89/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+Frame 90/45 > MaskRadius: 300px | ImgScale: 1.00x | Blur: 0px
+🎥 Gerando o Vídeo Sandbox MP4 usando FFmpeg e fundo Cama...
+🛠️ Invocando Comando:
+"C:\Users\claud\.gemini\antigravity\scratch\kreativ-platform\node_modules\@ffmpeg-installer\win32-x64\ffmpeg.exe" -y         -i "C:\Users\claud\.gemini\antigravity\scratch\kreativ-platform\assets\cama_sem_mic.mp4"         -framerate 30 -i "C:\Users\claud\.gemini\antigravity\scratch\kreativ-platform\tmp_frames/frame_%03d.png"         -filter_complex "[0:v][1:v]overlay=x=0:y=0[out]"         -map "[out]" -t 3 -c:v libx264 -pix_fmt yuv420p "C:\Users\claud\Desktop\Kreativ\Artes_Geradas_Teste\output_teste.mp4"
+ffmpeg version N-92722-gf22fcd4483 Copyright (c) 2000-2018 the FFmpeg developers
+  built with gcc 8.2.1 (GCC) 20181201
+  configuration: --enable-gpl --enable-version3 --enable-sdl2 --enable-fontconfig --enable-gnutls --enable-iconv --enable-libass --enable-libbluray --enable-libfreetype --enable-libmp3lame --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-libopus --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libtheora --enable-libtwolame --enable-libvpx --enable-libwavpack --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxml2 --enable-libzimg --enable-lzma --enable-zlib --enable-gmp --enable-libvidstab --enable-libvorbis --enable-libvo-amrwbenc --enable-libmysofa --enable-libspeex --enable-libxvid --enable-libaom --enable-libmfx --enable-amf --enable-ffnvcodec --enable-cuvid --enable-d3d11va --enable-nvenc --enable-nvdec --enable-dxva2 --enable-avisynth --enable-libopenmpt
+  libavutil      56. 24.101 / 56. 24.101
+  libavcodec     58. 42.102 / 58. 42.102
+  libavformat    58. 24.101 / 58. 24.101
+  libavdevice    58.  6.101 / 58.  6.101
+  libavfilter     7. 46.101 /  7. 46.101
+  libswscale      5.  4.100 /  5.  4.100
+  libswresample   3.  4.100 /  3.  4.100
+  libpostproc    55.  4.100 / 55.  4.100
+Input #0, mov,mp4,m4a,3gp,3g2,mj2, from 'C:\Users\claud\.gemini\antigravity\scratch\kreativ-platform\assets\cama_sem_mic.mp4':
+  Metadata:
+    major_brand     : mp42
+    minor_version   : 0
+    compatible_brands: mp42mp41
+    creation_time   : 2026-04-08T20:32:37.000000Z
+  Duration: 00:01:00.00, start: 0.000000, bitrate: 4295 kb/s
+    Stream #0:0(eng): Video: h264 (Main) (avc1 / 0x31637661), yuv420p(tv, bt709), 1080x1920, 4289 kb/s, 60 fps, 60 tbr, 60k tbn, 120 tbc (default)
+    Metadata:
+      creation_time   : 2026-04-08T20:32:37.000000Z
+      handler_name    : ?Mainconcept Video Media Handler
+      encoder         : AVC Coding
+Input #1, image2, from 'C:\Users\claud\.gemini\antigravity\scratch\kreativ-platform\tmp_frames/frame_%03d.png':
+  Duration: 00:00:03.00, start: 0.000000, bitrate: N/A
+    Stream #1:0: Video: png, rgba(pc), 1080x1920, 30 fps, 30 tbr, 30 tbn, 30 tbc
+Stream mapping:
+  Stream #0:0 (h264) -> overlay:main
+  Stream #1:0 (png) -> overlay:overlay
+  overlay -> Stream #0:0 (libx264)
+Press [q] to stop, [?] for help
+[image2 @ 00000289f65ee880] Thread message queue blocking; consider raising the thread_queue_size option (current value: 8)
+[libx264 @ 00000289f6594700] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2
+[libx264 @ 00000289f6594700] profile High, level 4.2, 4:2:0, 8-bit
+[libx264 @ 00000289f6594700] 264 - core 157 r2935 545de2f - H.264/MPEG-4 AVC codec - Copyleft 2003-2018 - http://www.videolan.org/x264.html - options: cabac=1 ref=3 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=7 psy=1 psy_rd=1.00:0.00 mixed_ref=1 me_range=16 chroma_me=1 trellis=1 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=-2 threads=18 lookahead_threads=3 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=3 b_pyramid=2 b_adapt=1 b_bias=0 direct=1 weightb=1 open_gop=0 weightp=2 keyint=250 keyint_min=25 scenecut=40 intra_refresh=0 rc_lookahead=40 rc=crf mbtree=1 crf=23.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
+Output #0, mp4, to 'C:\Users\claud\Desktop\Kreativ\Artes_Geradas_Teste\output_teste.mp4':
+  Metadata:
+    major_brand     : mp42
+    minor_version   : 0
+    compatible_brands: mp42mp41
+    encoder         : Lavf58.24.101
+    Stream #0:0: Video: h264 (libx264) (avc1 / 0x31637661), yuv420p, 1080x1920, q=-1--1, 60 fps, 15360 tbn, 60 tbc (default)
+    Metadata:
+      encoder         : Lavc58.42.102 libx264
+    Side data:
+      cpb: bitrate max/min/avg: 0/0/0 buffer size: 0 vbv_delay: -1
+frame=   29 fps=0.0 q=0.0 size=       0kB time=00:00:00.00 bitrate=N/A speed=   0x    frame=   51 fps= 50 q=0.0 size=       0kB time=00:00:00.00 bitrate=N/A speed=   0x    frame=   77 fps= 50 q=31.0 size=       0kB time=00:00:00.20 bitrate=   1.9kbits/s speed=0.13x    frame=  105 fps= 51 q=31.0 size=     256kB time=00:00:00.66 bitrate=3146.0kbits/s speed=0.326x    frame=  147 fps= 57 q=31.0 size=     512kB time=00:00:01.36 bitrate=3069.1kbits/s speed=0.534x    frame=  180 fps= 58 q=-1.0 Lsize=     660kB time=00:00:02.95 bitrate=1833.0kbits/s speed=0.954x    
+video:657kB audio:0kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: 0.441778%
+[libx264 @ 00000289f6594700] frame I:1     Avg QP:24.09  size: 56410
+[libx264 @ 00000289f6594700] frame P:54    Avg QP:23.20  size:  8911
+[libx264 @ 00000289f6594700] frame B:125   Avg QP:24.66  size:  1077
+[libx264 @ 00000289f6594700] consecutive B-frames:  0.6% 18.9%  5.0% 75.6%
+[libx264 @ 00000289f6594700] mb I  I16..4: 15.6% 79.4%  5.0%
+[libx264 @ 00000289f6594700] mb P  I16..4:  3.4%  5.6%  0.1%  P16..4: 19.1%  3.6%  1.5%  0.0%  0.0%    skip:66.6%
+[libx264 @ 00000289f6594700] mb B  I16..4:  0.2%  0.2%  0.0%  B16..8:  9.0%  0.3%  0.0%  direct: 0.1%  skip:90.3%  L0:32.2% L1:66.9% BI: 0.9%
+[libx264 @ 00000289f6594700] 8x8 transform intra:62.8% inter:87.2%
+[libx264 @ 00000289f6594700] coded y,uvDC,uvAC intra: 18.5% 30.4% 3.6% inter: 1.8% 1.5% 0.2%
+[libx264 @ 00000289f6594700] i16 v,h,dc,p: 29% 29%  9% 33%
+[libx264 @ 00000289f6594700] i8 v,h,dc,ddl,ddr,vr,hd,vl,hu: 20% 17% 46%  2%  4%  4%  3%  3%  2%
+[libx264 @ 00000289f6594700] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu: 23% 15% 21%  6% 11%  9%  7%  4%  4%
+[libx264 @ 00000289f6594700] i8c dc,h,v,p: 58% 21% 15%  6%
+[libx264 @ 00000289f6594700] Weighted P-Frames: Y:0.0% UV:0.0%
+[libx264 @ 00000289f6594700] ref P L0: 77.8% 11.0%  8.9%  2.3%
+[libx264 @ 00000289f6594700] ref B L0: 89.9%  8.7%  1.4%
+[libx264 @ 00000289f6594700] ref B L1: 96.6%  3.4%
+[libx264 @ 00000289f6594700] kb/s:1792.73
+
+✅ Sucesso! Abra C:\Users\claud\Desktop\Kreativ\Artes_Geradas_Teste\output_teste.mp4 no Finder para aprovar o movimento.
