@@ -58,8 +58,10 @@ router.post('/rb_podcast/analyze', verifyToken, upload.fields([{ name: 'audioFil
         const photoFile = req.files['photoFile'][0];
         const audioFile = req.files['audioFile'][0];
 
+        const numberFormatted = String(number).padStart(4, '0');
+
         const podcastData = {
-            number: "Nº " + number,
+            number: "Nº " + numberFormatted,
             guestLabel: gender === 'F' ? 'Convidada:' : 'Convidado:',
             guestName: name,
             title: subject
@@ -76,7 +78,7 @@ router.post('/rb_podcast/analyze', verifyToken, upload.fields([{ name: 'audioFil
             podcastData,
             photoPath: photoFile.path,
             audioPath: audioFile.path,
-            numberRaw: number
+            numberRaw: numberFormatted
         });
 
         // Retorna o jobId de rastreio imediatamente

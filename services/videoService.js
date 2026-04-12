@@ -1,9 +1,16 @@
 const fs = require('fs');
 const path = require('path');
 const { OpenAI } = require('openai');
-const ffmpeg = require('@ffmpeg-installer/ffmpeg');
 const { execSync } = require('child_process');
 const { createCanvas, loadImage } = require('canvas');
+
+let ffPath = 'ffmpeg';
+try {
+    const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
+    ffPath = ffmpegInstaller.path;
+} catch (e) {
+    console.log("Aviso: @ffmpeg-installer/ffmpeg não carregado. Módulo utilizará ffmpeg nativo do SO.");
+}
 const dotenv = require('dotenv');
 
 dotenv.config();
@@ -62,7 +69,7 @@ function drawGroup(ctx, elements, basex, text, applyBlur = false, forceLeft = fa
 
         // Truncamento Inteligente!
         if (el.class !== "guest_label") { 
-             let maxW = el.class === "number" ? 180 : maxTextWidth; 
+             let maxW = el.class === "number" ? 280 : maxTextWidth; 
              if (w > maxW) {
                  textScale = maxW / w; 
              }
@@ -183,7 +190,6 @@ async function extractWhisperData(audioFilePath) {
 function extractWaveData(audioFilePath) {
     return new Promise((resolve, reject) => {
         try {
-            const ffPath = ffmpeg.path;
             const rawPath = path.join(path.dirname(audioFilePath), 'tmp_audio.raw');
             
             if (fs.existsSync(rawPath)) fs.rmSync(rawPath);
@@ -247,7 +253,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
     const trackingData = JSON.parse(fs.readFileSync(trackingDataPath));
     const maxTrackKey = Math.max(...Object.keys(trackingData).map(k => parseInt(k))).toString();
     const guestImg = await loadImage(photoPath);
-    const micImgPath = path.join('C:\\Users\\claud\\Desktop\\Kreativ\\RB_0037_Podcast Files\\layout\\layout PNGs\\microfone menor.png');
+    const micImgPath = path.join(CWD, 'assets', 'microfone.png');
     const micImg = fs.existsSync(micImgPath) ? await loadImage(micImgPath) : null;
 
     const tmpFramesDir = path.join(sessionFolder, 'tmp_frames');
@@ -556,7 +562,6 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
     statusCallback('🎥 Montando arquivo MP4 final...');
     
     return new Promise((resolve, reject) => {
-        const ffPath = ffmpeg.path;
         const outFileName = `Corte_Vertical_Animado.mp4`;
         const outFile = path.join(sessionFolder, outFileName);
         
