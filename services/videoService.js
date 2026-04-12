@@ -15,9 +15,12 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
-});
+// Carregamento Lazy para não dar crash no boot se faltar ENV no Railway
+function getOpenAI() {
+    return new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY
+    });
+}
 
 // ==== FUNÇÕES AUXILIARES DE RENDER (Da Sandbox) ====
 const FPS = 30;
@@ -168,7 +171,8 @@ async function extractWhisperData(audioFilePath) {
         throw new Error("Arquivo de áudio não encontrado " + audioFilePath);
     }
     
-    const transcription = await openai.audio.transcriptions.create({
+    const openaiKey = getOpenAI();
+    const transcription = await openaiKey.audio.transcriptions.create({
         file: fs.createReadStream(audioFilePath),
         model: "whisper-1",
         response_format: "verbose_json",
