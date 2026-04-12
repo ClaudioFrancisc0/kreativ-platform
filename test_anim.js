@@ -360,7 +360,8 @@ async function renderFrame(frameNumber, guestImg, micImg, outputDir) {
         ], 0, TEMPLATE.title, true, false);
         // COMPONENTE 4: ONDAS SONORAS E LEGENDAS!
         // FIXED POSITION AT BOTTOM, NO PARALLAX, WITH FADE IN
-        let t_seconds = frameNumber / 30.0;
+        const AUDIO_DELAY = 1.5; // Audio start delayed by 1.5 seconds
+        let t_seconds = (frameNumber / 30.0) - AUDIO_DELAY;
         
         ctx.save();
         
@@ -372,15 +373,20 @@ async function renderFrame(frameNumber, guestImg, micImg, outputDir) {
         let waveY = 1522; // Subiu 8px p/ nivelar com o Podcast Logo
         
         let targetBars = 13;
-        let barWidth = 5; // Barra mais fina
-        let barSpacing = 12; // Gap
+        let barWidth = 3; // Mais fina ainda conforme solicitado
+        let barSpacing = 10; // Reduz gap proporcionalmente
         let totalWaveWidth = targetBars * barSpacing;
         
         // Centralizando brutalmente no meio do eixo X (540)
         let waveX = 540 - (totalWaveWidth / 2) + (barWidth / 2);
         
         // Pega as amlitudes ou default
-        let amps = mediaData.amplitudes[frameNumber] || mediaData.amplitudes[mediaData.amplitudes.length - 1] || new Array(targetBars).fill(0.1);
+        let audioFrame = Math.floor(frameNumber - (AUDIO_DELAY * 30));
+        let amps = null;
+        if (audioFrame >= 0) {
+             amps = mediaData.amplitudes[audioFrame];
+        }
+        if (!amps) amps = mediaData.amplitudes[mediaData.amplitudes.length - 1] || new Array(targetBars).fill(0.1);
         
         for (let b = 0; b < amps.length; b++) {
             if (b >= targetBars) break;
@@ -544,16 +550,22 @@ async function runTest() {
     if (!fs.existsSync(destDir)) {
         fs.mkdirSync(destDir, { recursive: true });
     }
-    const outFile = path.join(destDir, 'output_teste_v69.mp4');
+    const outFile = path.join(destDir, 'output_teste_v74.mp4');
 
     if (fs.existsSync(outFile)) {
         fs.rmSync(outFile);
     }
 
-    // FFmpeg compila os frames que já estão fundidos organicamente com o background nativo!
+    // Audio input addition
+    const audioPath = 'C:\\Users\\claud\\Desktop\\Kreativ\\RB_0037_Podcast Files\\link\\Chamada_Podcast_896.mp3';
+
+    // O filtro adelay=1500|1500 injeta literalmente 1.5 segundos de puro silêncio
+    // Isso evita o bug de players que pulam o atraso na primeira vez!
     const cmd = `"${ffPath}" -y \
         -framerate ${FPS} -i "${outputDir}/frame_%03d.png" \
-        -c:v libx264 -pix_fmt yuv420p "${outFile}"`;
+        -i "${audioPath}" \
+        -c:v libx264 -pix_fmt yuv420p \
+        -af "adelay=1500|1500" -c:a aac -shortest "${outFile}"`;
 
     try {
         console.log("🛠️ Invocando Comando:\n" + cmd);

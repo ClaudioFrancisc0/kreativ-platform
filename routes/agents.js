@@ -38,20 +38,25 @@ router.post('/rb_podcast/number', verifyToken, express.json(), (req, res) => {
     );
 });
 
+const { extractWhisperData, extractWaveData, generateAnimatedVideo } = require('../services/videoService');
+
 /**
- * POST /api/agents/rb_podcast/generate
- * Recebe formulário multipart, inicia trabalho background e retorna jobId.
+ * POST /api/agents/rb_podcast/analyze
+ * Fase 1: Recebe arquivos, chama Whisper e aguarda aprovação manual.
  */
-router.post('/rb_podcast/generate', verifyToken, upload.fields([{ name: 'audioFile' }, { name: 'photoFile' }]), async (req, res) => {
+router.post('/rb_podcast/analyze', verifyToken, upload.fields([{ name: 'audioFile' }, { name: 'photoFile' }]), async (req, res) => {
     try {
         const { number, gender, name, subject } = req.body;
         
         if (!req.files || !req.files['photoFile']) {
             return res.status(400).json({ error: 'Foto não enviada.' });
         }
+        if (!req.files['audioFile']) {
+            return res.status(400).json({ error: 'Áudio MP3 não enviado.' });
+        }
         
         const photoFile = req.files['photoFile'][0];
-        // const audioFile = req.files['audioFile'][0]; // guardado para a futura integração de vídeo
+        const audioFile = req.files['audioFile'][0];
 
         const podcastData = {
             number: "Nº " + number,
@@ -61,71 +66,130 @@ router.post('/rb_podcast/generate', verifyToken, upload.fields([{ name: 'audioFi
         };
 
         const jobId = Date.now().toString();
-        const sessionFolder = path.join(__dirname, '..', 'output', `session_${jobId}`);
-        const zipFilename = `RB_${number}_Podcast_View.zip`;
-        const zipFilePath = path.join(__dirname, '..', 'output', zipFilename);
         
-        jobs.set(jobId, { status: 'processing', message: 'Iniciando extração da foto...', downloadUrl: null });
+        jobs.set(jobId, { 
+            status: 'analyzing', 
+            message: 'Iniciando extração do áudio (Whisper)...', 
+            subtitles: null,
+            downloadUrl: null,
+            // Guardamos os inputs na memória
+            podcastData,
+            photoPath: photoFile.path,
+            audioPath: audioFile.path,
+            numberRaw: number
+        });
 
-        // Envia a resposta imediatamente ao cliente para startar o preenchimento da barra de progresso
+        // Retorna o jobId de rastreio imediatamente
         res.json({ jobId });
 
-        // Inicia a geração em *background*
+        // Background: OpenAI e PCM
         (async () => {
             try {
-                // 1. Gera todas as artes JPG
-                await generateAllLayouts(podcastData, photoFile.path, sessionFolder, (msg) => {
-                    if (jobs.has(jobId)) jobs.get(jobId).message = msg;
+                const job = jobs.get(jobId);
+                
+                // 1. Whisper API
+                const subtitles = await extractWhisperData(job.audioPath);
+                job.message = 'Mapeando picos de áudio PCM...';
+                
+                // 2. Extração PCM
+                const amplitudes = await extractWaveData(job.audioPath);
+                
+                // Ponto de parada!
+                job.status = 'review_pending';
+                job.message = 'Aguardando aprovação das legendas.';
+                job.subtitles = subtitles;
+                job.amplitudes = amplitudes;
+                
+            } catch (bgErr) {
+                console.error("Erro na Análise Background:", bgErr);
+                if (jobs.has(jobId)) {
+                    jobs.get(jobId).status = 'error';
+                    jobs.get(jobId).message = 'Erro ao processar as mídias: ' + bgErr.message;
+                }
+            }
+        })();
+
+    } catch (err) {
+        console.error('Erro no POST /analyze:', err);
+        if (!res.headersSent) res.status(500).json({ error: 'Erro interno ao iniciar a análise.' });
+    }
+});
+
+/**
+ * POST /api/agents/rb_podcast/render
+ * Fase 2: Recebe legendas corrigidas e manda renderizar tudo.
+ */
+router.post('/rb_podcast/render', verifyToken, express.json(), async (req, res) => {
+    try {
+        const { jobId, finalSubtitles } = req.body;
+        const job = jobs.get(jobId);
+        
+        if (!job) return res.status(404).json({ error: 'Sessão não encontrada ou expirada.' });
+        if (job.status !== 'review_pending') return res.status(400).json({ error: 'Job não está pronto para renderização.' });
+
+        job.status = 'processing';
+        job.message = 'Renderizando Backgrounds (JPGs)...';
+        
+        res.json({ success: true });
+
+        (async () => {
+            const sessionFolder = path.join(__dirname, '..', 'output', `session_${jobId}`);
+            const zipFilename = `RB_${job.numberRaw}_Podcast_View.zip`;
+            const zipFilePath = path.join(__dirname, '..', 'output', zipFilename);
+            
+            if (!fs.existsSync(sessionFolder)) fs.mkdirSync(sessionFolder, { recursive: true });
+
+            try {
+                // 1. JPGs Estáticos
+                await generateAllLayouts(job.podcastData, job.photoPath, sessionFolder, (msg) => {
+                    job.message = msg;
                 });
 
-                if (jobs.has(jobId)) jobs.get(jobId).message = 'Zipando arquivos...';
+                // 2. Vídeo MP4 Massivo
+                job.message = 'Iniciando Motor Geométrico do Vídeo...';
+                await generateAnimatedVideo(job.podcastData, job.photoPath, job.audioPath, finalSubtitles, job.amplitudes, sessionFolder, (msg) => {
+                    job.message = msg;
+                });
 
-                // 2. Prepara o arquivo ZIP diretamente no disco
+                job.message = 'Compactando o ZIP...';
+
+                // 3. Empacota tudo
                 const outputZip = fs.createWriteStream(zipFilePath);
                 const archive = archiver('zip', { zlib: { level: 9 } });
 
                 archive.on('error', (err) => { throw err; });
                 
-                // Finaliza pipeline do ZIP
                 outputZip.on('close', () => {
-                    if (jobs.has(jobId)) {
-                        jobs.get(jobId).status = 'done';
-                        jobs.get(jobId).message = 'Processamento concluído!';
-                        jobs.get(jobId).downloadUrl = `/api/agents/rb_podcast/download/${jobId}?file=${encodeURIComponent(zipFilename)}`;
-                    }
+                    job.status = 'done';
+                    job.message = 'Sucesso Total!';
+                    job.downloadUrl = `/api/agents/rb_podcast/download/${jobId}?file=${encodeURIComponent(zipFilename)}`;
 
-                    // 3. Limpeza dos arquivos temporários (uploads e outputs folder)
+                    // Cleanup temporários
                     setTimeout(() => {
                         try {
                             if (fs.existsSync(sessionFolder)) fs.rmSync(sessionFolder, { recursive: true, force: true });
-                            if (fs.existsSync(photoFile.path)) fs.unlinkSync(photoFile.path);
-                            if (req.files['audioFile'] && fs.existsSync(req.files['audioFile'][0].path)) {
-                                fs.unlinkSync(req.files['audioFile'][0].path);
-                            }
-                        } catch (cleanupErr) {
-                            console.error("Erro no cleanup:", cleanupErr);
+                            if (fs.existsSync(job.photoPath)) fs.unlinkSync(job.photoPath);
+                            if (fs.existsSync(job.audioPath)) fs.unlinkSync(job.audioPath);
+                        } catch (e) {
+                            console.error("Cleanup erro:", e);
                         }
-                    }, 5000);
+                    }, 10000); // Dá 10 segs por precaução
                 });
 
                 archive.pipe(outputZip);
                 archive.directory(sessionFolder, false);
                 await archive.finalize();
 
-            } catch (bgErr) {
-                console.error("Erro no job background:", bgErr);
-                if (jobs.has(jobId)) {
-                    jobs.get(jobId).status = 'error';
-                    jobs.get(jobId).message = 'Erro ao processar as mídias.';
-                }
+            } catch (renderErr) {
+                console.error("Erro na Renderização:", renderErr);
+                job.status = 'error';
+                job.message = 'Erro catastrófico no motor de vídeo: ' + renderErr.message;
             }
         })();
 
     } catch (err) {
-        console.error('Erro na inicialização da geração:', err);
-        if (!res.headersSent) {
-            res.status(500).json({ error: 'Erro interno ao iniciar os materiais.' });
-        }
+        console.error("Erro POST /render:", err);
+        res.status(500).json({ error: 'Falha server.' });
     }
 });
 

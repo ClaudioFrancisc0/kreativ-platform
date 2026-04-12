@@ -5,3 +5,11 @@ database/*.db
 data/*.db
 temp/
 .DS_Store
+tmp_frames/
+cama_frames/
+benchmark_frames_30fps/
+output/
+assets/
+*.png
+*.mp4
+*.raw
