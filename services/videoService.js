@@ -2,7 +2,17 @@ const fs = require('fs');
 const path = require('path');
 const { OpenAI } = require('openai');
 const { execSync } = require('child_process');
-const { createCanvas, loadImage } = require('canvas');
+const { createCanvas, loadImage, registerFont } = require('canvas');
+
+const ASSETS = path.join(__dirname, '..', 'assets');
+try {
+    registerFont(path.join(ASSETS, 'New-Highway-Light.otf'), { family: 'New-Highway', weight: '300' });
+    registerFont(path.join(ASSETS, 'New-Highway-Regular.otf'), { family: 'New-Highway', weight: '400' });
+    registerFont(path.join(ASSETS, 'New-Highway-Bold.otf'), { family: 'New-Highway', weight: '700' });
+    registerFont(path.join(ASSETS, 'New-Highway-Semi-Bold.otf'), { family: 'New-Highway', weight: '600' });
+} catch (e) {
+    console.error("Font error:", e);
+}
 
 let ffPath = 'ffmpeg';
 try {
@@ -373,10 +383,10 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         let hasData = trackingData[frameNumber.toString()] || trackingData[maxTrackKey];
         
         let TEMPLATE = {
-            "title": { "class": "title", "x": 0, "y": -93, "font": "104px 'Inter'", "color": "#1b62f9", "str": "subject", "stroke": false },
-            "number": { "class": "number", "x": -4, "y": -887, "font": "900 132px 'Syncopate'", "color": "#1b62f9", "str": "number", "stroke": false },
-            "guest_name": { "class": "guest", "x": 0, "y": 70, "font": "900 148px 'Inter'", "color": "transparent", "str": "guestName", "stroke": true, "s_width": 5, "stroke_c": "#1b62f9" },
-            "guest_label": { "class": "guest_label", "x": 10, "y": -58, "font": "100 50px 'Inter'", "color": "#1b62f9", "str": "guestLabel", "stroke": false }
+            "title": { "class": "title", "x": 0, "y": -93, "font": "700 104px 'New-Highway'", "color": "#FFFFFF", "str": "subject", "stroke": false },
+            "number": { "class": "number", "x": -4, "y": -887, "font": "600 132px 'New-Highway'", "color": "#024BE7", "str": "number", "stroke": false },
+            "guest_name": { "class": "guest", "x": 0, "y": 70, "font": "700 148px 'New-Highway'", "color": "#FFFFFF", "str": "guestName", "stroke": false },
+            "guest_label": { "class": "guest_label", "x": 10, "y": -58, "font": "300 50px 'New-Highway'", "color": "#FFFFFF", "str": "guestLabel", "stroke": false }
         };
 
         if (hasData) {
@@ -461,8 +471,8 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
             drawGroup(ctx, tempTitles, center_x, podcastData, false, false, 830);
             
             // Aspas
-            ctx.font = "italic 900 132px 'Syncopate'";
-            ctx.fillStyle = '#1b62f9';
+            ctx.font = "italic 700 132px 'New-Highway'";
+            ctx.fillStyle = '#FFFFFF';
             let quotes_y = TEMPLATE.title.y - 12; 
             if (frameNumber < 100) {
                 let pct = Math.max(0, Math.min(1, (frameNumber - 76) / (85 - 76)));
@@ -520,7 +530,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
             let activePhrase = subtitles.find(p => t_seconds >= p.start && t_seconds <= p.end);
             
             if (activePhrase && activePhrase.text) {
-                ctx.font = `600 ${fSize}px 'Inter'`;
+                ctx.font = `600 ${fSize}px 'New-Highway'`;
                 let words = activePhrase.text.split(' ');
                 
                 let lines = [];

@@ -520,8 +520,7 @@
             // Rolar janela para exatamente a altura do botão após a caixa de terminal se expandir físicamente no DOM
             setTimeout(() => {
                 document.getElementById('scrollAnchorBottom').style.display = 'block';
-                const yOffset = document.getElementById('renderBtn').getBoundingClientRect().top + window.scrollY - 100;
-                window.scrollTo({ top: yOffset, behavior: 'smooth' });
+                document.getElementById('renderBtn').scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 500);
 
             try {
@@ -538,6 +537,7 @@
                 if(!res.ok) throw new Error("Erro no backend");
 
                 let lastMsgObj = "";
+                let hasCompletedDialog = false;
                 const pollInt = setInterval(async () => {
                     try {
                         const sRes = await fetch(`/api/agents/rb_podcast/status/${ACTIVE_JOB_ID}`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -562,19 +562,22 @@
                             clearInterval(pollInt);
                             rBar.style.width = '100%';
                             
-                            let beep = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU');
-                            beep.play().catch(e => console.log('Sem permissão de audio'));
-                            
-                            const doneBox = document.createElement('div');
-                            doneBox.style.marginTop = "20px";
-                            doneBox.style.padding = "15px";
-                            doneBox.style.backgroundColor = "#28a745";
-                            doneBox.style.color = "#fff";
-                            doneBox.style.textAlign = "center";
-                            doneBox.style.borderRadius = "8px";
-                            doneBox.style.fontWeight = "bold";
-                            doneBox.innerHTML = `✅ Mídias geradas com sucesso! <br><a href="${job.downloadUrl}&t=${token}" style="color: #fff; text-decoration: underline; font-size: 18px; margin-top:10px; display:inline-block;">CLIQUE AQUI PARA DOWNLOAD</a>`;
-                            rContainer.parentNode.insertBefore(doneBox, rContainer.nextSibling);
+                            if (!hasCompletedDialog) {
+                                hasCompletedDialog = true;
+                                let beep = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU');
+                                beep.play().catch(e => console.log('Sem permissão de audio'));
+                                
+                                const doneBox = document.createElement('div');
+                                doneBox.style.marginTop = "20px";
+                                doneBox.style.padding = "15px";
+                                doneBox.style.backgroundColor = "#28a745";
+                                doneBox.style.color = "#fff";
+                                doneBox.style.textAlign = "center";
+                                doneBox.style.borderRadius = "8px";
+                                doneBox.style.fontWeight = "bold";
+                                doneBox.innerHTML = `✅ Mídias geradas com sucesso! <br><a href="${job.downloadUrl}&t=${token}" style="color: #fff; text-decoration: underline; font-size: 18px; margin-top:10px; display:inline-block;">CLIQUE AQUI PARA DOWNLOAD</a>`;
+                                rContainer.parentNode.insertBefore(doneBox, rContainer.nextSibling);
+                            }
                             
                             btn.classList.remove('btn-primary');
                             btn.classList.add('btn-success');
