@@ -347,6 +347,9 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
 
     // Render loop real
     for (let frameNumber = 1; frameNumber <= totalFrames; frameNumber++) {
+        // PERMITE O EVENT LOOP RESPIRAR PARA ENVIAR AS MENSAGENS AO CLIENTE NO SSE
+        await new Promise(r => setImmediate(r));
+        
         const canvas = createCanvas(CANVAS_W, CANVAS_H);
         const ctx = canvas.getContext('2d');
 
@@ -701,6 +704,11 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         fs.writeFileSync(path.join(tmpFramesDir, `frame_${frameTitle}.png`), buf);
     }
 
+        const rawNum = String(podcastData.number || '0000').replace(/\D/g, '');
+        const epNumber = rawNum.padStart(4, '0');
+        const outFileName = `Reels Animado_${epNumber}_legendado.mp4`;
+        const outFile = path.resolve(path.join(sessionFolder, outFileName));
+        
         const framesPattern = path.join(tmpFramesDir, 'frame_%03d.png');
         const absAudioPath = path.resolve(audioPath);
         
