@@ -155,13 +155,14 @@ function drawGroup(ctx, elements, basex, text, applyBlur = false, forceLeft = fa
     }
 }
 
-function drawImageWithBlur(ctx, guestImg, currentScale, currentMaskRadius, currentBlur, currentCenterY) {
+function drawImageWithBlur(ctx, guestImg, currentScale, currentMaskRadius, currentBlur, currentCenterY, pools) {
     const CANVAS_W = 1080;
     const CANVAS_H = 1920;
     const passes = Math.max(1, Math.floor(currentBlur / 60));
     
-    let baseCanvas = createCanvas(CANVAS_W, CANVAS_H);
-    let baseCtx = baseCanvas.getContext('2d');
+    let baseCanvas = pools.baseCanvas;
+    let baseCtx = pools.baseCtx;
+    baseCtx.clearRect(0, 0, CANVAS_W, CANVAS_H);
     
     baseCtx.save();
     baseCtx.beginPath();
@@ -178,8 +179,9 @@ function drawImageWithBlur(ctx, guestImg, currentScale, currentMaskRadius, curre
         return;
     }
 
-    let downCanvas = createCanvas(CANVAS_W / 4, CANVAS_H / 4);
-    let downCtx = downCanvas.getContext('2d');
+    let downCanvas = pools.downCanvas;
+    let downCtx = pools.downCtx;
+    downCtx.clearRect(0, 0, CANVAS_W / 4, CANVAS_H / 4);
     downCtx.drawImage(baseCanvas, 0, 0, CANVAS_W, CANVAS_H, 0, 0, CANVAS_W / 4, CANVAS_H / 4);
     
     let currentCanvas = downCanvas;
@@ -189,8 +191,9 @@ function drawImageWithBlur(ctx, guestImg, currentScale, currentMaskRadius, curre
     for (let i = 0; i < passes; i++) {
         let nextW = currentW;
         let nextH = currentH;
-        let upCanvas = createCanvas(nextW, nextH);
-        let uCtx = upCanvas.getContext('2d');
+        let upCanvas = (i % 2 === 0) ? pools.upCanvas1 : pools.upCanvas2;
+        let uCtx = (i % 2 === 0) ? pools.upCtx1 : pools.upCtx2;
+        uCtx.clearRect(0, 0, nextW, nextH);
         
         let off = 2;
         uCtx.globalAlpha = 1.0;
@@ -345,13 +348,28 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
 
     // O Loop Dinâmico agora é nativo no FFmpeg via -stream_loop, então o node não rastreia.
 
+    // Memory Pooling for Performance & OOM Prevention!
+    const canvas = createCanvas(CANVAS_W, CANVAS_H);
+    const ctx = canvas.getContext('2d');
+    
+    const blurPools = {
+        baseCanvas: createCanvas(CANVAS_W, CANVAS_H),
+        baseCtx: createCanvas(CANVAS_W, CANVAS_H).getContext('2d'),
+        downCanvas: createCanvas(CANVAS_W / 4, CANVAS_H / 4),
+        downCtx: createCanvas(CANVAS_W / 4, CANVAS_H / 4).getContext('2d'),
+        upCanvas1: createCanvas(CANVAS_W / 4, CANVAS_H / 4),
+        upCtx1: createCanvas(CANVAS_W / 4, CANVAS_H / 4).getContext('2d'),
+        upCanvas2: createCanvas(CANVAS_W / 4, CANVAS_H / 4),
+        upCtx2: createCanvas(CANVAS_W / 4, CANVAS_H / 4).getContext('2d')
+    };
+
     // Render loop real
     for (let frameNumber = 1; frameNumber <= totalFrames; frameNumber++) {
         // PERMITE O EVENT LOOP RESPIRAR PARA ENVIAR AS MENSAGENS AO CLIENTE NO SSE
         await new Promise(r => setImmediate(r));
         
-        const canvas = createCanvas(CANVAS_W, CANVAS_H);
-        const ctx = canvas.getContext('2d');
+        // Clear globally allocated ctx instead of redefining
+        ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
 
         // Fundo absolutamente transparente para viabilizar Overlay no FFmpeg final
         ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
@@ -389,7 +407,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         const currentBlur = Math.max(0, maxBlur - (maxBlur * easedBlurT));
 
         if (currentBlur > 0.1) {
-            drawImageWithBlur(ctx, guestImg, currentScale, currentMaskRadius, currentBlur, currentCenterY);
+            drawImageWithBlur(ctx, guestImg, currentScale, currentMaskRadius, currentBlur, currentCenterY, blurPools);
         } else {
             ctx.save();
             ctx.beginPath();
