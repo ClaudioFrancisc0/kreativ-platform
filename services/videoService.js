@@ -716,21 +716,20 @@ async function runTest() {
         ];
 
         const { execFile } = require('child_process');
-        execFile(ffPath, args, (error, stdout, stderr) => {
-            if (error) {
-                return reject(new Error("Erro ao montar ffmpeg: " + error.message + " | Detalhes: " + stderr));
-            }
-            
-            try {
-                // Clean up PNG frames
-                if (fs.existsSync(tmpFramesDir)) fs.rmSync(tmpFramesDir, { recursive: true, force: true });
-                resolve(outFileName);
-            } catch (fsErr) {
-                console.error("CleanUp tmpFrames error:", fsErr);
-                resolve(outFileName); // Resolve mesmo assim pra não quebrar a entrega
-            }
+        return new Promise((resolve, reject) => {
+            execFile(ffPath, args, (error, stdout, stderr) => {
+                if (error) {
+                    return reject(new Error("Erro ao montar ffmpeg: " + error.message + " | Detalhes: " + stderr));
+                }
+                try {
+                    if (fs.existsSync(tmpFramesDir)) fs.rmSync(tmpFramesDir, { recursive: true, force: true });
+                    resolve(outFileName);
+                } catch (fsErr) {
+                    console.error("CleanUp tmpFrames error:", fsErr);
+                    resolve(outFileName);
+                }
+            });
         });
-    });
 }
 
 module.exports = {
