@@ -365,249 +365,338 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
             ctx.restore();
         }
 
-        // Recupera Data
-        let hasData = trackingData[frameNumber.toString()] || trackingData[maxTrackKey];
+
+        // V74 CORE RESTORED
+        const rawNum = String(podcastData.number || '0000').replace(/\D/g, '');
+        const trackingDataPathReal = path.join(CWD, 'box_tracking_true.json');
+        const trackingDataRoot = JSON.parse(fs.readFileSync(trackingDataPathReal));
+        let hasData = trackingDataRoot[frameNumber.toString()];
+        let prevData = trackingDataRoot[(frameNumber - 1).toString()] || hasData;
+        if (!hasData) {
+            let maxTKey = Math.max(...Object.keys(trackingDataRoot).map(k => parseInt(k)));
+            hasData = trackingDataRoot[maxTKey.toString()];
+        }
+    
+    
+    
+
+    // Load mock subtitles/waves
+    
+
+    if (hasData) {
+        // === MOTOR DE TRACKING BASE (DA CAMA) ===
+        let base_maxX = hasData.maxX;
+        let base_maxY = hasData.maxY;
+        let p_maxX = prevData ? prevData.maxX : base_maxX;
+        let p_maxY = prevData ? prevData.maxY : base_maxY;
+
+        // O X vai de 0 (fora) até ~317 (repouso 1). Extraio o percentual t = 0.0 até 1.0!
+        // Sabendo que 317 é o final do frame 80!
+        let t_progress = Math.min(1.0, Math.max(0.0, (base_maxX - 80) / (317 - 80))); // 80 de margem inicial onde minX=0 ainda estava fora
+        // Para uma precisão perfeita com a visualização do AE, como eles rodam juntos, vamos
+        // abstrair um "distanciamento dinâmico": todo componente Textual entrará com um offset 
+        // decrescente baseado nesse Tracking base_maxX!
         
-        let TEMPLATE = {
-            "title": { "class": "title", "x": 0, "y": -93, "font": "700 104px 'New-Highway'", "color": "#FFFFFF", "str": "subject", "stroke": false },
-            "number": { "class": "number", "x": -4, "y": -887, "font": "600 132px 'New-Highway'", "color": "#024BE7", "str": "number", "stroke": false },
-            "guest_name": { "class": "guest", "x": 0, "y": 70, "font": "700 148px 'New-Highway'", "color": "#FFFFFF", "str": "guestName", "stroke": false },
-            "guest_label": { "class": "guest_label", "x": 10, "y": -58, "font": "300 50px 'New-Highway'", "color": "#FFFFFF", "str": "guestLabel", "stroke": false }
+        // A quina rastreada vai crescendo até chegar a 317 no Final do Repouso 1 (cravado F80).
+        let slide_offset = Math.max(0, 317 - base_maxX); 
+        
+        // As posições de repouso configuradas lá no nosso templates_config.json (Reels / Story)
+        const TEMPLATE = {
+            guestName: { left: 69, top: 1474, width: 440, height: 150, font: '78px "New-Highway-Bold"', lh: 84 },
+            title: { right: 1022, top: 1428, width: 482, height: 260, font: '44px "New-Highway-Regular"', lh: 63.8, align: "right" }
         };
 
-        if (hasData) {
-            let base_maxX = hasData.maxX;
-            let base_maxY = hasData.maxY;
+        // Y shift de queda livre (a partir do repouso 1)
+        // No repouso 1 (F80), maxY era 513. Se for maior que 515, é porque iniciou a queda.
+        let fall_shiftY = Math.max(0, base_maxY - 513); 
+        
+        // A proporção fotográfica calculada: enquanto a Cama cai 1038px (1551-513), 
+        // a câmera (BACKGROUND) scrolla apenas 912.5px! Este é um efeito Parallax/Pan do projeto nativo!
+        let bg_scrollY = fall_shiftY * (912.5 / 1038.0);
 
-            let center_x = 540;
-            let finaly_title = base_maxY + TEMPLATE.title.y;
-            // Repouso vs Target
-            let starty_title = finaly_title + 100;
-            let fall_shiftY = Math.max(0, base_maxY - 513); 
-            let base_subY = fall_shiftY * (912.5 / 1038.0);
-            
-            TEMPLATE.title.y += fall_shiftY;
-            TEMPLATE.guest_label.y += fall_shiftY;
-            TEMPLATE.guest_name.y += fall_shiftY;
-            TEMPLATE.number.y += fall_shiftY;
+        // Delta V puro em X e Y para calcularmos a severidade do Motion Blur
+        let blur_vx = base_maxX - p_maxX;
+        let blur_vy = base_maxY - p_maxY;
+        let speed = Math.sqrt(blur_vx*blur_vx + blur_vy*blur_vy);
+        let blurSteps = speed > 2 ? Math.min(24, Math.ceil(speed)) : 0;
 
-            let curY_title = TEMPLATE.title.y;
-            if (frameNumber < 100) curY_title = TEMPLATE.title.y - 8 + yShiftOffset;
-            
-            let current_suby = base_subY + TEMPLATE.title.y;
-
-            // Transições
-            let numStartFr = 63, numEndFr = 72;
-            let opac_num = frameNumber <= numStartFr ? 0 : Math.min(1, (frameNumber - numStartFr) / (numEndFr - numStartFr));
-            opac_num *= hasData.opacity;
-
-            ctx.globalAlpha = opac_num;
-            drawGroup(ctx, [TEMPLATE.number], 880, podcastData, false, true);
-
-            let txtStart = 78, txtEnd = 86;
-            let opac_txt = frameNumber <= txtStart ? 0 : Math.min(1, (frameNumber - txtStart) / (txtEnd - txtStart));
-            opac_txt *= hasData.opacity;
-
-            // Labels and Text positioning overrides
-            TEMPLATE.title.y = curY_title;
-            let customTemplateLabels = [{ ...TEMPLATE.guest_label }];
-            let lblBaseX = 143;
-            let lblBaseYOffsetRest = 143;
-            
-            if (frameNumber < 100) {
-                let pct = Math.max(0, Math.min(1, (frameNumber - txtStart) / (txtEnd - txtStart)));
-                let rest_x = lblBaseX + 12;
-                let rest_y = current_suby - lblBaseYOffsetRest;
-                
-                let cx_start = rest_x - 30;
-                let cy_start = rest_y + 40;
-                
-                customTemplateLabels[0].y = cy_start + (rest_y - cy_start) * standardEaseEase(pct) + 8;
-                lblBaseX = cx_start + (rest_x - cx_start) * standardEaseEase(pct);
-            } 
-
-            let cx_guestRest = center_x;
-            let cy_guestRest = TEMPLATE.guest_name.y;
-            let customTemplateName = [{ ...TEMPLATE.guest_name }];
-            if (frameNumber < 100) {
-                let pct = Math.max(0, Math.min(1, (frameNumber - txtStart) / (txtEnd - txtStart)));
-                let cy_start = cy_guestRest + 80;
-                customTemplateName[0].y = cy_start + (cy_guestRest - cy_start) * standardEaseEase(pct);
-            }
-
-            ctx.globalAlpha = opac_txt;
-            drawGroup(ctx, customTemplateLabels, lblBaseX, podcastData, false, true);
-            drawGroup(ctx, customTemplateName, center_x, podcastData, false, true);
-
-            let titleStart = 72, titleEnd = 80;
-            let titleEase = standardEaseEase(Math.max(0, Math.min(1, (frameNumber - titleStart) / (titleEnd - titleStart))));
-            let tempTitles = [{ ...TEMPLATE.title }];
-            if (frameNumber < 100) {
-                let t_yTarget = curY_title;
-                let t_yStart = t_yTarget + 8; 
-                tempTitles[0].y = t_yStart + (t_yTarget - t_yStart) * titleEase;
-                let titleBaseCenterX = center_x;
-                center_x = titleBaseCenterX + 8 * (1 - titleEase);
-            }
-
-            let opac_title = frameNumber <= titleStart ? 0 : titleEase;
-            opac_title *= hasData.opacity;
-            ctx.globalAlpha = opac_title;
-
-            drawGroup(ctx, tempTitles, center_x, podcastData, false, false, 830);
-            
-            // Aspas
-            ctx.font = "italic 700 132px 'New-Highway'";
-            ctx.fillStyle = '#FFFFFF';
-            let quotes_y = TEMPLATE.title.y - 12; 
-            if (frameNumber < 100) {
-                let pct = Math.max(0, Math.min(1, (frameNumber - 76) / (85 - 76)));
-                let target_y = TEMPLATE.title.y - 12;
-                quotes_y = (target_y + 8) + (target_y - (target_y + 8)) * standardEaseEase(pct);
-            }
-            ctx.fillText('"', center_x - 475, quotes_y);
-            ctx.textAlign = 'right';
-            ctx.fillText('"', center_x + 505, quotes_y - 8);
-
-            // ================== AUDIO WAVES E LEGENDAS =================
-            const AUDIO_DELAY = 1.5; 
-            let t_seconds = (frameNumber / 30.0) - AUDIO_DELAY;
-            
+        // Função de Injeção de Componente com Sub-Blur:
+        const drawComponent = (textList, yOffset, block, isRightSide = false, isDiagonalAsc = false) => {
             ctx.save();
-            let fadeAlpha = 1.0;
-            let fs_start = 50, fs_end = 90;
-            if (frameNumber < fs_start) fadeAlpha = 0.0;
-            else if (frameNumber < fs_end) {
-                fadeAlpha = (frameNumber - fs_start) / (fs_end - fs_start);
-            }
-            ctx.globalAlpha = fadeAlpha * hasData.opacity;
+            ctx.textAlign = block.align || "left";
+            ctx.textBaseline = "alphabetic"; 
 
-            // Audio Waves Estacionárias com Picos Reais
-            let waveY = 1522; 
-            let targetBars = 13;
-            let barWidth = 3; 
-            let barSpacing = 10; 
-            let totalWaveWidth = targetBars * barSpacing;
-            let waveX = 540 - (totalWaveWidth / 2) + (barWidth / 2);
-            
-            let audioFrame = Math.floor(frameNumber - (AUDIO_DELAY * 30));
-            let amps = null;
-            if (audioFrame >= 0 && audioFrame < amplitudes.length) {
-                 amps = amplitudes[audioFrame];
-            }
-            if (!amps) amps = new Array(targetBars).fill(0.05);
+            // Se for Right Side, o Slide Offset inverte (ele entra da extrema direita pra dentro)
+            let anchorX = isRightSide ? block.right : block.left;
+            let currentSlide = isRightSide ? slide_offset : -slide_offset;
+            let dir_blur_vx = isRightSide ? -blur_vx : blur_vx;
 
-            for (let b = 0; b < amps.length; b++) {
-                if (b >= targetBars) break;
-                let bh = amps[b] * 75; 
-                ctx.fillStyle = '#FFFFFF';
-                drawRoundedRect(ctx, waveX + b*barSpacing, waveY - bh/2, barWidth, Math.max(1, bh), 2);
-                ctx.fill();
-            }
+            let dynX = anchorX + currentSlide;
+            // ATENÇÃO: Os textos inferiores sobem ("- bg_scrollY") de acordo com o Pan fotográfico
+            let dynY = block.top - bg_scrollY + yOffset;
 
-            // Subtitles Whisper acopladas ao Círculo 
-            let finalSubY = 1290;
-            let currentSubYOffset = yShiftOffset;
-            let subY = (finalSubY - SHIFT_Y_AMOUNT) + currentSubYOffset; 
-            let subX = 540; 
-            let maxWidth = 750; 
-            let fSize = 40; 
+            // Diagonal Slide para a entrada (se ativo) - começa mais abaixo (+Y) e chega no (0)
+            if (isDiagonalAsc) {
+                dynY += (slide_offset * 0.75); // Maior inclinação, vindo bem mais baixo
+            }
             
-            let activePhrase = subtitles.find(p => t_seconds >= p.start && t_seconds <= p.end);
-            
-            if (activePhrase && activePhrase.text) {
-                ctx.font = `600 ${fSize}px 'New-Highway'`;
-                let words = activePhrase.text.split(' ');
-                
-                let lines = [];
-                let currentLine = words[0];
-                for (let i = 1; i < words.length; i++) {
-                    let testLine = currentLine + " " + words[i];
-                    if (ctx.measureText(testLine).width > maxWidth) {
-                        lines.push(currentLine);
-                        currentLine = words[i];
-                    } else {
-                        currentLine = testLine;
-                    }
+            if (blurSteps > 0) {
+                ctx.globalAlpha = 0.8 / blurSteps;
+                for (let i = 0; i < blurSteps; i++) {
+                    let f = (i / blurSteps) - 0.5;
+                    ctx.fillStyle = '#FFFFFF'; 
+                    textList.forEach(t => {
+                        let subY = dynY + blur_vy*f + t.dy;
+                        if(isDiagonalAsc) subY += (dir_blur_vx*f * -0.75);
+                        drawMultilineText(ctx, t.txt, dynX + dir_blur_vx*f, subY, block.width, block.lh || 0);
+                    });
                 }
-                lines.push(currentLine);
-                
-                let ptY_offset = lines.length === 1 ? -16 : -38;
-                let boxHeight = lines.length === 1 ? 60 : 100;
-                let longestLineWidth = Math.max(...lines.map(l => ctx.measureText(l).width));
-                let boxWidth = longestLineWidth + 60; 
-
-                ctx.fillStyle = '#006bff';
-                drawRoundedRect(ctx, subX - boxWidth/2, subY + ptY_offset - 28, boxWidth, boxHeight, 15);
-                ctx.fill();
-
-                ctx.fillStyle = '#FFFFFF';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                
-                let textStartY = subY + ptY_offset + (lines.length === 1 ? 0 : -8);
-                let lineCountY = textStartY;
-                
-                for (let textLine of lines) {
-                    ctx.fillText(textLine, subX, lineCountY);
-                    lineCountY += 45; 
-                }
+                ctx.globalAlpha = 0.5;
+            } else {
+                ctx.globalAlpha = 1.0;
             }
-
+            ctx.fillStyle = '#FFFFFF'; 
+            textList.forEach(t => {
+                drawMultilineText(ctx, t.txt, dynX, dynY + t.dy, block.width, block.lh || 0);
+            });
             ctx.restore();
+        };
 
-            // Mic
-            if (micImg) {
-                let mic_restY = 1035; 
-                let cx_mic = 170; 
-                let cy_mic = mic_restY; 
-                if (frameNumber < 100) {
-                    let pct = Math.max(0, Math.min(1, (frameNumber - 76) / (85 - 76)));
-                    let mic_startY = mic_restY + 25; 
-                    let mic_startX = -150; 
-                    cx_mic = mic_startX + (170 - mic_startX) * standardEaseEase(pct);
-                    cy_mic = mic_startY + (mic_restY - mic_startY) * standardEaseEase(pct);
+        // COMPONENTE 1: O NÚMERO
+        {
+            let numExtraX = base_maxX - 131.5;
+            let numExtraY = base_maxY - 27.5; 
+            ctx.save();
+            ctx.font = '600 36px "New-Highway"';
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            if (blurSteps > 0) {
+                ctx.globalAlpha = 0.8 / blurSteps;
+                for (let i = 0; i < blurSteps; i++) {
+                    let f = (i / blurSteps) - 0.5;
+                    ctx.fillStyle = '#006BFF';
+                    ctx.fillText(rawNum, numExtraX + blur_vx*f, numExtraY + blur_vy*f + 3);
                 }
-                cy_mic += yShiftOffset;
+                ctx.globalAlpha = 0.5;
+            }
+            ctx.fillStyle = '#006BFF';
+            ctx.fillText(rawNum, numExtraX, numExtraY + 3);
+            ctx.restore();
+        }
 
-                let micOpac = frameNumber <= 76 ? 0 : Math.min(1, (frameNumber - 76) / (85 - 76));
-                ctx.globalAlpha = micOpac * hasData.opacity;
-                const mScale = 0.5;
-                ctx.drawImage(micImg, cx_mic - (micImg.width*mScale)/2, cy_mic - (micImg.height*mScale)/2, micImg.width*mScale, micImg.height*mScale);
+        // COMPONENTE 2: GUEST NAME (Diagonal Ascendente Ligada)
+        ctx.font = TEMPLATE.guestName.font;
+        
+        let nameSplit = (podcastData.guestName || "CONVIDADO").split(" ");
+        let firstName = nameSplit[0] || "";
+        let lastName = nameSplit.slice(1).join(" ") || "";
+        
+        let subj = (podcastData.subject || "ASSUNTO AQUI").replace(/\.$/, "");
+        let sWords = subj.split(" ");
+        let mid = Math.ceil(sWords.length / 2);
+        let titleLine1 = sWords.slice(0, mid).join(" ");
+        let titleLine2 = sWords.slice(mid).join(" ");
+        if(titleLine2.length > 0) titleLine2 += ".";
+        drawComponent([
+            {txt: titleLine1, dy: 0},
+            {txt: titleLine2, dy: Math.floor(TEMPLATE.title.lh)}
+        ], 0, TEMPLATE.title, true, false);
+
+        // COMPONENTE 4: ONDAS SONORAS E LEGENDAS!
+        // FIXED POSITION AT BOTTOM, NO PARALLAX, WITH FADE IN
+        const AUDIO_DELAY = 1.5; // Audio start delayed by 1.5 seconds
+        let t_seconds = (frameNumber / 30.0) - AUDIO_DELAY;
+        
+        ctx.save();
+        
+        // Fade in começa lá no frame 50 e vai até 100
+        let fadeAlpha = Math.max(0, Math.min(1.0, (frameNumber - 50) / 40.0));
+        ctx.globalAlpha = fadeAlpha;
+        
+        // 4.1 Audio Waves -> Posição Fixa no Rodapé e Centralizadas
+        let waveY = 1522; // Subiu 8px p/ nivelar com o Podcast Logo
+        
+        let targetBars = 13;
+        let barWidth = 3; // Mais fina ainda conforme solicitado
+        let barSpacing = 10; // Reduz gap proporcionalmente
+        let totalWaveWidth = targetBars * barSpacing;
+        
+        // Centralizando brutalmente no meio do eixo X (540)
+        let waveX = 540 - (totalWaveWidth / 2) + (barWidth / 2);
+        
+        // Pega as amlitudes ou default
+        let audioFrame = Math.floor(frameNumber - (AUDIO_DELAY * 30));
+        let amps = null;
+        if (audioFrame >= 0) {
+             amps = amplitudes[audioFrame];
+        }
+        if (!amps) amps = amplitudes[amplitudes.length - 1] || new Array(targetBars).fill(0.1);
+        
+        for (let b = 0; b < amps.length; b++) {
+            if (b >= targetBars) break;
+            let bh = amps[b] * 75; // Mais altas
+            ctx.fillStyle = '#FFFFFF';
+            drawRoundedRect(ctx, waveX + b*barSpacing, waveY - bh/2, barWidth, bh, 3);
+            ctx.fill();
+        }
+
+        // 4.2 Legendas Flutuantes Dinâmicas (Grudada no Círculo da Foto)
+        // Descemos os 10px aprovados (target final = 1290). 
+        // Como ela anda atrelada ao circulo da foto, seu Y nativo sofre o mesmo yShiftOffset
+        let finalSubY = 1290;
+        let subY = (finalSubY - SHIFT_Y_AMOUNT) + yShiftOffset; 
+
+        let subX = 540; // centralizado
+        let maxWidth = 750; // máx width para 2 linhas
+        let fSize = 40; 
+        
+        ctx.font = `600 ${fSize}px "New-Highway"`;
+        ctx.textBaseline = "top";
+        ctx.textAlign = "center";
+        
+        let activeSubtitle = null;
+        for (let i = 0; i < subtitles.length; i++) {
+            let s = subtitles[i];
+            if (t_seconds >= s.start && t_seconds <= s.end) {
+                activeSubtitle = s.text;
+                break;
             }
         }
-
-        // Salvar Frame em formato PNG Stream Rápido (Conserva a Transparência Alfa sem estourar o limite da V8)
-        const outName = `frame_${String(frameNumber).padStart(3, '0')}.png`;
-        const outPath = path.join(tmpFramesDir, outName);
         
-        await new Promise((res, rej) => {
-            const out = fs.createWriteStream(outPath);
-            const stream = canvas.createPNGStream({ compressionLevel: 2 });
-            stream.pipe(out);
-            out.on('finish', res);
-            out.on('error', rej);
-        });
-        
-        if (frameNumber % 15 === 0) {
-            statusCallback(`🎬 Rastreando frame ${frameNumber}/${totalFrames}...`);
-            await new Promise(r => setTimeout(r, 0)); // Respira para o Garbage Collector do V8 engine
+        if (activeSubtitle) {
+            let words = activeSubtitle.split(" ");
+            let lines = [];
+            let currentLine = "";
+            let maxLineWidth = 0;
+            
+            for(let i = 0; i < words.length; i++) {
+                let testLine = currentLine + words[i] + " ";
+                let metrics = ctx.measureText(testLine);
+                if(metrics.width > maxWidth && i > 0) {
+                    lines.push(currentLine.trim());
+                    currentLine = words[i] + " ";
+                } else {
+                    currentLine = testLine;
+                }
+            }
+            lines.push(currentLine.trim());
+            
+            for(let l of lines) {
+                let w = ctx.measureText(l).width;
+                if(w > maxLineWidth) maxLineWidth = w;
+            }
+            
+            let padX = 30;
+            let padY = 20;
+            let boxWidth = maxLineWidth + padX*2;
+            let boxHeight = (lines.length * (fSize + 10)) + padY*2 - 10;
+            
+            // Fundo Azul
+            ctx.fillStyle = '#006BFF';
+            drawRoundedRect(ctx, subX - boxWidth/2, subY, boxWidth, boxHeight, 15);
+            ctx.fill();
+            
+            // Texto Branco
+            ctx.fillStyle = '#FFFFFF';
+            let ly = subY + padY;
+            for(let l of lines) {
+                ctx.fillText(l, subX, ly);
+                ly += fSize + 10;
+            }
         }
+        ctx.restore();
+        
     }
+    // ====== MÁQUINA DE ESTADOS DO MICROFONE ======
+    // CANVAS TELA: Largura (X) = 1080 | Altura (Y) = 1920 (Centro absoluto: X=540, Y=960).
 
-    // Failsafe de diagnóstico para saber se os arquivos físicos realmente estão disco!
-    const frameFiles = fs.readdirSync(tmpFramesDir).filter(f => f.endsWith('.png'));
-    if (frameFiles.length === 0) {
-        return Promise.reject(new Error(`Diagnóstico: A pasta tmp_frames continua vazia apesar de rodar o loop. Error writeFileSync.`));
-    }
-
-    statusCallback('🎥 Montando arquivo MP4 final...');
+    // --> 1. POSIÇÃO INICIAL (Origem)
+    // Fica invisível à esquerda. Y foi "subido" (Valor Y menor no Canvas).
+    const posX_Start = -micImg.width; 
+    const posY_Start = 1035; // Nascia no 1060, subimos 25px.
     
-    return new Promise((resolve, reject) => {
-        const rawNum = String(podcastData.number || '0000').replace(/\D/g, '');
-        const epNumber = rawNum.padStart(4, '0');
-        const outFileName = `Reels Animado_${epNumber}_legendado.mp4`;
-        const outFile = path.resolve(path.join(sessionFolder, outFileName));
+    // --> 2. POSIÇÃO DE POUSO (Aterrissagem sobre a foto)
+    const posX_Pouso = 300; 
+    const posY_Pouso = 1000; 
+    
+    // --> 3. POSIÇÃO FINAL (Recuo no Eixo X)
+    const posX_Final = 170; // Mais para esquerda ainda (20px a menos)
+    const posY_Final = 1000; 
+
+    let cx_mic = posX_Start;
+    let cy_mic = posY_Start;
+
+    if (frameNumber >= 15) { 
+        if (frameNumber <= 80) {
+            // Fase 2: Entrada do Mic
+            // Usamos easeOutCubic no lugar da curva nativa pra frear violentamente.
+            // (Atrasado inicio em +15 frames, forçando uma velocidade muito maior pra cumprir o alvo no frame 80)
+            let progress = (frameNumber - 15) / (80 - 15);
+            let ease = easeOutCubic(progress); 
+            cx_mic = posX_Start + (posX_Pouso - posX_Start) * ease;
+            cy_mic = posY_Start + (posY_Pouso - posY_Start) * ease;
+        } 
+        else if (frameNumber <= 85) {
+            // Fase 3: Hold ultra-precocce engordado em +15 frames de pura contemplação
+            cx_mic = posX_Pouso;
+            cy_mic = posY_Pouso;
+        } 
+        else if (frameNumber <= 145) {
+            // Fase 4: O Recuo. Espalhamos o recuo denovo, diluindo-os para arrastar por 60 quadros
+            // voltando a ficar bem devagar e engatilhando aos 3.5s.
+            let progress = (frameNumber - 85) / (145 - 85);
+            let ease = standardEaseEase(progress); 
+            cx_mic = posX_Pouso + (posX_Final - posX_Pouso) * ease;
+            cy_mic = posY_Pouso + (posY_Final - posY_Pouso) * ease;
+        } 
+        else {
+            // Fase 5: Estático
+            cx_mic = posX_Final;
+            cy_mic = posY_Final;
+        }
+        
+        // ALINHAMENTO GEOMÉTRICO EXTREMO: 
+        // O Microfone amarra e desce "+80px" sofrendo os efeitos mortais da gravidade 
+        // embutidos no yShiftOffset global para não descolar da Foto em movimento!
+        cy_mic += yShiftOffset;
+
+        ctx.drawImage(micImg, cx_mic, cy_mic);
+    }
+
+    const outFileName = path.join(outputDir, `frame_${String(frameNumber).padStart(3, '0')}.png`);
+    const buffer = canvas.toBuffer('image/png');
+    fs.writeFileSync(outFileName, buffer);
+    console.log(`[Timeline] Frame ${frameNumber} | Mask: ${Math.floor(currentMaskRadius)}px | Blur: ${Math.floor(currentBlur)}px | Mic(X,Y): ${Math.floor(cx_mic)}, ${Math.floor(cy_mic)}`);
+}
+
+async function runTest() {
+    const outputDir = path.join(__dirname, 'tmp_frames');
+    if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir);
+    } else {
+        fs.readdirSync(outputDir).forEach(f => fs.rmSync(path.join(outputDir, f)));
+    }
+
+    console.log('🖼️ Carregando assets...');
+    const guestImg = await loadImage(path.join(__dirname, 'assets', 'foto.jpg'));
+    const micImg = await loadImage('C:\\Users\\claud\\Desktop\\Kreativ\\RB_0037_Podcast Files\\layout\\layout PNGs\\microfone menor.png');
+
+    const TEST_FRAMES = 230; // Aumentado para cobrir a letargia de velocidade (7.7s)
+    console.log(`🎬 Renderizando ${TEST_FRAMES} frames da foto...`);
+    for (let f = 1; f <= TEST_FRAMES; f++) {
+        await renderFrame(f, guestImg, micImg, outputDir);
+    }
+
+    console.log('🎥 Gerando o Vídeo Sandbox MP4 usando FFmpeg e fundo Cama...');
+    const ffPath = ffmpeg.path;
+    const camaPath = path.join(__dirname, 'assets', 'cama_sem_mic.mp4');
+
+        // Salva o frame transparente nativo
+        const frameTitle = String(frameNumber).padStart(3, '0');
+        const buf = canvas.toBuffer('image/png', { compressionLevel: 0, filters: canvas.PNG_FILTER_NONE });
+        fs.writeFileSync(path.join(tmpFramesDir, `frame_${frameTitle}.png`), buf);
+    }
+
         const framesPattern = path.join(tmpFramesDir, 'frame_%03d.png');
         const absAudioPath = path.resolve(audioPath);
         
