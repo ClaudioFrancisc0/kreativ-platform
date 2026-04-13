@@ -283,6 +283,10 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
 
     const totalFrames = amplitudes.length; 
     statusCallback(`🎬 Rastreando ${totalFrames} frames...`);
+    
+    if (totalFrames === 0) {
+        return Promise.reject(new Error(`O áudio processado retornou 0 frames PCM. Arquivo muito curto ou não lido. AudioPath: ${audioPath}`));
+    }
 
     const CANVAS_W = 1080;
     const CANVAS_H = 1920;
@@ -589,6 +593,12 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         fs.writeFileSync(path.join(tmpFramesDir, outName), buffer);
         
         if (frameNumber % 100 === 0) statusCallback(`🎬 Processando frame ${frameNumber}/${totalFrames}...`);
+    }
+
+    // Failsafe de diagnóstico para saber se os arquivos físicos realmente estão disco!
+    const frameFiles = fs.readdirSync(tmpFramesDir).filter(f => f.endsWith('.png'));
+    if (frameFiles.length === 0) {
+        return Promise.reject(new Error(`Diagnóstico: A pasta tmp_frames continua vazia apesar de rodar o loop. Error writeFileSync.`));
     }
 
     statusCallback('🎥 Montando arquivo MP4 final...');

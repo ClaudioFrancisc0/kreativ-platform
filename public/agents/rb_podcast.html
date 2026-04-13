@@ -366,11 +366,19 @@
             const gender = document.getElementById('podGender').value;
             const name = document.getElementById('podName').value;
             const subject = document.getElementById('podSubject').value;
+            const token = localStorage.getItem('token');
 
             if (!number || !name || !subject || !audioFile || !cropper) {
                 alert('Preencha os campos e anexe Áudio e Foto cortada.');
                 return;
             }
+
+            // Silent update do number no backend para manter cache da ultima execucao
+            fetch('/api/agents/rb_podcast/number', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ number: parseInt(number, 10) })
+            }).catch(e => console.log('Silent update error', e));
 
             const btn = document.getElementById('startBtn');
             btn.disabled = true;
