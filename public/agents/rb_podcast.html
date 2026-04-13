@@ -515,11 +515,10 @@
             rLogs.innerHTML = '';
             rBar.style.width = '10%';
             
-            // Usar scroll natural via offset cravado para evitar problemas de Overflow e bloqueio de janela no Chrome
+            // Usar delay para evitar reflow block no DOM
             setTimeout(() => {
-                const y = btn.getBoundingClientRect().top + window.pageYOffset - 15;
-                window.scrollTo({top: y, behavior: 'smooth'});
-            }, 100);
+                document.getElementById('renderBtn').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 300);
 
             try {
                 const token = localStorage.getItem('token');

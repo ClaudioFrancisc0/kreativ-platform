@@ -610,7 +610,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
     }
 
     // Failsafe de diagnóstico para saber se os arquivos físicos realmente estão disco!
-    const frameFiles = fs.readdirSync(tmpFramesDir).filter(f => f.endsWith('.png'));
+    const frameFiles = fs.readdirSync(tmpFramesDir).filter(f => f.endsWith('.jpg'));
     if (frameFiles.length === 0) {
         return Promise.reject(new Error(`Diagnóstico: A pasta tmp_frames continua vazia apesar de rodar o loop. Error writeFileSync.`));
     }
