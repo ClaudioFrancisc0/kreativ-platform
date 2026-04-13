@@ -58,6 +58,16 @@ router.post('/rb_podcast/analyze', verifyToken, upload.fields([{ name: 'audioFil
         const photoFile = req.files['photoFile'][0];
         const audioFile = req.files['audioFile'][0];
 
+        // O Whisper (OpenAI) exige que o arquivo possua a extensão no nome para entender o formato
+        const photoExt = path.extname(photoFile.originalname) || '.png';
+        const photoNewPath = photoFile.path + photoExt;
+        
+        const audioExt = path.extname(audioFile.originalname) || '.mp3';
+        const audioNewPath = audioFile.path + audioExt;
+
+        fs.renameSync(photoFile.path, photoNewPath);
+        fs.renameSync(audioFile.path, audioNewPath);
+
         const numberFormatted = String(number).padStart(4, '0');
 
         const podcastData = {
@@ -76,8 +86,8 @@ router.post('/rb_podcast/analyze', verifyToken, upload.fields([{ name: 'audioFil
             downloadUrl: null,
             // Guardamos os inputs na memória
             podcastData,
-            photoPath: photoFile.path,
-            audioPath: audioFile.path,
+            photoPath: photoNewPath,
+            audioPath: audioNewPath,
             numberRaw: numberFormatted
         });
 
