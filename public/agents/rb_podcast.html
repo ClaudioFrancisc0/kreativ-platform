@@ -505,7 +505,10 @@
             rLogs.innerHTML = '';
             rBar.style.width = '10%';
             
-            btn.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Aguarda o navegador registrar a div p/ calcular a altura antes do scroll
+            setTimeout(() => {
+                btn.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
 
             try {
                 const token = localStorage.getItem('token');
