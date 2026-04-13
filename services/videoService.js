@@ -11,15 +11,23 @@ try {
 } catch (e) {
     console.log("Aviso: @ffmpeg-installer/ffmpeg não carregado. Módulo utilizará ffmpeg nativo do SO.");
 }
+const configService = require('./configService');
 const dotenv = require('dotenv');
 
 dotenv.config();
 
-// Carregamento Lazy para não dar crash no boot se faltar ENV no Railway
-function getOpenAI() {
-    return new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY
-    });
+// Carregamento Lazy e DB-Driven (Agora Dinâmico e Seguro via Admin Panel)
+async function getOpenAI() {
+    let apiKey = await configService.getOpenAiApiKey();
+    if (!apiKey) {
+        apiKey = process.env.OPENAI_API_KEY; // Fallback nuvem
+    }
+    
+    if (!apiKey) {
+        throw new Error("Chave da API OpenAI não configurada. Defina no Painel Administrativo de Configurações.");
+    }
+    
+    return new OpenAI({ apiKey });
 }
 
 // ==== FUNÇÕES AUXILIARES DE RENDER (Da Sandbox) ====
@@ -171,8 +179,8 @@ async function extractWhisperData(audioFilePath) {
         throw new Error("Arquivo de áudio não encontrado " + audioFilePath);
     }
     
-    const openaiKey = getOpenAI();
-    const transcription = await openaiKey.audio.transcriptions.create({
+    const openaiClient = await getOpenAI();
+    const transcription = await openaiClient.audio.transcriptions.create({
         file: fs.createReadStream(audioFilePath),
         model: "whisper-1",
         response_format: "verbose_json",

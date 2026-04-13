@@ -154,15 +154,16 @@
 
             <!-- RB Podcast Config -->
             <div class="config-card">
-                <h2>🎙️ RB Podcast</h2>
+                <h2>🎙️ RB Podcast (OpenAI)</h2>
                 <p class="helper-text" style="margin-bottom: 20px;">
-                    Configurações para a automação do RB Podcast.
+                    Configuração do motor gerador de teleprompter e áudio. Insira sua chave API do OpenAI (começada em sk-...).
                 </p>
+                <div class="form-status" id="openaiStatusMsg" style="margin-bottom:15px; padding:10px; border-radius:5px; display:none;"></div>
                 <div class="form-group">
-                    <label>API Key de Teste</label>
-                    <input type="text" id="rbApiKey" class="form-control" placeholder="Aguardando definição...">
+                    <label>API Key da OpenAI</label>
+                    <input type="password" id="rbApiKey" class="form-control" placeholder="Carregando..." autocomplete="off">
                 </div>
-                <button class="btn-save" onclick="alert('Configuração em breve')">Salvar RB Podcast</button>
+                <button class="btn-save" id="btnSaveOpenAI" onclick="saveOpenAIKey()">💾 Salvar Chave OpenAI</button>
             </div>
 
         </main>
@@ -176,8 +177,75 @@
                 document.getElementById('settingsPage').style.display = 'block';
                 const user = getUserData();
                 if (user) document.getElementById('userEmail').textContent = user.email;
+                
+                // Fetch atual configuração
+                fetchOpenAIKey();
             }
         });
+
+        const statusBox = document.getElementById('openaiStatusMsg');
+
+        async function fetchOpenAIKey() {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch('/api/admin/config/openai', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if(res.ok) {
+                    const data = await res.json();
+                    document.getElementById('rbApiKey').placeholder = data.key ? "Chave Salva: " + data.key : "sk-proj-**********************";
+                    if(data.key) document.getElementById('rbApiKey').value = ""; // não mostrar password claro
+                }
+            } catch (err) {
+                console.error("Erro ao puxar configuração:", err);
+            }
+        }
+
+        async function saveOpenAIKey() {
+            const apiKey = document.getElementById('rbApiKey').value.trim();
+            if(!apiKey) {
+                showStatus("Por favor, digite a chave primeiro.", false);
+                return;
+            }
+
+            const btn = document.getElementById('btnSaveOpenAI');
+            btn.disabled = true;
+            btn.innerHTML = "Salvando...";
+
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch('/api/admin/config/openai', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ apiKey })
+                });
+
+                if(res.ok) {
+                    showStatus("✅ Chave salva e aplicada no Sistema com sucesso!", true);
+                    document.getElementById('rbApiKey').value = "";
+                    fetchOpenAIKey(); // Atualiza placeholder com mascara
+                } else {
+                    const data = await res.json();
+                    showStatus("❌ Erro: " + (data.error || "Desconhecido"), false);
+                }
+            } catch (err) {
+                showStatus("❌ Falha de Rede.", false);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "💾 Salvar Chave OpenAI";
+            }
+        }
+
+        function showStatus(msg, isSuccess) {
+            statusBox.style.display = 'block';
+            statusBox.style.backgroundColor = isSuccess ? '#e6f7e6' : '#ffe6e6';
+            statusBox.style.color = isSuccess ? '#28a745' : '#dc3545';
+            statusBox.textContent = msg;
+            setTimeout(() => { statusBox.style.display = 'none'; }, 5000);
+        }
     </script>
 </body>
 

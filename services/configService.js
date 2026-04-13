@@ -82,6 +82,14 @@ class ConfigService {
         tokens[lang] = tokenData;
         return await this.set('youtube_tokens', tokens);
     }
+
+    async getOpenAiApiKey() {
+        return await this.get('openai_api_key');
+    }
+
+    async setOpenAiApiKey(apiKey) {
+        return await this.set('openai_api_key', apiKey);
+    }
 }
 
 module.exports = new ConfigService();
