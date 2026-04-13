@@ -103,8 +103,8 @@
         .cropper-view-box, .cropper-face { border-radius: 50%; }
 
         .btn-start {
-            background: var(--text-primary, #111);
-            color: white;
+            background: #0d6efd;
+            color: #fff;
             border: none;
             padding: 16px 32px;
             font-size: 16px;
@@ -114,7 +114,7 @@
             width: 100%;
             transition: background 0.2s ease;
         }
-        .btn-start:hover { background: #0ea5e9; }
+        .btn-start:hover { background: #0b5ed7; color: white;}
         .btn-start:disabled { background: #ccc; cursor: not-allowed; }
         .btn-success { background: #28a745; margin-top: 20px;}
         .btn-success:hover { background: #218838; }
@@ -281,7 +281,7 @@
                 <div class="podcast-card" style="background: transparent; box-shadow: none; padding: 0;">
                     <!-- Novo Botão de Fase 1 -->
                     <button class="btn-start" id="startBtn" onclick="analyzePodcastFiles()">
-                        🧠 1º Passo - Extrair Legendas do Áudio
+                        🧠 Gerar legendas para verificação
                     </button>
 
                     <div id="progressContainer" style="display: none; margin-top: 20px; text-align: center;">
@@ -305,8 +305,8 @@
                     <!-- Javascript vai encher isso com divs -->
                 </div>
 
-                <div class="mt-4 text-center">
-                    <button type="button" class="btn btn-primary py-3 px-5 fw-bold w-100 mb-3" id="renderBtn" style="font-size: 20px;" onclick="renderFinalVideo()">Gerar Mídias</button>
+                <div class="mt-5 text-center px-2">
+                    <button type="button" class="btn btn-primary py-3 px-5 fw-bold w-100 mb-3" id="renderBtn" style="font-size: 20px; border-radius: 12px;" onclick="renderFinalVideo()">Gerar Mídias</button>
                     
                     <!-- Novo Terminal de Progresso para a Fase 2 -->
                     <div id="renderProgressContainer" style="display: none; text-align: left; background: #111; padding: 20px; border-radius: 12px; margin-top: 15px; border: 1px solid #333;">
