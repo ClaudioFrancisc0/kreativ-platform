@@ -156,13 +156,14 @@
         .sub-segment {
             font-family: 'Inter', sans-serif;
             font-weight: 600;
-            font-size: 30px; /* Escalado proximo ao Canvas (40px) */
-            line-height: 1.25;
-            color: #888;
-            background: transparent;
+            font-size: 20px; /* Reduzido conforme pedido do cliente */
+            line-height: 1.4;
+            color: #ccc;
+            background: rgba(30, 30, 30, 0.8);
+            border-radius: 8px;
             display: inline-block;
-            margin: 10px auto;
-            padding: 10px 20px;
+            margin: 8px auto;
+            padding: 12px 24px;
             border-radius: 15px;
             max-width: 90%; 
             transition: all 0.1s linear;
@@ -304,10 +305,7 @@
                 <div class="subtitles-box" id="subsBox">
                     <!-- Javascript vai encher isso com divs -->
                 </div>
-                
-                <h5 class="mt-4 text-white">Edição Direta de Legendas:</h5>
-                <textarea id="subtitlesBox" class="form-control bg-dark text-white border-secondary" rows="12" style="font-family: 'Inter', sans-serif; font-size: 20px; padding: 25px; line-height: 1.6; border-radius: 12px; font-weight: 500;"></textarea>
-                
+
                 <div class="mt-4 text-end d-flex gap-3">
                     <button type="button" class="btn btn-secondary flex-grow-1 py-3 fw-bold" onclick="document.getElementById('reviewContainer').style.display = 'none'; document.getElementById('step1Container').style.opacity = '1'; document.getElementById('step1Container').style.pointerEvents = 'auto';">Voltar e Editar Dados</button>
                     <button type="button" class="btn btn-primary flex-grow-1 py-3 fw-bold" id="renderBtn" onclick="renderFinalVideo()">Aprovar e Avançar para Renderização 🎬</button>
