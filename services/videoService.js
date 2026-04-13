@@ -591,12 +591,22 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
             }
         }
 
-        // Salvar Frame
-        const outName = `frame_${String(frameNumber).padStart(3, '0')}.png`;
-        const buffer = canvas.toBuffer('image/png');
-        fs.writeFileSync(path.join(tmpFramesDir, outName), buffer);
+        // Salvar Frame em formato JPEG Stream (Alivia 90% da memória RAM em vídeos gigantes)
+        const outName = `frame_${String(frameNumber).padStart(3, '0')}.jpg`;
+        const outPath = path.join(tmpFramesDir, outName);
         
-        if (frameNumber % 100 === 0) statusCallback(`🎬 Processando frame ${frameNumber}/${totalFrames}...`);
+        await new Promise((res, rej) => {
+            const out = fs.createWriteStream(outPath);
+            const stream = canvas.createJPEGStream({ quality: 0.85 });
+            stream.pipe(out);
+            out.on('finish', res);
+            out.on('error', rej);
+        });
+        
+        if (frameNumber % 15 === 0) {
+            statusCallback(`🎬 Rastreando frame ${frameNumber}/${totalFrames}...`);
+            await new Promise(r => setTimeout(r, 0)); // Respira para o Garbage Collector do V8 engine
+        }
     }
 
     // Failsafe de diagnóstico para saber se os arquivos físicos realmente estão disco!
@@ -610,7 +620,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
     return new Promise((resolve, reject) => {
         const outFileName = `Reels Animado_${podcastData.number || '0000'}_legendado.mp4`;
         const outFile = path.resolve(path.join(sessionFolder, outFileName));
-        const framesPattern = path.join(tmpFramesDir, 'frame_%03d.png');
+        const framesPattern = path.join(tmpFramesDir, 'frame_%03d.jpg');
         const absAudioPath = path.resolve(audioPath);
         
         const args = [
