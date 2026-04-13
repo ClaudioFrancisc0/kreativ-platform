@@ -24,8 +24,11 @@ router.post('/config/openai', verifyToken, requireAdmin, async (req, res) => {
         const { apiKey } = req.body;
         if (!apiKey) return res.status(400).json({ error: 'A chave API é obrigatória.' });
         
-        await configService.setOpenAiApiKey(apiKey);
-        res.json({ message: 'Chave salva com sucesso' });
+        const success = await configService.setOpenAiApiKey(apiKey);
+        if (!success) {
+            return res.status(500).json({ error: 'Falha interna no Banco de Dados ao salvar a chave. Verifique os logs do servidor.' });
+        }
+        res.json({ message: 'Chave salva com sucesso no Banco de Dados!' });
     } catch (error) {
         console.error('Erro ao salvar chave OpenAI:', error);
         res.status(500).json({ error: 'Erro ao salvar chave OpenAI' });

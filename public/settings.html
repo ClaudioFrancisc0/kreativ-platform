@@ -193,7 +193,7 @@
                 });
                 if(res.ok) {
                     const data = await res.json();
-                    document.getElementById('rbApiKey').placeholder = data.key ? "Chave Salva: " + data.key : "sk-proj-**********************";
+                    document.getElementById('rbApiKey').placeholder = data.key ? "Chave Salva: " + data.key : "NENHUMA CHAVE SALVA! Cole sua sk-... aqui";
                     if(data.key) document.getElementById('rbApiKey').value = ""; // não mostrar password claro
                 }
             } catch (err) {
