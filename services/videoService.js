@@ -591,13 +591,13 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
             }
         }
 
-        // Salvar Frame em formato JPEG Stream (Alivia 90% da memória RAM em vídeos gigantes)
-        const outName = `frame_${String(frameNumber).padStart(3, '0')}.jpg`;
+        // Salvar Frame em formato PNG Stream Rápido (Conserva a Transparência Alfa sem estourar o limite da V8)
+        const outName = `frame_${String(frameNumber).padStart(3, '0')}.png`;
         const outPath = path.join(tmpFramesDir, outName);
         
         await new Promise((res, rej) => {
             const out = fs.createWriteStream(outPath);
-            const stream = canvas.createJPEGStream({ quality: 0.85 });
+            const stream = canvas.createPNGStream({ compressionLevel: 2 });
             stream.pipe(out);
             out.on('finish', res);
             out.on('error', rej);
@@ -610,7 +610,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
     }
 
     // Failsafe de diagnóstico para saber se os arquivos físicos realmente estão disco!
-    const frameFiles = fs.readdirSync(tmpFramesDir).filter(f => f.endsWith('.jpg'));
+    const frameFiles = fs.readdirSync(tmpFramesDir).filter(f => f.endsWith('.png'));
     if (frameFiles.length === 0) {
         return Promise.reject(new Error(`Diagnóstico: A pasta tmp_frames continua vazia apesar de rodar o loop. Error writeFileSync.`));
     }
@@ -618,9 +618,10 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
     statusCallback('🎥 Montando arquivo MP4 final...');
     
     return new Promise((resolve, reject) => {
-        const outFileName = `Reels Animado_${podcastData.number || '0000'}_legendado.mp4`;
+        const epNumber = String(podcastData.number || '0000').padStart(4, '0');
+        const outFileName = `Reels Animado_${epNumber}_legendado.mp4`;
         const outFile = path.resolve(path.join(sessionFolder, outFileName));
-        const framesPattern = path.join(tmpFramesDir, 'frame_%03d.jpg');
+        const framesPattern = path.join(tmpFramesDir, 'frame_%03d.png');
         const absAudioPath = path.resolve(audioPath);
         
         const args = [

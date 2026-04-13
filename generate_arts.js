@@ -205,7 +205,8 @@ async function generateAllLayouts(podcastData, photoBufferOrPath, outputDir, onP
             if (textToDraw) drawTextInBox(ctx, textToDraw, boxCfg);
         }
 
-        const outPath = path.join(outputDir, templateName + '_Generated.jpg');
+        const epNumber = String(dynamicData.number || '0000').padStart(4, '0');
+        const outPath = path.join(outputDir, templateName + '_' + epNumber + '.jpg');
         await new Promise((resolve, reject) => {
             const out = fs.createWriteStream(outPath);
             canvas.createJPEGStream({ quality: 0.95 }).pipe(out);

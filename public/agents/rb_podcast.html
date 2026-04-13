@@ -515,10 +515,10 @@
             rLogs.innerHTML = '';
             rBar.style.width = '10%';
             
-            // Usar delay para evitar reflow block no DOM
+            // Usar delay longo e bloco `end` para garantir flexibilidade com o tamanho do conteiner scrollable
             setTimeout(() => {
-                document.getElementById('renderBtn').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 300);
+                document.getElementById('renderBtn').scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }, 800);
 
             try {
                 const token = localStorage.getItem('token');
@@ -561,11 +561,16 @@
                             let beep = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU');
                             beep.play().catch(e => console.log('Sem permissão de audio'));
                             
-                            const doneLine = document.createElement('div');
-                            doneLine.style.marginTop = "15px";
-                            doneLine.style.color = "#0f0";
-                            doneLine.innerHTML = `✅ Mídias geradas! <a href="${job.downloadUrl}&t=${token}" class="text-info text-decoration-underline" style="font-size: 16px;">CLIQUE AQUI PARA DOWNLOAD</a>`;
-                            rLogs.appendChild(doneLine);
+                            const doneBox = document.createElement('div');
+                            doneBox.style.marginTop = "20px";
+                            doneBox.style.padding = "15px";
+                            doneBox.style.backgroundColor = "#28a745";
+                            doneBox.style.color = "#fff";
+                            doneBox.style.textAlign = "center";
+                            doneBox.style.borderRadius = "8px";
+                            doneBox.style.fontWeight = "bold";
+                            doneBox.innerHTML = `✅ Mídias geradas com sucesso! <br><a href="${job.downloadUrl}&t=${token}" style="color: #fff; text-decoration: underline; font-size: 18px; margin-top:10px; display:inline-block;">CLIQUE AQUI PARA DOWNLOAD</a>`;
+                            rContainer.appendChild(doneBox);
                             
                             btn.classList.remove('btn-primary');
                             btn.classList.add('btn-success');
