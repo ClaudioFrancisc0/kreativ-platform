@@ -310,31 +310,15 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
     const SHIFT_END_FRAME = 124; 
     const SHIFT_Y_AMOUNT = 80;
 
-    let maxCamaFrames = 1;
-    const camaDir = path.join(CWD, 'cama_frames');
-    if (fs.existsSync(camaDir)) {
-        const camaFiles = fs.readdirSync(camaDir).filter(f => f.endsWith('.png'));
-        if (camaFiles.length > 0) { maxCamaFrames = camaFiles.length; }
-    }
+    // O Loop Dinâmico agora é nativo no FFmpeg via -stream_loop, então o node não rastreia.
 
     // Render loop real
     for (let frameNumber = 1; frameNumber <= totalFrames; frameNumber++) {
         const canvas = createCanvas(CANVAS_W, CANVAS_H);
         const ctx = canvas.getContext('2d');
 
-        // Bounding fundo nativo em Loop perfeito (modulo)
-        let loopingFrame = ((frameNumber - 1) % maxCamaFrames) + 1;
-        let bgFrameKey = String(loopingFrame).padStart(3, '0');
-        let bgFramePath = path.join(CWD, 'cama_frames', `frame_${bgFrameKey}.png`);
-        
-        if (fs.existsSync(bgFramePath)) {
-            const bgImg = await loadImage(bgFramePath);
-            ctx.drawImage(bgImg, 0, 0, CANVAS_W, CANVAS_H);
-        } else {
-            // Failsafe: pinta escuro se não achar frame da cama
-            ctx.fillStyle = '#0c1221';
-            ctx.fillRect(0,0, CANVAS_W, CANVAS_H);
-        }
+        // Fundo absolutamente transparente para viabilizar Overlay no FFmpeg final
+        ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
 
         // Animação Photo (Círculo Central)
         let totalZoomFrames = 51; 
@@ -627,11 +611,17 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         const framesPattern = path.join(tmpFramesDir, 'frame_%03d.png');
         const absAudioPath = path.resolve(audioPath);
         
+        const camaVideo = path.join(CWD, 'assets', 'cama_sem_mic.mp4');
         const args = [
             '-loglevel', 'error', '-y',
+            '-stream_loop', '-1', // Loop infinito adaptável da cama
+            '-i', camaVideo,      // [0] Background
             '-framerate', FPS.toString(),
-            '-i', framesPattern,
-            '-i', absAudioPath,
+            '-i', framesPattern,  // [1] Overlay dinâmico transparente do node-canvas
+            '-i', absAudioPath,   // [2] Origem de áudio p/ final
+            '-filter_complex', '[0:v][1:v]overlay=shortest=1[outv]',
+            '-map', '[outv]',
+            '-map', '2:a',
             '-c:v', 'libx264', '-pix_fmt', 'yuv420p',
             '-af', 'adelay=1500|1500', '-c:a', 'aac', '-shortest', outFile
         ];

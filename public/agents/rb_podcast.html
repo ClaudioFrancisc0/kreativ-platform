@@ -546,7 +546,15 @@
                         
                         if (job.message !== lastMsgObj) {
                             lastMsgObj = job.message;
-                            if (job.message.startsWith('?? Rastreando')) { let existingLine = Array.from(rLogs.children).find(el => el.innerText.includes('Rastreando')); if (existingLine) { existingLine.innerHTML = "? <span style='color: #fff;'>" + job.message + "</span>"; return; } } const logLine = document.createElement('div');
+                            if (job.message.includes('Rastreando')) {
+                                let existingLine = Array.from(rLogs.children).find(el => el.innerText.includes('Rastreando'));
+                                if (existingLine) {
+                                    existingLine.innerHTML = "➜ <span style='color: #fff;'>" + job.message + "</span>";
+                                    return;
+                                }
+                            }
+                            
+                            const logLine = document.createElement('div');
                             logLine.style.marginBottom = "4px";
                             logLine.innerHTML = "➜ <span style='color: #fff;'>" + job.message + "</span>";
                             rLogs.appendChild(logLine);

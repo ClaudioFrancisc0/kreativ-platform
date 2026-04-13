@@ -4,7 +4,7 @@
   "description": "Plataforma de Agentes Inteligentes Kreativ",
   "main": "server.js",
   "scripts": {
-    "build": "node extract_cama_frames.js", "start": "node server.js",
+    "start": "node server.js",
     "dev": "node server.js"
   },
   "keywords": [
