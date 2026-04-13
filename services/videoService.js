@@ -4,10 +4,19 @@ const { OpenAI } = require('openai');
 const { execSync } = require('child_process');
 const { createCanvas, loadImage, registerFont } = require('canvas');
 
-registerFont(path.join(__dirname, '..', 'fonts', 'New_Highway_Regular.ttf'), { family: 'new-highway-regular' });
-registerFont(path.join(__dirname, '..', 'fonts', 'New_Highway_Bold.ttf'), { family: 'new-highway-bold' });
-registerFont(path.join(__dirname, '..', 'fonts', 'New_Highway_SemiBold.ttf'), { family: 'new-highway-semibold' });
-registerFont(path.join(__dirname, '..', 'fonts', 'New_Highway_Light.ttf'), { family: 'new-highway-light' });
+const ASSETS = path.join(__dirname, '..', 'assets');
+try {
+    registerFont(path.join(ASSETS, 'New-Highway-Light.otf'),          { family: 'New-Highway', weight: '300' });
+    registerFont(path.join(ASSETS, 'New-Highway-Light-Italic.otf'),   { family: 'New-Highway', weight: '300', style: 'italic' });
+    registerFont(path.join(ASSETS, 'New-Highway-Regular.otf'),        { family: 'New-Highway', weight: '400' });
+    registerFont(path.join(ASSETS, 'New-Highway-Regular-Italic.otf'), { family: 'New-Highway', weight: '400', style: 'italic' });
+    registerFont(path.join(ASSETS, 'New-Highway-Medium.otf'),         { family: 'New-Highway', weight: '500' });
+    registerFont(path.join(ASSETS, 'New-Highway-Medium-Italic.otf'),  { family: 'New-Highway', weight: '500', style: 'italic' });
+    registerFont(path.join(ASSETS, 'New-Highway-Semi-Bold.otf'),      { family: 'New-Highway', weight: '600' });
+    registerFont(path.join(ASSETS, 'New-Highway-Semi-Bold-Italic.otf'),{ family: 'New-Highway', weight: '600', style: 'italic' });
+    registerFont(path.join(ASSETS, 'New-Highway-Bold.otf'),           { family: 'New-Highway', weight: '700' });
+    registerFont(path.join(ASSETS, 'New-Highway-Bold-Italic.otf'),    { family: 'New-Highway', weight: '700', style: 'italic' });
+} catch(e) { console.error('Aviso: Fontes não encontradas para videoService'); }
 
 const { drawTextInBox } = require('../generate_arts.js');let ffPath = 'ffmpeg';
 try {
