@@ -441,7 +441,6 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
                 } else { cfgTit.top = cy_rest; }
                 drawTextInBox(ctx, podcastData.title, cfgTit);
             }
-        }
 
             // ================== AUDIO WAVES E LEGENDAS =================
             const AUDIO_DELAY = 1.5; 
