@@ -720,6 +720,8 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         const frameTitle = String(frameNumber).padStart(3, '0');
         const buf = canvas.toBuffer('image/png', { compressionLevel: 0, filters: canvas.PNG_FILTER_NONE });
         fs.writeFileSync(path.join(tmpFramesDir, `frame_${frameTitle}.png`), buf);
+        
+        statusCallback(`🎬 Rastreando ${frameNumber} de ${totalFrames} frames...`);
     }
 
         const rawNum = String(podcastData.number || '0000').replace(/\D/g, '');
