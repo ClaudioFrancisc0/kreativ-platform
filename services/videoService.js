@@ -252,8 +252,9 @@ function extractWaveData(audioFilePath) {
                     }
                 }
                 
-                    phase += 0.3;
-                }
+                amplitudes.push(bars);
+                phase += 0.3;
+            }
 
                 
                     if (fs.existsSync(rawPath)) fs.rmSync(rawPath); // Limpa resíduo

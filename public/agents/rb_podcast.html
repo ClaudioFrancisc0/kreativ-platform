@@ -107,15 +107,19 @@
             color: #fff;
             border: none;
             padding: 16px 32px;
-            font-size: 16px;
-            font-weight: 500;
+            font-size: 20px;
+            font-weight: bold;
             border-radius: 10px;
             cursor: pointer;
             width: 100%;
-            transition: background 0.2s ease;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
         }
         .btn-start:hover { background: #0b5ed7; color: white;}
-        .btn-start:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-start:disabled { background: #495057; color: #fff; cursor: not-allowed; opacity: 0.8; }
         .btn-success { background: #28a745; margin-top: 20px;}
         .btn-success:hover { background: #218838; }
 
@@ -281,7 +285,7 @@
                 <div class="podcast-card" style="background: transparent; box-shadow: none; padding: 0;">
                     <!-- Novo Botão de Fase 1 -->
                     <button class="btn-start" id="startBtn" onclick="analyzePodcastFiles()">
-                        🧠 Gerar legendas para verificação
+                        <span>🧠</span> Gerar legendas para verificação
                     </button>
 
                     <div id="progressContainer" style="display: none; margin-top: 20px; text-align: center;">
@@ -306,7 +310,7 @@
                 </div>
 
                 <div class="mt-5 text-center" style="margin-top: 50px !important;">
-                    <button type="button" class="btn btn-primary py-3 fw-bold w-100 mb-3" id="renderBtn" style="font-size: 20px; border-radius: 12px;" onclick="renderFinalVideo()">Gerar Mídias</button>
+                    <button type="button" class="btn-start mb-3" id="renderBtn" onclick="renderFinalVideo()">Gerar Mídias</button>
                     
                     <!-- Novo Terminal de Progresso para a Fase 2 -->
                     <div id="renderProgressContainer" style="display: none; text-align: left; background: #111; padding: 20px; border-radius: 12px; margin-top: 15px; border: 1px solid #333;">
@@ -391,7 +395,7 @@
 
             const btn = document.getElementById('startBtn');
             btn.disabled = true;
-            btn.innerHTML = '<div class="spinner" style="width:20px; height:20px; border-width:2px;"></div> Analisando Voz...';
+            btn.innerHTML = '<div class="spinner" style="width:24px; height:24px; border-width:3px;"></div> <span>Analisando Voz...</span>';
 
             cropper.getCroppedCanvas({ width: 800, height: 800 }).toBlob(async (blob) => {
                 const formData = new FormData();
@@ -495,7 +499,7 @@
         async function renderFinalVideo() {
             const btn = document.getElementById('renderBtn');
             btn.disabled = true;
-            btn.innerHTML = '<div class="spinner" style="width:20px; height:20px; border-width:2px; display:inline-block; vertical-align:middle; margin-right:8px;"></div> Gerando Mídias...';
+            btn.innerHTML = '<div class="spinner" style="width:24px; height:24px; border-width:3px;"></div> <span>Gerando Mídias...</span>';
             
             const rContainer = document.getElementById('renderProgressContainer');
             const rBar = document.getElementById('renderProgressBar');
@@ -505,9 +509,10 @@
             rLogs.innerHTML = '';
             rBar.style.width = '10%';
             
-            // Usar window.scrollTo para garantia bruta do topo
+            // Usar cálculo explícito do DOM para jogar a tela pra cima cravada no topo do botão
             setTimeout(() => {
-                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                const yOffset = btn.getBoundingClientRect().top + window.scrollY - 30;
+                window.scrollTo({ top: yOffset, behavior: 'smooth' });
             }, 100);
 
             try {
