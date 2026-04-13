@@ -42,6 +42,39 @@ async function getOpenAI() {
 
 // ==== FUNÇÕES AUXILIARES DE RENDER (Da Sandbox) ====
 const FPS = 30;
+
+function drawMultilineText(ctx, text, x, y, maxWidth, lineHeight, isAlignRight = false) {
+    const words = text.split(' ');
+    let line = '';
+    let currentY = y;
+    for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && n > 0) {
+            if (isAlignRight) {
+                let w = ctx.measureText(line).width;
+                ctx.fillText(line, x - w, currentY);
+            } else {
+                ctx.fillText(line, x, currentY);
+            }
+            line = words[n] + ' ';
+            currentY += lineHeight;
+        } else {
+            line = testLine;
+        }
+    }
+    if (isAlignRight) {
+        let w = ctx.measureText(line).width;
+        ctx.fillText(line, x - w, currentY);
+    } else {
+        ctx.fillText(line, x, currentY);
+    }
+}
+
+function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+}
+
 function drawRoundedRect(ctx, x, y, width, height, radius) {
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
