@@ -696,35 +696,6 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         ctx.drawImage(micImg, cx_mic, cy_mic);
     }
 
-    const outFileName = path.join(outputDir, `frame_${String(frameNumber).padStart(3, '0')}.png`);
-    const buffer = canvas.toBuffer('image/png');
-    fs.writeFileSync(outFileName, buffer);
-    console.log(`[Timeline] Frame ${frameNumber} | Mask: ${Math.floor(currentMaskRadius)}px | Blur: ${Math.floor(currentBlur)}px | Mic(X,Y): ${Math.floor(cx_mic)}, ${Math.floor(cy_mic)}`);
-}
-
-async function runTest() {
-    const outputDir = path.join(__dirname, 'tmp_frames');
-    if (!fs.existsSync(outputDir)) {
-        fs.mkdirSync(outputDir);
-    } else {
-        fs.readdirSync(outputDir).forEach(f => fs.rmSync(path.join(outputDir, f)));
-    }
-
-    console.log('🖼️ Carregando assets...');
-    const guestImg = await loadImage(path.join(__dirname, 'assets', 'foto.jpg'));
-    const micImg = await loadImage('C:\\Users\\claud\\Desktop\\Kreativ\\RB_0037_Podcast Files\\layout\\layout PNGs\\microfone menor.png');
-
-    const TEST_FRAMES = 230; // Aumentado para cobrir a letargia de velocidade (7.7s)
-    console.log(`🎬 Renderizando ${TEST_FRAMES} frames da foto...`);
-    for (let f = 1; f <= TEST_FRAMES; f++) {
-        await renderFrame(f, guestImg, micImg, outputDir);
-    }
-
-    console.log('🎥 Gerando o Vídeo Sandbox MP4 usando FFmpeg e fundo Cama...');
-    const ffPath = ffmpeg.path;
-    const camaPath = path.join(__dirname, 'assets', 'cama_sem_mic.mp4');
-
-        // Salva o frame transparente nativo
         const frameTitle = String(frameNumber).padStart(3, '0');
         const buf = canvas.toBuffer('image/png', { compressionLevel: 0, filters: canvas.PNG_FILTER_NONE });
         fs.writeFileSync(path.join(tmpFramesDir, `frame_${frameTitle}.png`), buf);
