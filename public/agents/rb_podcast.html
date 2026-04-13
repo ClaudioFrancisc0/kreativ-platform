@@ -520,7 +520,7 @@
             // Rolar janela para exatamente a altura do botão após a caixa de terminal se expandir físicamente no DOM
             setTimeout(() => {
                 document.getElementById('scrollAnchorBottom').style.display = 'block';
-                const yOffset = document.getElementById('renderBtn').getBoundingClientRect().top + window.scrollY - 30;
+                const yOffset = document.getElementById('renderBtn').getBoundingClientRect().top + window.scrollY - 100;
                 window.scrollTo({ top: yOffset, behavior: 'smooth' });
             }, 500);
 
