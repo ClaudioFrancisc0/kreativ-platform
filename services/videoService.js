@@ -203,30 +203,24 @@ function extractWaveData(audioFilePath) {
     return new Promise((resolve, reject) => {
         try {
             const absoluteAudioPath = path.resolve(audioFilePath);
-            const rawPath = path.join(path.dirname(absoluteAudioPath), 'tmp_audio.raw');
+            const rawPath = path.join(path.dirname(absoluteAudioPath), `tmp_audio_${Date.now()}.raw`);
             
             if (fs.existsSync(rawPath)) fs.rmSync(rawPath);
 
             const { execFile } = require('child_process');
-            execFile(ffPath, ['-loglevel', 'error', '-y', '-i', absoluteAudioPath, '-f', 'f32le', '-ac', '1', '-ar', '44100', rawPath], (error, stdout, stderr) => {
+            execFile(ffPath, ['-y', '-i', absoluteAudioPath, '-f', 'f32le', '-ac', '1', '-ar', '44100', rawPath], (error, stdout, stderr) => {
                 if (error) {
                     return reject(new Error("Erro no FFmpeg (Ondas): " + error.message + " | Detalhes: " + stderr));
                 }
 
                 try {
                     const rawBuffer = fs.readFileSync(rawPath);
-                    let lenOriginal = rawBuffer.length;
-                    let useBuffer = rawBuffer;
-                    
-                    // Fallback Secreto: Se o áudio explodir ou for 0 bytes real, forçamos um PCM de 10 segundos
-                    // para salvar a renderização da animação em casos de falha do FFmpeg na hospedagem!
-                    if (useBuffer.length < 5880) {
-                        console.warn(`[DIAGNÓSTICO] FFmpeg executou mas gerou onda vazia. Criando onda sintética de 10s. originalBytes: ${lenOriginal}`);
-                        useBuffer = Buffer.alloc(5880 * 300); // 10 seg * 30 fps * 5880 = 10 sec fake audio buffer
+                    if (rawBuffer.length < 5880) {
+                        return reject(new Error(`O arquivo de áudio foi processado gerando 0 frames (vazio). Detalhes do Servidor: ${stderr.substring(0,250)}`));
                     }
                     
                     const bytesPerFrame = 5880; 
-                    const totalFrames = Math.floor(useBuffer.length / bytesPerFrame);
+                    const totalFrames = Math.floor(rawBuffer.length / bytesPerFrame);
                     const amplitudes = [];
 
             const barFactors = [0.8, 1.2, 0.9, 1.5, 0.7, 1.8, 0.6, 1.3, 1.0, 1.6, 0.85, 1.4, 0.95];
@@ -237,8 +231,8 @@ function extractWaveData(audioFilePath) {
                 let sumSquares = 0;
                 let count = 0;
                 for (let i = 0; i < bytesPerFrame; i += 16) { 
-                    if (offset + i + 4 <= useBuffer.length) {
-                         let val = useBuffer.readFloatLE(offset + i);
+                    if (offset + i + 4 <= rawBuffer.length) {
+                         let val = rawBuffer.readFloatLE(offset + i);
                          sumSquares += val * val;
                          count++;
                     }
@@ -290,16 +284,12 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
     const tmpFramesDir = path.join(sessionFolder, 'tmp_frames');
     if (!fs.existsSync(tmpFramesDir)) fs.mkdirSync(tmpFramesDir, { recursive: true });
 
-    let totalFrames = amplitudes.length;
-    
-    // Extremo Fallback
-    if (totalFrames === 0) {
-        statusCallback(`⚠️ Alerta: Amplitudes falharam. Entrando em modo sintético (10s)...`);
-        amplitudes = Array.from({length: 300}, () => Array.from({length: 13}, () => Math.random()));
-        totalFrames = 300;
-    }
-    
+    const totalFrames = amplitudes.length;
     statusCallback(`🎬 Rastreando ${totalFrames} frames...`);
+    
+    if (totalFrames === 0) {
+        return Promise.reject(new Error(`O áudio processado retornou 0 frames PCM. Arquivo não legível. Path: ${audioPath}`));
+    }
 
     const CANVAS_W = 1080;
     const CANVAS_H = 1920;
@@ -617,7 +607,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
     statusCallback('🎥 Montando arquivo MP4 final...');
     
     return new Promise((resolve, reject) => {
-        const outFileName = `Corte_Vertical_Animado.mp4`;
+        const outFileName = `Reels Animado_${podcastData.number || '0000'}_legendado.mp4`;
         const outFile = path.resolve(path.join(sessionFolder, outFileName));
         const framesPattern = path.join(tmpFramesDir, 'frame_%03d.png');
         const absAudioPath = path.resolve(audioPath);

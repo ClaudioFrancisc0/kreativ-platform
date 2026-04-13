@@ -160,7 +160,10 @@ async function generateAllLayouts(podcastData, photoBufferOrPath, outputDir, onP
     const photo = await loadImage(photoBufferOrPath);
 
     for (const templateName of Object.keys(config)) {
-        if (onProgress) onProgress('Processando ' + templateName);
+        if (onProgress) {
+             onProgress('Gerando ' + templateName + '...');
+             await new Promise(r => setTimeout(r, 600)); // Sleep pra UI ver o ping
+        }
         console.log('Montando: ' + templateName);
         const tmpl = config[templateName];
         const canvas = createCanvas(tmpl.width, tmpl.height);

@@ -305,8 +305,8 @@
                     <!-- Javascript vai encher isso com divs -->
                 </div>
 
-                <div class="mt-5 text-center px-2">
-                    <button type="button" class="btn btn-primary py-3 px-5 fw-bold w-100 mb-3" id="renderBtn" style="font-size: 20px; border-radius: 12px;" onclick="renderFinalVideo()">Gerar Mídias</button>
+                <div class="mt-5 text-center" style="margin-top: 50px !important;">
+                    <button type="button" class="btn btn-primary py-3 fw-bold w-100 mb-3" id="renderBtn" style="font-size: 20px; border-radius: 12px;" onclick="renderFinalVideo()">Gerar Mídias</button>
                     
                     <!-- Novo Terminal de Progresso para a Fase 2 -->
                     <div id="renderProgressContainer" style="display: none; text-align: left; background: #111; padding: 20px; border-radius: 12px; margin-top: 15px; border: 1px solid #333;">
@@ -505,9 +505,9 @@
             rLogs.innerHTML = '';
             rBar.style.width = '10%';
             
-            // Aguarda o navegador registrar a div p/ calcular a altura antes do scroll
+            // Usar window.scrollTo para garantia bruta do topo
             setTimeout(() => {
-                btn.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             }, 100);
 
             try {
@@ -537,7 +537,7 @@
                         rLogs.scrollTop = rLogs.scrollHeight;
                     }
 
-                    if (job.message.includes('Backgrounds')) rBar.style.width = '30%';
+                    if (job.message.includes('Backgrounds') || job.message.includes('Gerando')) rBar.style.width = '30%';
                     if (job.message.includes('Motor Geométrico')) rBar.style.width = '60%';
                     if (job.message.includes('Rastreando')) rBar.style.width = '80%';
                     if (job.message.includes('Compactando')) rBar.style.width = '95%';
@@ -546,20 +546,18 @@
                         clearInterval(pollInt);
                         rBar.style.width = '100%';
                         
+                        let beep = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU');
+                        beep.play().catch(e => console.log('Sem permissão de audio'));
+                        
                         const doneLine = document.createElement('div');
                         doneLine.style.marginTop = "15px";
                         doneLine.style.color = "#0f0";
-                        doneLine.innerHTML = "✅ Mídias geradas e disponíveis para download no link abaixo:";
+                        doneLine.innerHTML = `✅ Mídias geradas! <a href="${job.downloadUrl}&t=${token}" class="text-info text-decoration-underline" style="font-size: 16px;">CLIQUE AQUI PARA DOWNLOAD</a>`;
                         rLogs.appendChild(doneLine);
                         
                         btn.classList.remove('btn-primary');
                         btn.classList.add('btn-success');
-                        btn.innerHTML = '✨ Prontinho! Baixando...';
-                        
-                        setTimeout(() => {
-                            window.location.href = job.downloadUrl + '&t=' + token;
-                            setTimeout(() => window.location.reload(), 4500);
-                        }, 500);
+                        btn.innerHTML = '✨ Prontinho! Mídias Criadas.';
                     } else if (job.status === 'error') {
                         clearInterval(pollInt);
                         const errLine = document.createElement('div');
@@ -569,7 +567,7 @@
                         rLogs.appendChild(errLine);
                         btn.innerHTML = 'Falha!';
                     }
-                }, 1000);
+                }, 500);
 
             } catch (err) {
                 alert(err);
