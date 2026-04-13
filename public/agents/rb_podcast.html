@@ -306,7 +306,17 @@
                 </div>
 
                 <div class="mt-4 text-center">
-                    <button type="button" class="btn btn-primary py-3 px-5 fw-bold w-100" id="renderBtn" onclick="renderFinalVideo()">Aprovar e Avançar para Renderização 🎬</button>
+                    <button type="button" class="btn btn-primary py-3 px-5 fw-bold w-100 mb-3" id="renderBtn" style="font-size: 20px;" onclick="renderFinalVideo()">Gerar Mídias</button>
+                    
+                    <!-- Novo Terminal de Progresso para a Fase 2 -->
+                    <div id="renderProgressContainer" style="display: none; text-align: left; background: #111; padding: 20px; border-radius: 12px; margin-top: 15px; border: 1px solid #333;">
+                        <div style="width: 100%; background-color: #222; border-radius: 8px; overflow: hidden; height: 10px; margin-bottom: 15px;">
+                            <div id="renderProgressBar" style="width: 0%; height: 100%; background-color: #0d6efd; transition: width 0.3s ease;"></div>
+                        </div>
+                        <div id="renderLogs" style="font-family: monospace; font-size: 14px; color: #0f0; max-height: 200px; overflow-y: auto;">
+                            <!-- Injeção dos logs descritivos -->
+                        </div>
+                    </div>
                 </div>
 
         </main>
@@ -485,7 +495,17 @@
         async function renderFinalVideo() {
             const btn = document.getElementById('renderBtn');
             btn.disabled = true;
-            btn.innerHTML = '<div class="spinner" style="width:20px; height:20px; border-width:2px; display:inline-block; vertical-align:middle;"></div> Compilando MP4...';
+            btn.innerHTML = '<div class="spinner" style="width:20px; height:20px; border-width:2px; display:inline-block; vertical-align:middle; margin-right:8px;"></div> Gerando Mídias...';
+            
+            const rContainer = document.getElementById('renderProgressContainer');
+            const rBar = document.getElementById('renderProgressBar');
+            const rLogs = document.getElementById('renderLogs');
+            
+            rContainer.style.display = 'block';
+            rLogs.innerHTML = '';
+            rBar.style.width = '10%';
+            
+            btn.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
             try {
                 const token = localStorage.getItem('token');
@@ -500,43 +520,58 @@
 
                 if(!res.ok) throw new Error("Erro no backend");
 
-                // Restaura o container de barra lá de cima mas agora como Modal Flutuante?
-                // Vou reexibir no painel o "Progress Container"
-                document.getElementById('progressContainer').style.display = 'block';
-                document.getElementById('step1Container').style.display = 'block';
-                document.getElementById('step1Container').style.opacity = '0.5';
-                document.getElementById('step1Container').style.pointerEvents = 'none';
-
+                let lastMsgObj = "";
                 const pollInt = setInterval(async () => {
                     const sRes = await fetch(`/api/agents/rb_podcast/status/${ACTIVE_JOB_ID}`, { headers: { 'Authorization': `Bearer ${token}` } });
                     const job = await sRes.json();
-                    document.getElementById('progressText').textContent = job.message;
+                    
+                    if (job.message !== lastMsgObj) {
+                        lastMsgObj = job.message;
+                        const logLine = document.createElement('div');
+                        logLine.style.marginBottom = "4px";
+                        logLine.innerHTML = "➜ <span style='color: #fff;'>" + job.message + "</span>";
+                        rLogs.appendChild(logLine);
+                        rLogs.scrollTop = rLogs.scrollHeight;
+                    }
 
-                    // Fake progress bump
-                    let progBar = document.getElementById('progressBar');
-                    if (job.message.includes('Backgrounds')) progBar.style.width = '30%';
-                    if (job.message.includes('Motor Geométrico')) progBar.style.width = '70%';
-                    if (job.message.includes('Compactando')) progBar.style.width = '95%';
+                    if (job.message.includes('Backgrounds')) rBar.style.width = '30%';
+                    if (job.message.includes('Motor Geométrico')) rBar.style.width = '60%';
+                    if (job.message.includes('Rastreando')) rBar.style.width = '80%';
+                    if (job.message.includes('Compactando')) rBar.style.width = '95%';
 
                     if (job.status === 'done') {
                         clearInterval(pollInt);
-                        progBar.style.width = '100%';
-                        document.getElementById('progressText').textContent = 'Pronto! Iniciando Download...';
+                        rBar.style.width = '100%';
+                        
+                        const doneLine = document.createElement('div');
+                        doneLine.style.marginTop = "15px";
+                        doneLine.style.color = "#0f0";
+                        doneLine.innerHTML = "✅ Mídias geradas e disponíveis para download no link abaixo:";
+                        rLogs.appendChild(doneLine);
+                        
+                        btn.classList.remove('btn-primary');
+                        btn.classList.add('btn-success');
+                        btn.innerHTML = '✨ Prontinho! Baixando...';
                         
                         setTimeout(() => {
-                            window.location.href = job.downloadUrl;
-                            setTimeout(() => window.location.reload(), 3000); // Reseta a pagina limpa
+                            window.location.href = job.downloadUrl + '&t=' + token;
+                            setTimeout(() => window.location.reload(), 4500);
                         }, 500);
                     } else if (job.status === 'error') {
                         clearInterval(pollInt);
-                        alert("Erro Fatal: " + job.message);
-                        window.location.reload();
+                        const errLine = document.createElement('div');
+                        errLine.style.color = "#f00";
+                        errLine.style.marginTop = "10px";
+                        errLine.innerHTML = "❌ Erro Fatal: " + job.message;
+                        rLogs.appendChild(errLine);
+                        btn.innerHTML = 'Falha!';
                     }
                 }, 1000);
 
             } catch (err) {
                 alert(err);
                 btn.disabled = false;
+                btn.innerHTML = 'Gerar Mídias';
             }
         }
     </script>

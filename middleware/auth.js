@@ -9,9 +9,13 @@ const getJwtSecret = () => process.env.JWT_SECRET || 'nirin-default-secret-chang
  */
 const verifyToken = async (req, res, next) => {
     try {
-        // Buscar token no header Authorization ou cookie
+        // Buscar token no header Authorization ou query params
         const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+        let token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+        
+        if (!token) {
+            token = req.query.t;
+        }
 
         if (!token) {
             return res.status(401).json({ error: 'Token não fornecido' });
