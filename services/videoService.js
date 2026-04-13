@@ -206,7 +206,7 @@ function extractWaveData(audioFilePath) {
             
             if (fs.existsSync(rawPath)) fs.rmSync(rawPath);
 
-            const cmd = `"${ffPath}" -y -i "${audioFilePath}" -f f32le -ac 1 -ar 44100 "${rawPath}"`;
+            const cmd = `"${ffPath}" -loglevel error -y -i "${audioFilePath}" -f f32le -ac 1 -ar 44100 "${rawPath}"`;
             
             const { exec } = require('child_process');
             exec(cmd, (error, stdout, stderr) => {
@@ -506,8 +506,8 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
             let currentSubYOffset = yShiftOffset;
             let subY = (finalSubY - SHIFT_Y_AMOUNT) + currentSubYOffset; 
             let subX = 540; 
-            let maxWidth = 750; 
-            let fSize = 40; 
+            let maxWidth = 880; 
+            let fSize = 25; 
             
             let activePhrase = subtitles.find(p => t_seconds >= p.start && t_seconds <= p.end);
             
@@ -528,25 +528,35 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
                 }
                 lines.push(currentLine);
                 
-                let ptY_offset = lines.length === 1 ? -16 : -38;
-                let boxHeight = lines.length === 1 ? 60 : 100;
+                // Redimensionando caixas e linhas
+                let lineHeighSp = 32;
+                let ptY_offset = -6;
+                let boxHeight = 44; 
+                if (lines.length === 2) {
+                    ptY_offset = -20;
+                    boxHeight = 74;
+                } else if (lines.length >= 3) {
+                    ptY_offset = -38;
+                    boxHeight = 106;
+                }
+                
                 let longestLineWidth = Math.max(...lines.map(l => ctx.measureText(l).width));
                 let boxWidth = longestLineWidth + 60; 
 
                 ctx.fillStyle = '#006bff';
-                drawRoundedRect(ctx, subX - boxWidth/2, subY + ptY_offset - 28, boxWidth, boxHeight, 15);
+                drawRoundedRect(ctx, subX - boxWidth/2, subY + ptY_offset - 20, boxWidth, boxHeight, 15);
                 ctx.fill();
 
                 ctx.fillStyle = '#FFFFFF';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 
-                let textStartY = subY + ptY_offset + (lines.length === 1 ? 0 : -8);
+                let textStartY = subY + ptY_offset + (lines.length === 1 ? 2 : (lines.length === 2 ? 0 : -2));
                 let lineCountY = textStartY;
                 
                 for (let textLine of lines) {
                     ctx.fillText(textLine, subX, lineCountY);
-                    lineCountY += 45; 
+                    lineCountY += lineHeighSp; 
                 }
             }
 
@@ -588,7 +598,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         const outFile = path.join(sessionFolder, outFileName);
         
         // Juntamos áudio real, atrasando o áudio 1.5s
-        const cmd = `"${ffPath}" -y \
+        const cmd = `"${ffPath}" -loglevel error -y \
             -framerate ${FPS} -i "${tmpFramesDir}/frame_%03d.png" \
             -i "${audioPath}" \
             -c:v libx264 -pix_fmt yuv420p \
