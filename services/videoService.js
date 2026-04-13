@@ -207,9 +207,15 @@ function extractWaveData(audioFilePath) {
             if (fs.existsSync(rawPath)) fs.rmSync(rawPath);
 
             const cmd = `"${ffPath}" -y -i "${audioFilePath}" -f f32le -ac 1 -ar 44100 "${rawPath}"`;
-            execSync(cmd); // sincrono pois é ultra rápido em C
+            
+            const { exec } = require('child_process');
+            exec(cmd, (error, stdout, stderr) => {
+                if (error) {
+                    return reject(new Error("Erro no FFmpeg (Ondas): " + error.message));
+                }
 
-            const rawBuffer = fs.readFileSync(rawPath);
+                try {
+                    const rawBuffer = fs.readFileSync(rawPath);
             const bytesPerFrame = 5880; // 44100Hz / 30fps = 1470 floats * 4 bytes
             const totalFrames = Math.floor(rawBuffer.length / bytesPerFrame);
             const amplitudes = [];
@@ -243,12 +249,16 @@ function extractWaveData(audioFilePath) {
                     }
                 }
                 
-                amplitudes.push(bars);
-                phase += 0.3;
-            }
+                    phase += 0.3;
+                }
 
-            fs.rmSync(rawPath); // Limpa resíduo
-            resolve(amplitudes);
+                
+                    if (fs.existsSync(rawPath)) fs.rmSync(rawPath); // Limpa resíduo
+                    resolve(amplitudes);
+                } catch (internalErr) {
+                    reject(new Error("Erro ao processar as ondas de áudio: " + internalErr.message));
+                }
+            }); // end do exec callback
 
         } catch (err) {
             reject(err);
@@ -584,16 +594,21 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
             -c:v libx264 -pix_fmt yuv420p \
             -af "adelay=1500|1500" -c:a aac -shortest "${outFile}"`;
 
-        try {
-            execSync(cmd, { stdio: 'pipe' });
+        const { exec } = require('child_process');
+        exec(cmd, (error, stdout, stderr) => {
+            if (error) {
+                return reject(new Error("Erro ao montar ffmpeg: " + error.message));
+            }
             
-            // Clean up PNG frames
-            if (fs.existsSync(tmpFramesDir)) fs.rmSync(tmpFramesDir, { recursive: true, force: true });
-            
-            resolve(outFileName);
-        } catch (err) {
-            reject(new Error("Erro ao montar ffmpeg: " + err.message));
-        }
+            try {
+                // Clean up PNG frames
+                if (fs.existsSync(tmpFramesDir)) fs.rmSync(tmpFramesDir, { recursive: true, force: true });
+                resolve(outFileName);
+            } catch (fsErr) {
+                console.error("CleanUp tmpFrames error:", fsErr);
+                resolve(outFileName); // Resolve mesmo assim pra não quebrar a entrega
+            }
+        });
     });
 }
 
