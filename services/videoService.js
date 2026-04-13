@@ -202,20 +202,22 @@ async function extractWhisperData(audioFilePath) {
 function extractWaveData(audioFilePath) {
     return new Promise((resolve, reject) => {
         try {
-            const rawPath = path.join(path.dirname(audioFilePath), 'tmp_audio.raw');
+            const absoluteAudioPath = path.resolve(audioFilePath);
+            const rawPath = path.join(path.dirname(absoluteAudioPath), 'tmp_audio.raw');
             
             if (fs.existsSync(rawPath)) fs.rmSync(rawPath);
 
-            const cmd = `"${ffPath}" -loglevel error -y -i "${audioFilePath}" -f f32le -ac 1 -ar 44100 "${rawPath}"`;
-            
-            const { exec } = require('child_process');
-            exec(cmd, (error, stdout, stderr) => {
+            const { execFile } = require('child_process');
+            execFile(ffPath, ['-loglevel', 'error', '-y', '-i', absoluteAudioPath, '-f', 'f32le', '-ac', '1', '-ar', '44100', rawPath], (error, stdout, stderr) => {
                 if (error) {
-                    return reject(new Error("Erro no FFmpeg (Ondas): " + error.message));
+                    return reject(new Error("Erro no FFmpeg (Ondas): " + error.message + " | Detalhes: " + stderr));
                 }
 
                 try {
                     const rawBuffer = fs.readFileSync(rawPath);
+                    if (rawBuffer.length < 5880) {
+                        return reject(new Error(`FFmpeg executou (exit 0) mas gerou arquivo vazio (${rawBuffer.length} bytes). Path: ${absoluteAudioPath} | erro-interno: ${stderr} | cmd_output: ${stdout}`));
+                    }
             const bytesPerFrame = 5880; // 44100Hz / 30fps = 1470 floats * 4 bytes
             const totalFrames = Math.floor(rawBuffer.length / bytesPerFrame);
             const amplitudes = [];
@@ -605,19 +607,23 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
     
     return new Promise((resolve, reject) => {
         const outFileName = `Corte_Vertical_Animado.mp4`;
-        const outFile = path.join(sessionFolder, outFileName);
+        const outFile = path.resolve(path.join(sessionFolder, outFileName));
+        const framesPattern = path.join(tmpFramesDir, 'frame_%03d.png');
+        const absAudioPath = path.resolve(audioPath);
         
-        // Juntamos áudio real, atrasando o áudio 1.5s
-        const cmd = `"${ffPath}" -loglevel error -y \
-            -framerate ${FPS} -i "${tmpFramesDir}/frame_%03d.png" \
-            -i "${audioPath}" \
-            -c:v libx264 -pix_fmt yuv420p \
-            -af "adelay=1500|1500" -c:a aac -shortest "${outFile}"`;
+        const args = [
+            '-loglevel', 'error', '-y',
+            '-framerate', FPS.toString(),
+            '-i', framesPattern,
+            '-i', absAudioPath,
+            '-c:v', 'libx264', '-pix_fmt', 'yuv420p',
+            '-af', 'adelay=1500|1500', '-c:a', 'aac', '-shortest', outFile
+        ];
 
-        const { exec } = require('child_process');
-        exec(cmd, (error, stdout, stderr) => {
+        const { execFile } = require('child_process');
+        execFile(ffPath, args, (error, stdout, stderr) => {
             if (error) {
-                return reject(new Error("Erro ao montar ffmpeg: " + error.message));
+                return reject(new Error("Erro ao montar ffmpeg: " + error.message + " | Detalhes: " + stderr));
             }
             
             try {

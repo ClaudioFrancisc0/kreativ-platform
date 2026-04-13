@@ -304,11 +304,14 @@
                 <div class="subtitles-box" id="subsBox">
                     <!-- Javascript vai encher isso com divs -->
                 </div>
-
-                <button class="btn-start btn-success" id="renderBtn" onclick="renderFinalVideo()">
-                    🎬 2º Passo - Aprovar e Renderizar Vídeo
-                </button>
-            </div>
+                
+                <h5 class="mt-4 text-white">Edição Direta de Legendas:</h5>
+                <textarea id="subtitlesBox" class="form-control bg-dark text-white border-secondary" rows="12" style="font-family: 'Inter', sans-serif; font-size: 20px; padding: 25px; line-height: 1.6; border-radius: 12px; font-weight: 500;"></textarea>
+                
+                <div class="mt-4 text-end d-flex gap-3">
+                    <button type="button" class="btn btn-secondary flex-grow-1 py-3 fw-bold" onclick="document.getElementById('reviewContainer').style.display = 'none'; document.getElementById('step1Container').style.opacity = '1'; document.getElementById('step1Container').style.pointerEvents = 'auto';">Voltar e Editar Dados</button>
+                    <button type="button" class="btn btn-primary flex-grow-1 py-3 fw-bold" id="renderBtn" onclick="renderFinalVideo()">Aprovar e Avançar para Renderização 🎬</button>
+                </div>
 
         </main>
     </div>
