@@ -308,29 +308,31 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
     // Controles físicos originais
     const SHIFT_START_FRAME = 103.5;
     const SHIFT_END_FRAME = 124; 
-    const SHIFT_Y_AMOUNT = 80; 
+    const SHIFT_Y_AMOUNT = 80;
+
+    let maxCamaFrames = 1;
+    const camaDir = path.join(CWD, 'cama_frames');
+    if (fs.existsSync(camaDir)) {
+        const camaFiles = fs.readdirSync(camaDir).filter(f => f.endsWith('.png'));
+        if (camaFiles.length > 0) { maxCamaFrames = camaFiles.length; }
+    }
 
     // Render loop real
     for (let frameNumber = 1; frameNumber <= totalFrames; frameNumber++) {
         const canvas = createCanvas(CANVAS_W, CANVAS_H);
         const ctx = canvas.getContext('2d');
 
-        // Bounding fundo amarelo nativo
-        let bgFrameKey = String(frameNumber).padStart(3, '0');
+        // Bounding fundo nativo em Loop perfeito (modulo)
+        let loopingFrame = ((frameNumber - 1) % maxCamaFrames) + 1;
+        let bgFrameKey = String(loopingFrame).padStart(3, '0');
         let bgFramePath = path.join(CWD, 'cama_frames', `frame_${bgFrameKey}.png`);
-        
-        // Evita crash se a cama_frames não tiver frames o suficiente pro audio
-        if (!fs.existsSync(bgFramePath)) {
-            let maxBgKey = fs.existsSync(path.join(CWD, 'cama_frames', `frame_230.png`)) ? 230 : 230;
-            bgFramePath = path.join(CWD, 'cama_frames', `frame_${String(maxBgKey).padStart(3, '0')}.png`);
-        }
         
         if (fs.existsSync(bgFramePath)) {
             const bgImg = await loadImage(bgFramePath);
             ctx.drawImage(bgImg, 0, 0, CANVAS_W, CANVAS_H);
         } else {
-            // Failsafe brutal: pinta de amarelo se der crash nos frames nativos
-            ctx.fillStyle = '#dbf227';
+            // Failsafe: pinta escuro se não achar frame da cama
+            ctx.fillStyle = '#0c1221';
             ctx.fillRect(0,0, CANVAS_W, CANVAS_H);
         }
 
