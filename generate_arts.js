@@ -205,7 +205,8 @@ async function generateAllLayouts(podcastData, photoBufferOrPath, outputDir, onP
             if (textToDraw) drawTextInBox(ctx, textToDraw, boxCfg);
         }
 
-        const epNumber = String(podcastData.number || '0000').padStart(4, '0');
+        const rawNum = String(podcastData.number || '0000').replace(/\D/g, '');
+        const epNumber = rawNum.padStart(4, '0');
         const outPath = path.join(outputDir, templateName + '_' + epNumber + '.jpg');
         await new Promise((resolve, reject) => {
             const out = fs.createWriteStream(outPath);
@@ -230,4 +231,4 @@ if (require.main === module) {
         .catch(console.error);
 }
 
-module.exports = { generateAllLayouts };
+module.exports = { generateAllLayouts, drawTextInBox };

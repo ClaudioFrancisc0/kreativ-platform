@@ -2,9 +2,14 @@ const fs = require('fs');
 const path = require('path');
 const { OpenAI } = require('openai');
 const { execSync } = require('child_process');
-const { createCanvas, loadImage } = require('canvas');
+const { createCanvas, loadImage, registerFont } = require('canvas');
 
-let ffPath = 'ffmpeg';
+registerFont(path.join(__dirname, '..', 'fonts', 'New_Highway_Regular.ttf'), { family: 'new-highway-regular' });
+registerFont(path.join(__dirname, '..', 'fonts', 'New_Highway_Bold.ttf'), { family: 'new-highway-bold' });
+registerFont(path.join(__dirname, '..', 'fonts', 'New_Highway_SemiBold.ttf'), { family: 'new-highway-semibold' });
+registerFont(path.join(__dirname, '..', 'fonts', 'New_Highway_Light.ttf'), { family: 'new-highway-light' });
+
+const { drawTextInBox } = require('../generate_arts.js');let ffPath = 'ffmpeg';
 try {
     const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
     ffPath = ffmpegInstaller.path;
@@ -281,6 +286,9 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
     const guestImg = await loadImage(photoPath);
     const micImgPath = path.join(CWD, 'assets', 'microfone.png');
     const micImg = fs.existsSync(micImgPath) ? await loadImage(micImgPath) : null;
+    
+    // Carega config baseada no calibrado em Story_1920x1080
+    const tcfg = JSON.parse(fs.readFileSync(path.join(CWD, 'templates_config.json')))['Story_1920x1080'];
 
     const tmpFramesDir = path.join(sessionFolder, 'tmp_frames');
     if (!fs.existsSync(tmpFramesDir)) fs.mkdirSync(tmpFramesDir, { recursive: true });
@@ -324,154 +332,107 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
             ctx.fillRect(0,0, CANVAS_W, CANVAS_H);
         }
 
-        // Animação Photo (Círculo Central)
+        // Animação Photo (Círculo Central) a partir do TCFG
         let totalZoomFrames = 51; 
         if (frameNumber > 1 && frameNumber < 50) totalZoomFrames = 49;
         let t = 0;
-        if (frameNumber >= 30) {
-            t = (frameNumber - 30) / totalZoomFrames;
-        }
+        if (frameNumber >= 30) t = (frameNumber - 30) / totalZoomFrames;
         if (t > 1) t = 1;
 
         let easedZoomT = standardEaseEase(t);
         let easedBlurT = delayedFocusEase(t);
 
-        let currentCenterY = CANVAS_H / 2; 
+        let currentCenterY = tcfg.photoCircle.cy; 
         let yShiftOffset = 0;
 
         if (frameNumber > SHIFT_START_FRAME) {
             let shiftProg = Math.min(1, (frameNumber - SHIFT_START_FRAME) / (SHIFT_END_FRAME - SHIFT_START_FRAME));
-            let shiftEase = standardEaseEase(shiftProg); 
-            yShiftOffset = SHIFT_Y_AMOUNT * shiftEase; 
+            yShiftOffset = SHIFT_Y_AMOUNT * standardEaseEase(shiftProg); 
             currentCenterY += yShiftOffset;
         }
 
         const startRadius = 2400; 
-        const finalRadius = 270;
+        const finalRadius = tcfg.photoCircle.radius;
         const currentMaskRadius = startRadius - ((startRadius - finalRadius) * easedZoomT);
         const startScale = (startRadius / finalRadius) * 1.02;
         const finalScale = ((finalRadius * 2) + 2) / guestImg.width;
         const currentScale = startScale - ((startScale - finalScale) * easedZoomT);
-        
         const maxBlur = 1700;
         const currentBlur = Math.max(0, maxBlur - (maxBlur * easedBlurT));
 
         if (currentBlur > 0.1) {
-            drawImageWithBlur(ctx, guestImg, currentScale, currentMaskRadius, currentBlur, currentCenterY);
+            drawImageWithBlur(ctx, guestImg, currentScale, currentMaskRadius, currentCenterY);
         } else {
             ctx.save();
             ctx.beginPath();
-            ctx.arc(CANVAS_W / 2, currentCenterY, currentMaskRadius, 0, Math.PI * 2);
+            ctx.arc(tcfg.photoCircle.cx, currentCenterY, currentMaskRadius, 0, Math.PI * 2);
             ctx.clip();
             const dw = guestImg.width * currentScale;
             const dh = guestImg.height * currentScale;
-            ctx.drawImage(guestImg, (CANVAS_W/2) - (dw/2), currentCenterY - (dh/2), dw, dh);
+            ctx.drawImage(guestImg, tcfg.photoCircle.cx - (dw/2), currentCenterY - (dh/2), dw, dh);
             ctx.restore();
         }
 
-        // Recupera Data
+        // ====== INTEGRAÇÃO DE TEXTOS DA LAYER STATICA ======
         let hasData = trackingData[frameNumber.toString()] || trackingData[maxTrackKey];
-        
-        let TEMPLATE = {
-            "title": { "class": "title", "x": 0, "y": -93, "font": "104px 'Inter'", "color": "#1b62f9", "str": "subject", "stroke": false },
-            "number": { "class": "number", "x": -4, "y": -887, "font": "900 132px 'Syncopate'", "color": "#1b62f9", "str": "number", "stroke": false },
-            "guest_name": { "class": "guest", "x": 0, "y": 70, "font": "900 148px 'Inter'", "color": "transparent", "str": "guestName", "stroke": true, "s_width": 5, "stroke_c": "#1b62f9" },
-            "guest_label": { "class": "guest_label", "x": 10, "y": -58, "font": "100 50px 'Inter'", "color": "#1b62f9", "str": "guestLabel", "stroke": false }
-        };
-
         if (hasData) {
-            let base_maxX = hasData.maxX;
-            let base_maxY = hasData.maxY;
-
-            let center_x = 540;
-            let finaly_title = base_maxY + TEMPLATE.title.y;
-            // Repouso vs Target
-            let starty_title = finaly_title + 100;
-            let fall_shiftY = Math.max(0, base_maxY - 513); 
-            let base_subY = fall_shiftY * (912.5 / 1038.0);
-            
-            TEMPLATE.title.y += fall_shiftY;
-            TEMPLATE.guest_label.y += fall_shiftY;
-            TEMPLATE.guest_name.y += fall_shiftY;
-            TEMPLATE.number.y += fall_shiftY;
-
-            let curY_title = TEMPLATE.title.y;
-            if (frameNumber < 100) curY_title = TEMPLATE.title.y - 8 + yShiftOffset;
-            
-            let current_suby = base_subY + TEMPLATE.title.y;
-
-            // Transições
+            // Number (Episode)
             let numStartFr = 63, numEndFr = 72;
             let opac_num = frameNumber <= numStartFr ? 0 : Math.min(1, (frameNumber - numStartFr) / (numEndFr - numStartFr));
             opac_num *= hasData.opacity;
+            if (opac_num > 0 && tcfg.elements.number) {
+                ctx.globalAlpha = opac_num;
+                let cfgNum = { ...tcfg.elements.number, top: tcfg.elements.number.top + yShiftOffset };
+                drawTextInBox(ctx, podcastData.number, cfgNum);
+            }
 
-            ctx.globalAlpha = opac_num;
-            drawGroup(ctx, [TEMPLATE.number], 880, podcastData, false, true);
-
+            // Texts timing
             let txtStart = 78, txtEnd = 86;
             let opac_txt = frameNumber <= txtStart ? 0 : Math.min(1, (frameNumber - txtStart) / (txtEnd - txtStart));
             opac_txt *= hasData.opacity;
 
-            // Labels and Text positioning overrides
-            TEMPLATE.title.y = curY_title;
-            let customTemplateLabels = [{ ...TEMPLATE.guest_label }];
-            let lblBaseX = 143;
-            let lblBaseYOffsetRest = 143;
-            
-            if (frameNumber < 100) {
-                let pct = Math.max(0, Math.min(1, (frameNumber - txtStart) / (txtEnd - txtStart)));
-                let rest_x = lblBaseX + 12;
-                let rest_y = current_suby - lblBaseYOffsetRest;
-                
-                let cx_start = rest_x - 30;
-                let cy_start = rest_y + 40;
-                
-                customTemplateLabels[0].y = cy_start + (rest_y - cy_start) * standardEaseEase(pct) + 8;
-                lblBaseX = cx_start + (rest_x - cx_start) * standardEaseEase(pct);
-            } 
-
-            let cx_guestRest = center_x;
-            let cy_guestRest = TEMPLATE.guest_name.y;
-            let customTemplateName = [{ ...TEMPLATE.guest_name }];
-            if (frameNumber < 100) {
-                let pct = Math.max(0, Math.min(1, (frameNumber - txtStart) / (txtEnd - txtStart)));
-                let cy_start = cy_guestRest + 80;
-                customTemplateName[0].y = cy_start + (cy_guestRest - cy_start) * standardEaseEase(pct);
+            // Guest Label
+            if (opac_txt > 0 && tcfg.elements.guestLabel) {
+                ctx.globalAlpha = opac_txt;
+                let cfgLbl = { ...tcfg.elements.guestLabel };
+                let cy_rest = cfgLbl.top + yShiftOffset;
+                if (frameNumber < 100) {
+                    let pct = Math.max(0, Math.min(1, (frameNumber - txtStart) / (txtEnd - txtStart)));
+                    let cy_start = cy_rest + 40;
+                    cfgLbl.top = cy_start + (cy_rest - cy_start) * standardEaseEase(pct);
+                } else { cfgLbl.top = cy_rest; }
+                drawTextInBox(ctx, podcastData.guestLabel, cfgLbl);
             }
 
-            ctx.globalAlpha = opac_txt;
-            drawGroup(ctx, customTemplateLabels, lblBaseX, podcastData, false, true);
-            drawGroup(ctx, customTemplateName, center_x, podcastData, false, true);
+            // Guest Name
+            if (opac_txt > 0 && tcfg.elements.guestName) {
+                ctx.globalAlpha = opac_txt;
+                let cfgNm = { ...tcfg.elements.guestName };
+                let cy_rest = cfgNm.top + yShiftOffset;
+                if (frameNumber < 100) {
+                    let pct = Math.max(0, Math.min(1, (frameNumber - txtStart) / (txtEnd - txtStart)));
+                    let cy_start = cy_rest + 80;
+                    cfgNm.top = cy_start + (cy_rest - cy_start) * standardEaseEase(pct);
+                } else { cfgNm.top = cy_rest; }
+                drawTextInBox(ctx, podcastData.guestName, cfgNm);
+            }
 
+            // Title
             let titleStart = 72, titleEnd = 80;
-            let titleEase = standardEaseEase(Math.max(0, Math.min(1, (frameNumber - titleStart) / (titleEnd - titleStart))));
-            let tempTitles = [{ ...TEMPLATE.title }];
-            if (frameNumber < 100) {
-                let t_yTarget = curY_title;
-                let t_yStart = t_yTarget + 8; 
-                tempTitles[0].y = t_yStart + (t_yTarget - t_yStart) * titleEase;
-                let titleBaseCenterX = center_x;
-                center_x = titleBaseCenterX + 8 * (1 - titleEase);
-            }
-
-            let opac_title = frameNumber <= titleStart ? 0 : titleEase;
+            let opac_title = frameNumber <= titleStart ? 0 : Math.min(1, (frameNumber - titleStart) / (titleEnd - titleStart));
             opac_title *= hasData.opacity;
-            ctx.globalAlpha = opac_title;
-
-            drawGroup(ctx, tempTitles, center_x, podcastData, false, false, 830);
-            
-            // Aspas
-            ctx.font = "italic 900 132px 'Syncopate'";
-            ctx.fillStyle = '#1b62f9';
-            let quotes_y = TEMPLATE.title.y - 12; 
-            if (frameNumber < 100) {
-                let pct = Math.max(0, Math.min(1, (frameNumber - 76) / (85 - 76)));
-                let target_y = TEMPLATE.title.y - 12;
-                quotes_y = (target_y + 8) + (target_y - (target_y + 8)) * standardEaseEase(pct);
+            if (opac_title > 0 && tcfg.elements.title) {
+                ctx.globalAlpha = opac_title;
+                let cfgTit = { ...tcfg.elements.title };
+                let cy_rest = cfgTit.top + yShiftOffset;
+                if (frameNumber < 100) {
+                    let pct = Math.max(0, Math.min(1, (frameNumber - titleStart) / (titleEnd - titleStart)));
+                    let cy_start = cy_rest + 10;
+                    cfgTit.top = cy_start + (cy_rest - cy_start) * standardEaseEase(pct);
+                } else { cfgTit.top = cy_rest; }
+                drawTextInBox(ctx, podcastData.title, cfgTit);
             }
-            ctx.fillText('"', center_x - 475, quotes_y);
-            ctx.textAlign = 'right';
-            ctx.fillText('"', center_x + 505, quotes_y - 8);
+        }
 
             // ================== AUDIO WAVES E LEGENDAS =================
             const AUDIO_DELAY = 1.5; 
@@ -618,7 +579,8 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
     statusCallback('🎥 Montando arquivo MP4 final...');
     
     return new Promise((resolve, reject) => {
-        const epNumber = String(podcastData.number || '0000').padStart(4, '0');
+        const rawNum = String(podcastData.number || '0000').replace(/\D/g, '');
+        const epNumber = rawNum.padStart(4, '0');
         const outFileName = `Reels Animado_${epNumber}_legendado.mp4`;
         const outFile = path.resolve(path.join(sessionFolder, outFileName));
         const framesPattern = path.join(tmpFramesDir, 'frame_%03d.png');

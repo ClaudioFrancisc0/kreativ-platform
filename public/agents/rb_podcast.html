@@ -322,6 +322,8 @@
                             <!-- Injeção dos logs descritivos -->
                         </div>
                     </div>
+                    
+                    <div id="scrollAnchorBottom" style="height: 60vh; width: 100%; display: none;"></div>
                 </div>
 
         </main>
@@ -517,7 +519,8 @@
             
             // Rolar janela para exatamente a altura do botão após a caixa de terminal se expandir físicamente no DOM
             setTimeout(() => {
-                const yOffset = document.getElementById('renderBtn').getBoundingClientRect().top + window.pageYOffset - 20;
+                document.getElementById('scrollAnchorBottom').style.display = 'block';
+                const yOffset = document.getElementById('renderBtn').getBoundingClientRect().top + window.scrollY - 30;
                 window.scrollTo({ top: yOffset, behavior: 'smooth' });
             }, 500);
 
