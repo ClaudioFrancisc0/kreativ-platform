@@ -156,16 +156,15 @@
         .sub-segment {
             font-family: 'Inter', sans-serif;
             font-weight: 600;
-            font-size: 20px; /* Reduzido conforme pedido do cliente */
+            font-size: 15px; /* Fonte compacta para tela cheia */
             line-height: 1.4;
             color: #ccc;
             background: rgba(30, 30, 30, 0.8);
-            border-radius: 8px;
-            display: inline-block;
-            margin: 8px auto;
-            padding: 12px 24px;
-            border-radius: 15px;
-            max-width: 90%; 
+            display: block;
+            margin: 4px auto;
+            padding: 8px 16px;
+            border-radius: 6px;
+            max-width: 100%; 
             transition: all 0.1s linear;
             cursor: text;
             outline: none;
@@ -306,9 +305,8 @@
                     <!-- Javascript vai encher isso com divs -->
                 </div>
 
-                <div class="mt-4 text-end d-flex gap-3">
-                    <button type="button" class="btn btn-secondary flex-grow-1 py-3 fw-bold" onclick="document.getElementById('reviewContainer').style.display = 'none'; document.getElementById('step1Container').style.opacity = '1'; document.getElementById('step1Container').style.pointerEvents = 'auto';">Voltar e Editar Dados</button>
-                    <button type="button" class="btn btn-primary flex-grow-1 py-3 fw-bold" id="renderBtn" onclick="renderFinalVideo()">Aprovar e Avançar para Renderização 🎬</button>
+                <div class="mt-4 text-center">
+                    <button type="button" class="btn btn-primary py-3 px-5 fw-bold w-100" id="renderBtn" onclick="renderFinalVideo()">Aprovar e Avançar para Renderização 🎬</button>
                 </div>
 
         </main>
