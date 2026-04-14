@@ -422,13 +422,11 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
 
         // V74 CORE RESTORED
         const rawNum = String(podcastData.number || '0000').replace(/\D/g, '');
-        const trackingDataPathReal = path.join(CWD, 'box_tracking_true.json');
-        const trackingDataRoot = JSON.parse(fs.readFileSync(trackingDataPathReal));
-        let hasData = trackingDataRoot[frameNumber.toString()];
-        let prevData = trackingDataRoot[(frameNumber - 1).toString()] || hasData;
+        let hasData = trackingData[frameNumber.toString()];
+        let prevData = trackingData[(frameNumber - 1).toString()] || hasData;
         if (!hasData) {
-            let maxTKey = Math.max(...Object.keys(trackingDataRoot).map(k => parseInt(k)));
-            hasData = trackingDataRoot[maxTKey.toString()];
+            let maxTKey = Math.max(...Object.keys(trackingData).map(k => parseInt(k)));
+            hasData = trackingData[maxTKey.toString()];
         }
     
     
