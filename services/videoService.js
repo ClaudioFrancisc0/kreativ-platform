@@ -159,38 +159,36 @@ function drawImageWithBlur(ctx, guestImg, currentScale, currentMaskRadius, curre
     const CANVAS_W = 1080;
     const CANVAS_H = 1920;
     
-    let baseCanvas = pools.baseCanvas;
-    let baseCtx = pools.baseCtx;
-    baseCtx.clearRect(0, 0, CANVAS_W, CANVAS_H);
-    
-    baseCtx.save();
-    baseCtx.beginPath();
-    baseCtx.arc(CANVAS_W / 2, currentCenterY, currentMaskRadius, 0, Math.PI * 2);
-    baseCtx.clip();
-    
     const dw = guestImg.width * currentScale;
     const dh = guestImg.height * currentScale;
-    baseCtx.drawImage(guestImg, (CANVAS_W/2) - (dw/2), currentCenterY - (dh/2), dw, dh);
-    baseCtx.restore();
 
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(CANVAS_W / 2, currentCenterY, currentMaskRadius, 0, Math.PI * 2);
+    ctx.clip();
+    
     if (currentBlur <= 0.1) {
-        ctx.drawImage(baseCanvas, 0, 0);
+        ctx.drawImage(guestImg, (CANVAS_W/2) - (dw/2), currentCenterY - (dh/2), dw, dh);
+        ctx.restore();
         return;
     }
 
-    let scaleDiv = Math.max(1.0, Math.min(4.0, 1.0 + (currentBlur / 400.0)));
-    let downW = Math.max(20, Math.floor(CANVAS_W / scaleDiv));
-    let downH = Math.max(35, Math.floor(CANVAS_H / scaleDiv));
+    // Heavy resolution reduction instead of bleeding alpha loops
+    let scaleDiv = Math.max(1.0, 1.0 + (currentBlur / 60.0));
+    let downW = Math.max(12, Math.floor(dw / scaleDiv));
+    let downH = Math.max(12, Math.floor(dh / scaleDiv));
 
-    let downCanvas = pools.downCanvas;
+    let downCanvas = pools.downCanvas; 
     let downCtx = pools.downCtx;
     downCtx.clearRect(0, 0, CANVAS_W / 4, CANVAS_H / 4);
     
     downCtx.imageSmoothingEnabled = true;
-    downCtx.drawImage(baseCanvas, 0, 0, CANVAS_W, CANVAS_H, 0, 0, downW, downH);
+    downCtx.drawImage(guestImg, 0, 0, guestImg.width, guestImg.height, 0, 0, downW, downH);
     
     ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(downCanvas, 0, 0, downW, downH, 0, 0, CANVAS_W, CANVAS_H);
+    ctx.drawImage(downCanvas, 0, 0, downW, downH, (CANVAS_W/2) - (dw/2), currentCenterY - (dh/2), dw, dh);
+    
+    ctx.restore();
 }
 
 // ==== SERVIÇOS EXPORTADOS ====
@@ -354,11 +352,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
 
         // Animação Photo (Círculo Central)
         let totalZoomFrames = 51; 
-        if (frameNumber > 1 && frameNumber < 50) totalZoomFrames = 49;
-        let t = 0;
-        if (frameNumber >= 30) {
-            t = (frameNumber - 30) / totalZoomFrames;
-        }
+        let t = frameNumber / totalZoomFrames;
         if (t > 1) t = 1;
 
         let easedZoomT = standardEaseEase(t);
