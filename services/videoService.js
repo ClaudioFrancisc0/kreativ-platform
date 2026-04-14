@@ -397,7 +397,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         }
 
         const startRadius = 2400; 
-        const finalRadius = 270;
+        const finalRadius = 290;
         const currentMaskRadius = startRadius - ((startRadius - finalRadius) * easedZoomT);
         const startScale = (startRadius / finalRadius) * 1.02;
         const finalScale = ((finalRadius * 2) + 2) / guestImg.width;
@@ -422,9 +422,8 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
 
         // V74 CORE RESTORED
         const rawNum = String(podcastData.number || '0000').replace(/\D/g, '');
-        let magicOffset = 1; // Compensate for FFmpeg sequence reading starting at 0 versus 1 natively
-        let hasData = trackingData[(frameNumber + magicOffset).toString()];
-        let prevData = trackingData[(frameNumber + magicOffset - 1).toString()] || trackingData[(frameNumber - 1).toString()] || hasData;
+        let hasData = trackingData[frameNumber.toString()];
+        let prevData = trackingData[(frameNumber - 1).toString()] || hasData;
         if (!hasData) {
             let keys = Object.keys(trackingData).map(Number);
             let minKey = Math.min(...keys);
@@ -531,7 +530,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
             ctx.font = '600 36px "New-Highway"';
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.fillStyle = '#024BE7'; // Match Cama Reel Blue exactly
+            ctx.fillStyle = '#006BFF'; // Match parameter blue
             if (blurSteps > 0) {
                 ctx.globalAlpha = 0.8 / blurSteps;
                 for (let i = 0; i < blurSteps; i++) {
@@ -581,7 +580,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         drawComponent([
             {txt: titleLine1, dy: 0},
             {txt: titleLine2, dy: 63.8}
-        ], 0, { right: 1003, top: 1428, width: 482, align: "right" }, true, false);
+        ], 0, { right: 1019, top: 1428, width: 482, align: "right" }, true, false);
 
         // COMPONENTE 4: ONDAS SONORAS E LEGENDAS!
         // FIXED POSITION AT BOTTOM, NO PARALLAX, WITH FADE IN
@@ -673,7 +672,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
             let boxHeight = (lines.length * (fSize + 10)) + padY*2 - 10;
             
             // Fundo Azul
-            ctx.fillStyle = '#024BE7';
+            ctx.fillStyle = '#006BFF';
             drawRoundedRect(ctx, subX - boxWidth/2, subY, boxWidth, boxHeight, 15);
             ctx.fill();
             
@@ -767,6 +766,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         const absAudioPath = path.resolve(audioPath);
         
         const camaVideo = path.join(CWD, 'assets', 'cama_sem_mic.mp4');
+        statusCallback('Compactando arquivos...');
         const args = [
             '-loglevel', 'error', '-y',
             '-stream_loop', '-1', // Loop infinito adaptável da cama
