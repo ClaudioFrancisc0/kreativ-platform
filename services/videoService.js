@@ -802,6 +802,9 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         const outFileName = `Reels Animado_${epNumber}_legendado.mp4`;
         const outFile = path.resolve(path.join(sessionFolder, outFileName));
         
+        const framesPattern = path.join(tmpFramesDir, 'frame_%03d.png');
+        const absAudioPath = path.resolve(audioPath);
+        
         const camaVideo = path.join(CWD, 'assets', 'cama_sem_mic.mp4');
         statusCallback(`🎬 Preparando montagem de vídeo via FFmpeg...`);
         await new Promise(r => setTimeout(r, 600));
