@@ -69,10 +69,13 @@ app.get('/api/diag', async (req, res) => {
     res.json(diag);
 });
 
-// Catch-all para SPA routing (serve index.html para rotas desconhecidas)
+// Redirect root to main platform
+app.get('/', (req, res) => res.redirect('/agents/rb_podcast.html'));
+
+// Catch-all para rotas desconhecidas
 app.use((req, res) => {
     console.log(`⚠️ 404 - Rota não encontrada: ${req.method} ${req.url}`);
-    res.status(404).sendFile(path.join(__dirname, 'index.html'));
+    res.status(404).json({ error: 'Endpoint ou arquivo não encontrado' });
 });
 
 // Error handler
