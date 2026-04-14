@@ -159,6 +159,10 @@ async function generateAllLayouts(podcastData, photoBufferOrPath, outputDir, onP
     // Suporta passar o buffer da imagem ao invés do caminho completo se necessário
     const photo = await loadImage(photoBufferOrPath);
 
+    // Otimização de Memória: Aloca apenas 1 objeto nativo e recicla seu ponteiro na memória
+    const canvas = createCanvas(1, 1);
+    const ctx = canvas.getContext('2d');
+
     for (const templateName of Object.keys(config)) {
         if (onProgress) {
              onProgress('Gerando ' + templateName + '...');
@@ -166,8 +170,10 @@ async function generateAllLayouts(podcastData, photoBufferOrPath, outputDir, onP
         }
         console.log('Montando: ' + templateName);
         const tmpl = config[templateName];
-        const canvas = createCanvas(tmpl.width, tmpl.height);
-        const ctx = canvas.getContext('2d');
+        
+        // Recicla o buffer em C++ (não aloca lixo no V8 Heap)
+        canvas.width = tmpl.width;
+        canvas.height = tmpl.height;
 
         let templateImg;
         try {
