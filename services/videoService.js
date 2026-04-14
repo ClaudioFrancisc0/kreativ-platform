@@ -427,14 +427,16 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         const rawNum = String(podcastData.number || '0000').replace(/\D/g, '');
         let hasData = trackingData[frameNumber.toString()];
         let prevData = trackingData[(frameNumber - 1).toString()] || hasData;
+        
         if (!hasData) {
             let keys = Object.keys(trackingData).map(Number);
-            let minKey = Math.min(...keys);
             let maxKey = Math.max(...keys);
-            if (frameNumber < minKey) {
-                hasData = trackingData[minKey.toString()];
-            } else {
+            // Só fazemos fallback de tracking para segurar a posição APÓS a animação de entrada terminar.
+            // Para frames antes da entrada (frameNumber < minKey), hasData continua indefinido e nada é desenhado,
+            // garantindo o timing perfeito da cama.
+            if (frameNumber > maxKey) {
                 hasData = trackingData[maxKey.toString()];
+                prevData = hasData;
             }
         }
     
@@ -806,9 +808,8 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         const absAudioPath = path.resolve(audioPath);
         
         const camaVideo = path.join(CWD, 'assets', 'cama_sem_mic.mp4');
-        statusCallback(`🎬 Preparando montagem de vídeo via FFmpeg...`);
-        await new Promise(r => setTimeout(r, 600));
-        statusCallback('Compactando arquivos...');
+        statusCallback(`🎬 Gerando Reels Animado_legendado...`);
+        await new Promise(r => setTimeout(r, 400));
         
         const args = [
             '-loglevel', 'error', '-y',
