@@ -375,25 +375,10 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
 
     // Render loop real
     for (let frameNumber = 1; frameNumber <= totalVideoFrames; frameNumber++) {
-        // PERMITE O EVENT LOOP RESPIRAR PARA ENVIAR AS MENSAGENS AO CLIENTE NO SSE
-        await new Promise(r => setImmediate(r));
-        
+        // Clear globally allocated ctx instead of redefining
         ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
 
-        // Fundo nativo obrigatório queimado na malha para evitar desync do tracker!
-        const bgFramePath = path.join(__dirname, '..', 'cama_frames', `frame_${String(frameNumber).padStart(3, '0')}.png`);
-        if (fs.existsSync(bgFramePath)) {
-            const bgImg = await loadImage(bgFramePath);
-            ctx.drawImage(bgImg, 0, 0);
-        } else {
-            // Se passar dos frames extraídos (exemplo > 321), mantém estático com o último frame ou algo neutro.
-            // O ideal é sempre ter o loop da Cama.
-            const staticBgPath = path.join(__dirname, '..', 'cama_frames', `frame_320.png`);
-            if (fs.existsSync(staticBgPath)) {
-                const staticBgImg = await loadImage(staticBgPath);
-                ctx.drawImage(staticBgImg, 0, 0);
-            }
-        }
+        // Fundo absolutamente transparente para viabilizar Overlay no FFmpeg final (sem os cama_frames locais ignorados pelo git)
 
         // Animação Photo (Círculo Central)
         let totalZoomFrames = 45; // 1.5 s
@@ -817,20 +802,24 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         const outFileName = `Reels Animado_${epNumber}_legendado.mp4`;
         const outFile = path.resolve(path.join(sessionFolder, outFileName));
         
-        const framesPattern = path.join(tmpFramesDir, 'frame_%03d.png');
-        const absAudioPath = path.resolve(audioPath);
-        
         const camaVideo = path.join(CWD, 'assets', 'cama_sem_mic.mp4');
-        statusCallback(`🎬 Rastreando ${totalVideoFrames} de ${totalVideoFrames} frames...`);
+        statusCallback(`🎬 Preparando montagem de vídeo via FFmpeg...`);
         await new Promise(r => setTimeout(r, 600));
         statusCallback('Compactando arquivos...');
+        
         const args = [
             '-loglevel', 'error', '-y',
+            '-stream_loop', '-1', // Loop adaptável
+            '-r', '30',           // Força CFR no input para zerar o atraso (desync frames do tracking!)
+            '-i', camaVideo,      // [0] Background MP4 local
             '-framerate', FPS.toString(),
             '-start_number', '1', 
-            '-i', framesPattern,  // [0] Imagens compostas 
-            '-i', absAudioPath,   // [1] Origem de áudio p/ final
-            '-c:v', 'libx264', '-pix_fmt', 'yuv420p',
+            '-i', framesPattern,  // [1] Overlay gerado (PNGs transparentes)
+            '-i', absAudioPath,   // [2] Origem de áudio
+            '-filter_complex', '[0:v][1:v]overlay=shortest=1[outv]',
+            '-map', '[outv]',
+            '-map', '2:a',
+            '-c:v', 'libx264', '-preset', 'fast', '-pix_fmt', 'yuv420p',
             '-af', 'adelay=1500|1500', '-c:a', 'aac', '-shortest', outFile
         ];
 
