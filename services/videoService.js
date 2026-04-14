@@ -536,28 +536,32 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
             ctx.restore();
         }
 
-        // COMPONENTE 2: GUEST NAME (Diagonal Ascendente Ligada)
-        ctx.font = TEMPLATE.guestName.font;
+        // COMPONENTE 2: GUEST LABEL & GUEST NAME
+        // O GuestLabel ("CONVIDADO:") está gravado fisicamente no mp4 cama_sem_mic.mp4
         
-        let nameSplit = (podcastData.guestName || "CONVIDADO").split(" ");
+        ctx.font = '700 89px "New-Highway"';
+        let guestNameStr = podcastData.guestName || "";
+        let nameSplit = guestNameStr.split(" ");
         let firstName = nameSplit[0] || "";
         let lastName = nameSplit.slice(1).join(" ") || "";
-        
         drawComponent([
             {txt: firstName, dy: 0},
-            {txt: lastName, dy: Math.floor(TEMPLATE.guestName.lh)}
-        ], 0, TEMPLATE.guestName, false, true);
+            {txt: lastName, dy: 84}
+        ], 0, { left: 71, top: 1440, width: 940, align: "left" }, false, true);
         
+        // COMPONENTE 3: TITLE
+        ctx.font = '400 44px "New-Highway"';
         let subj = (podcastData.title || "ASSUNTO AQUI").replace(/\.$/, "");
+        subj = `"${subj}"`; 
         let sWords = subj.split(" ");
         let mid = Math.ceil(sWords.length / 2);
         let titleLine1 = sWords.slice(0, mid).join(" ");
         let titleLine2 = sWords.slice(mid).join(" ");
-        if(titleLine2.length > 0) titleLine2 += ".";
+        
         drawComponent([
             {txt: titleLine1, dy: 0},
-            {txt: titleLine2, dy: Math.floor(TEMPLATE.title.lh)}
-        ], 0, TEMPLATE.title, true, false);
+            {txt: titleLine2, dy: 66}
+        ], 0, { left: 73, top: 1640, width: 653, align: "left" }, false, false);
 
         // COMPONENTE 4: ONDAS SONORAS E LEGENDAS!
         // FIXED POSITION AT BOTTOM, NO PARALLAX, WITH FADE IN
