@@ -208,12 +208,12 @@ async function generateAllLayouts(podcastData, photoBufferOrPath, outputDir, onP
         const rawNum = String(podcastData.number || '0000').replace(/\D/g, '');
         const epNumber = rawNum.padStart(4, '0');
         const outPath = path.join(outputDir, templateName + '_' + epNumber + '.jpg');
-        await new Promise((resolve, reject) => {
-            const out = fs.createWriteStream(outPath);
-            canvas.createJPEGStream({ quality: 0.95 }).pipe(out);
-            out.on('finish', () => { console.log('[OK] ' + templateName); resolve(); });
-            out.on('error', reject);
-        });
+        const buf = canvas.toBuffer('image/jpeg', { quality: 0.95 });
+        fs.writeFileSync(outPath, buf);
+        console.log('[OK] ' + templateName);
+        
+        // Force GC breather interval
+        await new Promise(r => setTimeout(r, 10));
     }
     console.log('\nArtes concluídas em: ' + outputDir);
 }
