@@ -397,7 +397,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         }
 
         const startRadius = 2400; 
-        const finalRadius = 270;
+        const finalRadius = 375;
         const currentMaskRadius = startRadius - ((startRadius - finalRadius) * easedZoomT);
         const startScale = (startRadius / finalRadius) * 1.02;
         const finalScale = ((finalRadius * 2) + 2) / guestImg.width;
@@ -523,21 +523,21 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         // COMPONENTE 1: O NÚMERO
         {
             let numExtraX = base_maxX - 131.5;
-            let numExtraY = base_maxY - 27.5; 
+            let numExtraY = base_maxY - 29.5; 
             ctx.save();
             ctx.font = '600 36px "New-Highway"';
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.fillStyle = 'rgba(0,0,0,1)';
             if (blurSteps > 0) {
                 ctx.globalAlpha = 0.8 / blurSteps;
                 for (let i = 0; i < blurSteps; i++) {
                     let f = (i / blurSteps) - 0.5;
-                    ctx.fillStyle = '#006BFF';
                     ctx.fillText(rawNum, numExtraX + blur_vx*f, numExtraY + blur_vy*f + 3);
                 }
-                ctx.globalAlpha = 0.5;
+                ctx.globalAlpha = 1.0;
             }
-            ctx.fillStyle = '#006BFF';
             ctx.fillText(rawNum, numExtraX, numExtraY + 3);
             ctx.restore();
         }
@@ -565,7 +565,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         if (lines.length > 3) lines = lines.slice(0, 3);
         
         let compLines = lines.map((l, idx) => ({ txt: l, dy: idx * 84 }));
-        drawComponent(compLines, 0, { left: 69, top: 1474, width: 440, align: "left" }, false, true);
+        drawComponent(compLines, 0, { left: 49, top: 1474, width: 480, align: "left" }, false, true);
         
         // COMPONENTE 3: TITLE
         ctx.font = '400 44px "New-Highway"';
@@ -578,7 +578,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         drawComponent([
             {txt: titleLine1, dy: 0},
             {txt: titleLine2, dy: 63.8}
-        ], 0, { right: 1022, top: 1428, width: 482, align: "right" }, true, false);
+        ], 0, { right: 1017, top: 1428, width: 482, align: "right" }, true, false);
 
         // COMPONENTE 4: ONDAS SONORAS E LEGENDAS!
         // FIXED POSITION AT BOTTOM, NO PARALLAX, WITH FADE IN

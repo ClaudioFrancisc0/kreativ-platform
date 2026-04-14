@@ -152,6 +152,9 @@ router.post('/rb_podcast/render', verifyToken, express.json(), async (req, res) 
             if (!fs.existsSync(sessionFolder)) fs.mkdirSync(sessionFolder, { recursive: true });
 
             try {
+                // Delay artificial para a interface conseguir 'printar' o background inicial antes de ser sobreescrito
+                await new Promise(r => setTimeout(r, 1200));
+
                 // 1. JPGs Estáticos
                 await generateAllLayouts(job.podcastData, job.photoPath, sessionFolder, (msg) => {
                     job.message = msg;
