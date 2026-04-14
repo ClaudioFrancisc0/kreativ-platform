@@ -155,41 +155,7 @@ function drawGroup(ctx, elements, basex, text, applyBlur = false, forceLeft = fa
     }
 }
 
-function drawImageWithBlur(ctx, guestImg, currentScale, currentMaskRadius, currentBlur, currentCenterY, pools) {
-    const CANVAS_W = 1080;
-    const CANVAS_H = 1920;
-    
-    const dw = guestImg.width * currentScale;
-    const dh = guestImg.height * currentScale;
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(CANVAS_W / 2, currentCenterY, currentMaskRadius, 0, Math.PI * 2);
-    ctx.clip();
-    
-    if (currentBlur <= 0.1) {
-        ctx.drawImage(guestImg, (CANVAS_W/2) - (dw/2), currentCenterY - (dh/2), dw, dh);
-        ctx.restore();
-        return;
-    }
-
-    // Heavy resolution reduction instead of bleeding alpha loops
-    let scaleDiv = Math.max(1.0, 1.0 + (currentBlur / 60.0));
-    let downW = Math.max(12, Math.floor(dw / scaleDiv));
-    let downH = Math.max(12, Math.floor(dh / scaleDiv));
-
-    let downCanvas = pools.downCanvas; 
-    let downCtx = pools.downCtx;
-    downCtx.clearRect(0, 0, CANVAS_W / 4, CANVAS_H / 4);
-    
-    downCtx.imageSmoothingEnabled = true;
-    downCtx.drawImage(guestImg, 0, 0, guestImg.width, guestImg.height, 0, 0, downW, downH);
-    
-    ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(downCanvas, 0, 0, downW, downH, (CANVAS_W/2) - (dw/2), currentCenterY - (dh/2), dw, dh);
-    
-    ctx.restore();
-}
+// drawImageWithBlur removido, utilizaremos ctx.filter diretamente.
 
 // ==== SERVIÇOS EXPORTADOS ====
 
@@ -354,45 +320,49 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
 
         // Animação Photo (Círculo Central)
-        let totalZoomFrames = 51; 
+        let totalZoomFrames = 45; // 1.5 s
         let t = frameNumber / totalZoomFrames;
         if (t > 1) t = 1;
 
         let easedZoomT = standardEaseEase(t);
-        let easedBlurT = delayedFocusEase(t);
 
-        let currentCenterY = CANVAS_H / 2; 
+        let currentCenterY = 950; // Centralizado nativo default
         let yShiftOffset = 0;
 
         if (frameNumber > SHIFT_START_FRAME) {
             let shiftProg = Math.min(1, (frameNumber - SHIFT_START_FRAME) / (SHIFT_END_FRAME - SHIFT_START_FRAME));
-            let shiftEase = standardEaseEase(shiftProg); 
-            yShiftOffset = SHIFT_Y_AMOUNT * shiftEase; 
+            yShiftOffset = SHIFT_Y_AMOUNT * standardEaseEase(shiftProg); 
             currentCenterY += yShiftOffset;
         }
 
-        const startRadius = 2400; 
-        const finalRadius = 300;
+        const startRadius = 375 * 1.5; 
+        const finalRadius = 290;
         const currentMaskRadius = startRadius - ((startRadius - finalRadius) * easedZoomT);
-        const startScale = (startRadius / finalRadius) * 1.02;
-        const finalScale = ((finalRadius * 2) + 2) / guestImg.width;
-        const currentScale = startScale - ((startScale - finalScale) * easedZoomT);
         
-        const maxBlur = 1700;
-        const currentBlur = Math.max(0, maxBlur - (maxBlur * easedBlurT));
+        let imgScaleX = (currentMaskRadius * 2) / guestImg.width;
+        let imgScaleY = (currentMaskRadius * 2) / guestImg.height;
+        let imgScale = Math.max(imgScaleX, imgScaleY);
+        
+        // PADDING LEVE PARA NÃO DEIXAR BORDAS NEGRAS APARECEREM CASO SEJA MUITO EXATO
+        imgScale *= 1.02;
+        
+        let drawW = guestImg.width * imgScale;
+        let drawH = guestImg.height * imgScale;
 
-        if (currentBlur > 0.1) {
-            drawImageWithBlur(ctx, guestImg, currentScale, currentMaskRadius, currentBlur, currentCenterY, blurPools);
-        } else {
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(CANVAS_W / 2, currentCenterY, currentMaskRadius, 0, Math.PI * 2);
-            ctx.clip();
-            const dw = guestImg.width * currentScale;
-            const dh = guestImg.height * currentScale;
-            ctx.drawImage(guestImg, (CANVAS_W/2) - (dw/2), currentCenterY - (dh/2), dw, dh);
-            ctx.restore();
-        }
+        // "Desfoque Inicial" mágico usando API nativa
+        let blurProgress = 1 - t; 
+        let currentBlur = Math.max(0, 20 * blurProgress);
+        
+        if (currentBlur > 0) ctx.filter = `blur(${currentBlur}px)`;
+        
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(CANVAS_W / 2, currentCenterY, currentMaskRadius, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(guestImg, (CANVAS_W/2) - (drawW/2), currentCenterY - (drawH/2), drawW, drawH);
+        ctx.restore();
+        
+        ctx.filter = 'none';
 
 
         // V74 CORE RESTORED
@@ -548,18 +518,45 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         ctx.font = '400 36px "New-Highway"';
         let subj = (podcastData.title || "ASSUNTO AQUI").replace(/\.$/, "");
         let sWords = subj.split(" ");
-        let linesTitle = [];
-        let curLine = "";
-        for (let i = 0; i < sWords.length; i++) {
-            let testLine = curLine + sWords[i] + " ";
-            if (ctx.measureText(testLine.trim()).width > 420 && i > 0) {
-                linesTitle.push(curLine.trim());
-                curLine = sWords[i] + " ";
+        let linesTitle = null;
+        let finalTitleString = sWords.join(" ");
+        
+        if (ctx.measureText(finalTitleString).width <= 482) {
+            linesTitle = [finalTitleString];
+        } else {
+            let mid = Math.ceil(sWords.length / 2);
+            let l1 = sWords.slice(0, mid).join(" ");
+            let l2 = sWords.slice(mid).join(" ");
+            if (ctx.measureText(l1).width <= 482 && ctx.measureText(l2).width <= 482) {
+                linesTitle = [l1, l2];
             } else {
-                curLine = testLine;
+                let third = Math.ceil(sWords.length / 3);
+                let l1_3 = sWords.slice(0, third).join(" ");
+                let l2_3 = sWords.slice(third, third * 2).join(" ");
+                let l3_3 = sWords.slice(third * 2).join(" ");
+                if (ctx.measureText(l1_3).width <= 482 && 
+                    ctx.measureText(l2_3).width <= 482 && 
+                    ctx.measureText(l3_3).width <= 482) {
+                    linesTitle = [l1_3, l2_3, l3_3].filter(l => l.length > 0);
+                }
             }
         }
-        linesTitle.push(curLine.trim());
+        
+        if (!linesTitle) {
+            linesTitle = [];
+            let curLine = "";
+            for (let i = 0; i < sWords.length; i++) {
+                let testLine = curLine + sWords[i] + " ";
+                if (ctx.measureText(testLine.trim()).width > 482 && i > 0) {
+                    linesTitle.push(curLine.trim());
+                    curLine = sWords[i] + " ";
+                } else {
+                    curLine = testLine;
+                }
+            }
+            linesTitle.push(curLine.trim());
+        }
+
         if (linesTitle.length > 3) linesTitle = linesTitle.slice(0, 3);
         if (linesTitle.length > 0) linesTitle[linesTitle.length - 1] += ".";
 

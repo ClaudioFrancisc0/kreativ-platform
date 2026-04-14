@@ -70,17 +70,45 @@ function drawTextInBox(ctx, text, boxConfig) {
         let currentLine = '';
         lines = [];
 
-        for (let i = 0; i < words.length; i++) {
-            const testLine = currentLine + words[i] + ' ';
-            const testWidth = measureWithSpacing(ctx, testLine.trimEnd(), spacing);
-            if (testWidth > width && i > 0) {
-                lines.push(currentLine.trim());
-                currentLine = words[i] + ' ';
+        let bestLines = null;
+        if (boxConfig.balancedWrap) {
+            if (measureWithSpacing(ctx, finalString, spacing) <= width) {
+                bestLines = [finalString];
             } else {
-                currentLine = testLine;
+                let mid = Math.ceil(words.length / 2);
+                let l1 = words.slice(0, mid).join(' ');
+                let l2 = words.slice(mid).join(' ');
+                if (measureWithSpacing(ctx, l1, spacing) <= width && measureWithSpacing(ctx, l2, spacing) <= width) {
+                    bestLines = [l1, l2];
+                } else {
+                    let third = Math.ceil(words.length / 3);
+                    let l1_3 = words.slice(0, third).join(' ');
+                    let l2_3 = words.slice(third, third * 2).join(' ');
+                    let l3_3 = words.slice(third * 2).join(' ');
+                    if (measureWithSpacing(ctx, l1_3, spacing) <= width && 
+                        measureWithSpacing(ctx, l2_3, spacing) <= width && 
+                        measureWithSpacing(ctx, l3_3, spacing) <= width) {
+                        bestLines = [l1_3, l2_3, l3_3].filter(l => l.length > 0);
+                    }
+                }
             }
         }
-        lines.push(currentLine.trim());
+
+        if (bestLines) {
+            lines = bestLines;
+        } else {
+            for (let i = 0; i < words.length; i++) {
+                const testLine = currentLine + words[i] + ' ';
+                const testWidth = measureWithSpacing(ctx, testLine.trimEnd(), spacing);
+                if (testWidth > width && i > 0) {
+                    lines.push(currentLine.trim());
+                    currentLine = words[i] + ' ';
+                } else {
+                    currentLine = testLine;
+                }
+            }
+            lines.push(currentLine.trim());
+        }
 
         textHeight = currentSize * lh;
         
