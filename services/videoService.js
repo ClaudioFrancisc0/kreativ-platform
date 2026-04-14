@@ -425,8 +425,14 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         let hasData = trackingData[frameNumber.toString()];
         let prevData = trackingData[(frameNumber - 1).toString()] || hasData;
         if (!hasData) {
-            let maxTKey = Math.max(...Object.keys(trackingData).map(k => parseInt(k)));
-            hasData = trackingData[maxTKey.toString()];
+            let keys = Object.keys(trackingData).map(Number);
+            let minKey = Math.min(...keys);
+            let maxKey = Math.max(...keys);
+            if (frameNumber < minKey) {
+                hasData = trackingData[minKey.toString()];
+            } else {
+                hasData = trackingData[maxKey.toString()];
+            }
         }
     
     
