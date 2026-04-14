@@ -718,8 +718,17 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
     }
 
         const frameTitle = String(frameNumber).padStart(3, '0');
-        const buf = canvas.toBuffer('image/png', { compressionLevel: 0, filters: canvas.PNG_FILTER_NONE });
-        fs.writeFileSync(path.join(tmpFramesDir, `frame_${frameTitle}.png`), buf);
+        
+        await new Promise((resolve, reject) => {
+            const out = fs.createWriteStream(path.join(tmpFramesDir, `frame_${frameTitle}.png`));
+            const stream = canvas.createPNGStream({ compressionLevel: 0, filters: canvas.PNG_FILTER_NONE });
+            stream.pipe(out);
+            out.on('finish', resolve);
+            out.on('error', reject);
+        });
+
+        // Libera o EventLoop completamente e dá fôlego pro GC (Garbage Collector)
+        await new Promise(r => setTimeout(r, 1));
         
         statusCallback(`🎬 Rastreando ${frameNumber} de ${totalFrames} frames...`);
     }
