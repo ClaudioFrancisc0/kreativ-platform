@@ -586,7 +586,9 @@
                                 doneBox.style.fontWeight = "bold";
                                 doneBox.innerHTML = `✅ Mídias geradas com sucesso! 
                                 <br><button onclick="downloadZip('${job.downloadUrl}&t=${token}')" style="cursor: pointer; background: #0d6efd; color: #fff; border: none; padding: 10px 20px; font-size: 16px; border-radius: 6px; margin-top:15px; font-weight: bold;">BAIXAR PACOTE ZIP</button>
-                                <div id="dlError" style="display:none; color:#ffbaba; font-size:13px; margin-top:8px;">O arquivo já foi baixado ou expirou. Por favor, gere novamente.</div>`;
+                                <div id="dlMessage" style="display:none; color:#e0f7fa; font-size:14px; margin-top:12px; font-weight:normal;"></div>
+                                <div id="dlError" style="display:none; color:#ffbaba; font-size:14px; margin-top:12px; font-weight:normal;"></div>
+                                <br><button id="btnVoltarInicio" onclick="window.location.reload()" style="display:none; cursor: pointer; background: #6c757d; color: #fff; border: none; padding: 8px 16px; font-size: 14px; border-radius: 6px; margin-top:15px; font-weight: bold;">VOLTAR AO INÍCIO</button>`;
                                 rContainer.parentNode.insertBefore(doneBox, rContainer.nextSibling);
                             }
                             
@@ -615,35 +617,39 @@
             }
         }
         
-
+        let dlClickCount = 0;
         async function downloadZip(url) {
+            dlClickCount++;
+            const msgBox = document.getElementById('dlMessage');
+            const errBox = document.getElementById('dlError');
+            const btnVoltar = document.getElementById('btnVoltarInicio');
+            
             try {
                 const res = await fetch(url, { method: 'HEAD' });
                 if (!res.ok) {
-                    document.getElementById('dlError').style.display = 'block';
-                    setTimeout(() => window.location.reload(), 3000);
+                    msgBox.style.display = 'none';
+                    errBox.style.display = 'block';
+                    if (dlClickCount > 1) {
+                        errBox.innerHTML = "O arquivo já foi baixado com sucesso há pouco. <br>Para gerar um novo, clique em 'Voltar ao Início'.";
+                    } else {
+                        errBox.innerHTML = "O arquivo não está disponível ou expirou. <br>Por favor, volte ao início e gere novamente.";
+                    }
+                    btnVoltar.style.display = 'inline-block';
                 } else {
+                    errBox.style.display = 'none';
+                    msgBox.style.display = 'block';
+                    msgBox.innerHTML = "⬇️ Download em andamento... Verifique sua pasta de downloads.";
                     window.location.href = url;
-                    // Aguarda o disparo nativo do download no navegador, e então joga o usuário limpo pro início
-                    setTimeout(() => window.location.reload(), 2000);
+                    
+                    // Exibe o botão de voltar ao invés de forçar o reload
+                    btnVoltar.style.display = 'inline-block';
                 }
             } catch (err) {
                 console.error(err);
-                document.getElementById('dlError').style.display = 'block';
-            }
-        }
-        async function downloadZip(url) {
-            try {
-                const res = await fetch(url, { method: 'HEAD' });
-                if (!res.ok) {
-                    document.getElementById('dlError').style.display = 'block';
-                } else {
-                    window.location.href = url;
-                    setTimeout(() => window.location.reload(), 2000);
-                }
-            } catch (err) {
-                console.error(err);
-                document.getElementById('dlError').style.display = 'block';
+                msgBox.style.display = 'none';
+                errBox.style.display = 'block';
+                errBox.innerHTML = "Erro ao conectar com o servidor.";
+                btnVoltar.style.display = 'inline-block';
             }
         }
     </script>
