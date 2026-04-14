@@ -140,7 +140,7 @@ router.post('/rb_podcast/render', verifyToken, express.json(), async (req, res) 
         if (job.status !== 'review_pending') return res.status(400).json({ error: 'Job não está pronto para renderização.' });
 
         job.status = 'processing';
-        job.message = 'Renderizando Backgrounds (JPGs)...';
+        job.message = 'Gerando Mídias Estáticas...';
         
         res.json({ success: true });
 

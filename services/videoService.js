@@ -480,6 +480,8 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
 
         // Função de Injeção de Componente com Sub-Blur:
         const drawComponent = (textList, yOffset, block, isRightSide = false, isDiagonalAsc = false) => {
+            if (t_progress <= 0) return; // Prevent early ghost apparition when sliding hasn't commenced
+            
             ctx.save();
             ctx.textAlign = block.align || "left";
             ctx.textBaseline = "alphabetic"; 
