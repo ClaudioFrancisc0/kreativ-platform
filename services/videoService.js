@@ -719,7 +719,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         
         await new Promise((resolve, reject) => {
             const out = fs.createWriteStream(path.join(tmpFramesDir, `frame_${frameTitle}.png`));
-            const stream = canvas.createPNGStream({ compressionLevel: 0, filters: canvas.PNG_FILTER_NONE });
+            const stream = canvas.createPNGStream(); // Volta pro padrao leve e zipado
             stream.pipe(out);
             out.on('finish', resolve);
             out.on('error', reject);
