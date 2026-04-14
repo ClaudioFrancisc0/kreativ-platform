@@ -397,7 +397,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         }
 
         const startRadius = 2400; 
-        const finalRadius = 290;
+        const finalRadius = 270;
         const currentMaskRadius = startRadius - ((startRadius - finalRadius) * easedZoomT);
         const startScale = (startRadius / finalRadius) * 1.02;
         const finalScale = ((finalRadius * 2) + 2) / guestImg.width;
@@ -422,8 +422,9 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
 
         // V74 CORE RESTORED
         const rawNum = String(podcastData.number || '0000').replace(/\D/g, '');
-        let hasData = trackingData[frameNumber.toString()];
-        let prevData = trackingData[(frameNumber - 1).toString()] || hasData;
+        let magicOffset = 1; // Compensate for FFmpeg sequence reading starting at 0 versus 1 natively
+        let hasData = trackingData[(frameNumber + magicOffset).toString()];
+        let prevData = trackingData[(frameNumber + magicOffset - 1).toString()] || trackingData[(frameNumber - 1).toString()] || hasData;
         if (!hasData) {
             let keys = Object.keys(trackingData).map(Number);
             let minKey = Math.min(...keys);
@@ -527,35 +528,18 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
             let numExtraX = base_maxX - 131.5;
             let numExtraY = base_maxY - 29.5; 
             ctx.save();
-            let boxW = 156;
-            let boxH = 50;
-            
+            ctx.font = '600 36px "New-Highway"';
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillStyle = '#024BE7'; // Match Cama Reel Blue exactly
             if (blurSteps > 0) {
                 ctx.globalAlpha = 0.8 / blurSteps;
                 for (let i = 0; i < blurSteps; i++) {
                     let f = (i / blurSteps) - 0.5;
-                    // Box Blur
-                    ctx.fillStyle = '#FFCD00'; 
-                    drawRoundedRect(ctx, numExtraX - boxW/2 + blur_vx*f, numExtraY - boxH/2 + blur_vy*f + 1, boxW, boxH, boxH/2);
-                    ctx.fill();
-                    // Text Blur
-                    ctx.fillStyle = '#024BE7';
-                    ctx.font = '600 36px "New-Highway"';
-                    ctx.textAlign = "center";
-                    ctx.textBaseline = "middle";
                     ctx.fillText(rawNum, numExtraX + blur_vx*f, numExtraY + blur_vy*f + 1);
                 }
                 ctx.globalAlpha = 1.0;
             }
-            // Box
-            ctx.fillStyle = '#FFCD00'; 
-            drawRoundedRect(ctx, numExtraX - boxW/2, numExtraY - boxH/2 + 1, boxW, boxH, boxH/2);
-            ctx.fill();
-            // Text
-            ctx.fillStyle = '#024BE7';
-            ctx.font = '600 36px "New-Highway"';
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
             ctx.fillText(rawNum, numExtraX, numExtraY + 1);
             
             ctx.restore();
@@ -597,7 +581,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         drawComponent([
             {txt: titleLine1, dy: 0},
             {txt: titleLine2, dy: 63.8}
-        ], 0, { right: 1011, top: 1428, width: 482, align: "right" }, true, false);
+        ], 0, { right: 1003, top: 1428, width: 482, align: "right" }, true, false);
 
         // COMPONENTE 4: ONDAS SONORAS E LEGENDAS!
         // FIXED POSITION AT BOTTOM, NO PARALLAX, WITH FADE IN
@@ -638,9 +622,9 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         }
 
         // 4.2 Legendas Flutuantes Dinâmicas (Grudada no Círculo da Foto)
-        // Descemos os 10px aprovados (target final = 1290). 
+        // Descemos os 10px aprovados (target final = 1300). 
         // Como ela anda atrelada ao circulo da foto, seu Y nativo sofre o mesmo yShiftOffset
-        let finalSubY = 1290;
+        let finalSubY = 1300;
         let subY = (finalSubY - SHIFT_Y_AMOUNT) + yShiftOffset; 
 
         let subX = 540; // centralizado
@@ -689,7 +673,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
             let boxHeight = (lines.length * (fSize + 10)) + padY*2 - 10;
             
             // Fundo Azul
-            ctx.fillStyle = '#006BFF';
+            ctx.fillStyle = '#024BE7';
             drawRoundedRect(ctx, subX - boxWidth/2, subY, boxWidth, boxHeight, 15);
             ctx.fill();
             
