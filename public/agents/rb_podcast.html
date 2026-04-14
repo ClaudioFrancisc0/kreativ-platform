@@ -584,7 +584,9 @@
                                 doneBox.style.textAlign = "center";
                                 doneBox.style.borderRadius = "8px";
                                 doneBox.style.fontWeight = "bold";
-                                doneBox.innerHTML = `✅ Mídias geradas com sucesso! <br><a href="${job.downloadUrl}&t=${token}" style="color: #fff; text-decoration: underline; font-size: 18px; margin-top:10px; display:inline-block;">CLIQUE AQUI PARA DOWNLOAD</a>`;
+                                doneBox.innerHTML = `✅ Mídias geradas com sucesso! 
+                                <br><button onclick="downloadZip('${job.downloadUrl}&t=${token}')" style="cursor: pointer; background: #0d6efd; color: #fff; border: none; padding: 10px 20px; font-size: 16px; border-radius: 6px; margin-top:15px; font-weight: bold;">BAIXAR PACOTE ZIP</button>
+                                <div id="dlError" style="display:none; color:#ffbaba; font-size:13px; margin-top:8px;">O arquivo já foi baixado ou expirou. Por favor, gere novamente.</div>`;
                                 rContainer.parentNode.insertBefore(doneBox, rContainer.nextSibling);
                             }
                             
@@ -610,6 +612,38 @@
                 alert(err);
                 btn.disabled = false;
                 btn.innerHTML = 'Gerar Mídias';
+            }
+        }
+        
+
+        async function downloadZip(url) {
+            try {
+                const res = await fetch(url, { method: 'HEAD' });
+                if (!res.ok) {
+                    document.getElementById('dlError').style.display = 'block';
+                    setTimeout(() => window.location.reload(), 3000);
+                } else {
+                    window.location.href = url;
+                    // Aguarda o disparo nativo do download no navegador, e então joga o usuário limpo pro início
+                    setTimeout(() => window.location.reload(), 2000);
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('dlError').style.display = 'block';
+            }
+        }
+        async function downloadZip(url) {
+            try {
+                const res = await fetch(url, { method: 'HEAD' });
+                if (!res.ok) {
+                    document.getElementById('dlError').style.display = 'block';
+                } else {
+                    window.location.href = url;
+                    setTimeout(() => window.location.reload(), 2000);
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('dlError').style.display = 'block';
             }
         }
     </script>

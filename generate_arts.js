@@ -83,7 +83,13 @@ function drawTextInBox(ctx, text, boxConfig) {
         lines.push(currentLine.trim());
 
         textHeight = currentSize * lh;
-        if (lines.length * textHeight <= height) break;
+        
+        if (boxConfig.maxLines) {
+            if (lines.length <= boxConfig.maxLines) break;
+        } else {
+            if (lines.length * textHeight <= height) break;
+        }
+        
         currentSize -= 1;
     }
 
@@ -166,7 +172,7 @@ async function generateAllLayouts(podcastData, photoBufferOrPath, outputDir, onP
     for (const templateName of Object.keys(config)) {
         if (onProgress) {
              onProgress('Gerando ' + templateName + '...');
-             await new Promise(r => setTimeout(r, 600)); // Sleep pra UI ver o ping
+             await new Promise(r => setTimeout(r, 1200)); // Sleep pra UI ver o ping
         }
         console.log('Montando: ' + templateName);
         const tmpl = config[templateName];
