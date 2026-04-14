@@ -339,8 +339,11 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         upCtx2: createCanvas(CANVAS_W / 4, CANVAS_H / 4).getContext('2d')
     };
 
+    // We add +45 frames (1.5 seconds) to ensure the delayed audio finishes playing completely
+    const totalVideoFrames = totalFrames + 45; 
+
     // Render loop real
-    for (let frameNumber = 1; frameNumber <= totalFrames; frameNumber++) {
+    for (let frameNumber = 1; frameNumber <= totalVideoFrames; frameNumber++) {
         // PERMITE O EVENT LOOP RESPIRAR PARA ENVIAR AS MENSAGENS AO CLIENTE NO SSE
         await new Promise(r => setImmediate(r));
         
@@ -539,7 +542,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         if (lines.length > 3) lines = lines.slice(0, 3);
         
         let compLines = lines.map((l, idx) => ({ txt: l, dy: idx * 76 }));
-        drawComponent(compLines, 0, { left: 53, top: 1474, width: 480, align: "left" }, false, true);
+        drawComponent(compLines, 0, { left: 54, top: 1474, width: 480, align: "left" }, false, true);
         
         // COMPONENTE 3: TITLE
         ctx.font = '400 36px "New-Highway"';
@@ -561,7 +564,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         if (linesTitle.length > 0) linesTitle[linesTitle.length - 1] += ".";
 
         let titleComps = linesTitle.map((l, idx) => ({ txt: l, dy: idx * 50 }));
-        drawComponent(titleComps, 0, { right: 1022, top: 1428, width: 482, align: "right" }, true, false);
+        drawComponent(titleComps, 0, { right: 1019, top: 1428, width: 482, align: "right" }, true, false);
 
         // COMPONENTE 4: ONDAS SONORAS E LEGENDAS!
         // FIXED POSITION AT BOTTOM, NO PARALLAX, WITH FADE IN
@@ -735,7 +738,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         // Libera o EventLoop completamente e dá fôlego pro GC (Garbage Collector)
         await new Promise(r => setTimeout(r, 1));
         
-        statusCallback(`🎬 Rastreando ${frameNumber} de ${totalFrames} frames...`);
+        statusCallback(`🎬 Rastreando ${frameNumber} de ${totalVideoFrames} frames...`);
     }
 
         const rawNum = String(podcastData.number || '0000').replace(/\D/g, '');
@@ -747,7 +750,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         const absAudioPath = path.resolve(audioPath);
         
         const camaVideo = path.join(CWD, 'assets', 'cama_sem_mic.mp4');
-        statusCallback(`🎬 Rastreando ${totalFrames} de ${totalFrames} frames...`);
+        statusCallback(`🎬 Rastreando ${totalVideoFrames} de ${totalVideoFrames} frames...`);
         await new Promise(r => setTimeout(r, 600));
         statusCallback('Compactando arquivos...');
         const args = [
@@ -755,6 +758,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
             '-stream_loop', '-1', // Loop infinito adaptável da cama
             '-i', camaVideo,      // [0] Background
             '-framerate', FPS.toString(),
+            '-start_number', '1', // Evita que o FFmpeg engula o primeiro frame ao procurar o 000
             '-i', framesPattern,  // [1] Overlay dinâmico transparente do node-canvas
             '-i', absAudioPath,   // [2] Origem de áudio p/ final
             '-filter_complex', '[0:v][1:v]overlay=shortest=1[outv]',
