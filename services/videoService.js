@@ -336,33 +336,49 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         }
 
         const startRadius = 375 * 1.5; 
-        const finalRadius = 290;
+        const finalRadius = 298; // ajustado conforme pedido
         const currentMaskRadius = startRadius - ((startRadius - finalRadius) * easedZoomT);
         
         let imgScaleX = (currentMaskRadius * 2) / guestImg.width;
         let imgScaleY = (currentMaskRadius * 2) / guestImg.height;
-        let imgScale = Math.max(imgScaleX, imgScaleY);
-        
-        // PADDING LEVE PARA NÃO DEIXAR BORDAS NEGRAS APARECEREM CASO SEJA MUITO EXATO
-        imgScale *= 1.02;
+        let imgScale = Math.max(imgScaleX, imgScaleY) * 1.02; // padding leve anti-borda preta
         
         let drawW = guestImg.width * imgScale;
         let drawH = guestImg.height * imgScale;
 
-        // "Desfoque Inicial" mágico usando API nativa
-        let blurProgress = 1 - t; 
-        let currentBlur = Math.max(0, 20 * blurProgress);
+        // --- Desfoque inicial: renderiza em canvas off-screen para evitar vazamento pelo clip ---
+        let blurProgress = 1 - easedZoomT; // Desfoque proporcional ao zoom: começa máximo, termina zero
+        let currentBlurPx = Math.max(0, Math.round(22 * blurProgress));
         
-        if (currentBlur > 0) ctx.filter = `blur(${currentBlur}px)`;
+        const photoOffCtx = blurPools.baseCtx;
+        const photoOffCanvas = blurPools.baseCanvas;
+        photoOffCtx.clearRect(0, 0, CANVAS_W, CANVAS_H);
         
+        if (currentBlurPx > 0) {
+            // Reduz a imagem para simular blur pesado sem vazar pelo clip
+            const downFactor = Math.max(1, Math.round(1 + currentBlurPx / 4));
+            const dW2 = Math.max(4, Math.round(drawW / downFactor));
+            const dH2 = Math.max(4, Math.round(drawH / downFactor));
+            const ox = Math.round((CANVAS_W / 2) - (drawW / 2));
+            const oy = Math.round(currentCenterY - (drawH / 2));
+            // Downsample
+            photoOffCtx.imageSmoothingEnabled = true;
+            photoOffCtx.drawImage(guestImg, 0, 0, guestImg.width, guestImg.height, ox, oy, dW2, dH2);
+            // Upsample de volta para simular desfoque
+            photoOffCtx.drawImage(photoOffCanvas, ox, oy, dW2, dH2, ox, oy, drawW, drawH);
+        } else {
+            const ox = Math.round((CANVAS_W / 2) - (drawW / 2));
+            const oy = Math.round(currentCenterY - (drawH / 2));
+            photoOffCtx.drawImage(guestImg, ox, oy, drawW, drawH);
+        }
+        
+        // Recorta o resultado já borrado na máscara circular do canvas principal
         ctx.save();
         ctx.beginPath();
         ctx.arc(CANVAS_W / 2, currentCenterY, currentMaskRadius, 0, Math.PI * 2);
         ctx.clip();
-        ctx.drawImage(guestImg, (CANVAS_W/2) - (drawW/2), currentCenterY - (drawH/2), drawW, drawH);
+        ctx.drawImage(photoOffCanvas, 0, 0);
         ctx.restore();
-        
-        ctx.filter = 'none';
 
 
         // V74 CORE RESTORED
@@ -561,7 +577,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         if (linesTitle.length > 0) linesTitle[linesTitle.length - 1] += ".";
 
         let titleComps = linesTitle.map((l, idx) => ({ txt: l, dy: idx * 50 }));
-        drawComponent(titleComps, 0, { right: 1019, top: 1428, width: 482, align: "right" }, true, false);
+        drawComponent(titleComps, 0, { right: 1015, top: 1428, width: 482, align: "right" }, true, false);
 
         // COMPONENTE 4: ONDAS SONORAS E LEGENDAS!
         // FIXED POSITION AT BOTTOM, NO PARALLAX, WITH FADE IN
