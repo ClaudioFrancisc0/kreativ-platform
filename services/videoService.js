@@ -717,13 +717,8 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
 
         const frameTitle = String(frameNumber).padStart(3, '0');
         
-        await new Promise((resolve, reject) => {
-            const out = fs.createWriteStream(path.join(tmpFramesDir, `frame_${frameTitle}.png`));
-            const stream = canvas.createPNGStream(); // Volta pro padrao leve e zipado
-            stream.pipe(out);
-            out.on('finish', resolve);
-            out.on('error', reject);
-        });
+        const buf = canvas.toBuffer('image/png'); // Default compression, yields 50kb per frame safely
+        fs.writeFileSync(path.join(tmpFramesDir, `frame_${frameTitle}.png`), buf);
 
         // Libera o EventLoop completamente e dá fôlego pro GC (Garbage Collector)
         await new Promise(r => setTimeout(r, 1));
