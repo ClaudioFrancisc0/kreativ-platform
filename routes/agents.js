@@ -225,7 +225,15 @@ router.get('/rb_podcast/download/:jobId', verifyToken, (req, res) => {
     
     const zipPath = path.join(__dirname, '..', 'output', filename);
     if (!fs.existsSync(zipPath)) {
-        return res.status(404).send('Arquivo ZIP não encontrado ou expirado.');
+        return res.status(404).send(`
+        <html>
+            <body style="font-family: sans-serif; text-align: center; margin-top: 100px; background: #0f111a; color: #fff;">
+                <h2 style="color: #0d6efd;">Arquivo indisponível</h2>
+                <p style="color: #adb5bd; max-width: 400px; margin: 0 auto; line-height: 1.5;">O pacote já foi baixado ou expirou. Por questões de segurança e limite de armazenamento na nuvem, os arquivos gerados são apagados do servidor da Kreativ imedidatamente após o download.</p>
+                <button onclick="window.close()" style="margin-top: 20px; padding: 10px 20px; background: #0d6efd; color: white; border: none; border-radius: 5px; cursor: pointer;">Fechar Aba</button>
+            </body>
+        </html>
+        `);
     }
 
     res.download(zipPath, filename, (err) => {

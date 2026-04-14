@@ -543,7 +543,12 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         let firstName = nameSplit[0] || "";
         let lastName = nameSplit.slice(1).join(" ") || "";
         
-        let subj = (podcastData.subject || "ASSUNTO AQUI").replace(/\.$/, "");
+        drawComponent([
+            {txt: firstName, dy: 0},
+            {txt: lastName, dy: Math.floor(TEMPLATE.guestName.lh)}
+        ], 0, TEMPLATE.guestName, false, true);
+        
+        let subj = (podcastData.title || "ASSUNTO AQUI").replace(/\.$/, "");
         let sWords = subj.split(" ");
         let mid = Math.ceil(sWords.length / 2);
         let titleLine1 = sWords.slice(0, mid).join(" ");
@@ -712,7 +717,9 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         // embutidos no yShiftOffset global para não descolar da Foto em movimento!
         cy_mic += yShiftOffset;
 
-        ctx.drawImage(micImg, cx_mic, cy_mic);
+        // Escala manual porque o asset principal é muito maior que o 'menor.png' original
+        let micScale = 0.55;
+        ctx.drawImage(micImg, cx_mic, cy_mic, micImg.width * micScale, micImg.height * micScale);
     }
 
         const frameTitle = String(frameNumber).padStart(3, '0');
