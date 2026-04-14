@@ -373,12 +373,35 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
     // We add +45 frames (1.5 seconds) to ensure the delayed audio finishes playing completely
     const totalVideoFrames = totalFrames + 45; 
 
+    const camaFramesDir = path.join(CWD, 'cama_frames');
+    const camaVideoSrc = path.join(CWD, 'assets', 'cama_sem_mic.mp4');
+
+    if (!fs.existsSync(camaFramesDir) || fs.readdirSync(camaFramesDir).filter(f => f.endsWith('.png')).length < 300) {
+        statusCallback('Extraindo Cama Base para ancoragem sub-pixel (Apenas primeira vez)...');
+        if(!fs.existsSync(camaFramesDir)) fs.mkdirSync(camaFramesDir, { recursive: true });
+        const { execFileSync } = require('child_process');
+        try {
+            execFileSync(ffPath, ['-y', '-i', camaVideoSrc, '-r', '30', path.join(camaFramesDir, 'frame_%03d.png')]);
+        } catch(e) {
+            console.error("Falha ao extrair cama local:", e);
+        }
+    }
+    
+    let camaFiles = fs.existsSync(camaFramesDir) ? fs.readdirSync(camaFramesDir).filter(f => f.endsWith('.png')) : [];
+    let totalBgFrames = camaFiles.length > 0 ? camaFiles.length : 321; // fallback para tamanho padrao V74
+
     // Render loop real
     for (let frameNumber = 1; frameNumber <= totalVideoFrames; frameNumber++) {
         // Clear globally allocated ctx instead of redefining
         ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
 
-        // Fundo absolutamente transparente para viabilizar Overlay no FFmpeg final (sem os cama_frames locais ignorados pelo git)
+        // Determinar o frame do loop usando Módulo contínuo!
+        let bgFrameIndex = ((frameNumber - 1) % totalBgFrames) + 1;
+        const bgFramePath = path.join(camaFramesDir, `frame_${String(bgFrameIndex).padStart(3, '0')}.png`);
+        if (fs.existsSync(bgFramePath)) {
+            const bgImg = await loadImage(bgFramePath);
+            ctx.drawImage(bgImg, 0, 0);
+        }
 
         // Animação Photo (Círculo Central)
         let totalZoomFrames = 45; // 1.5 s
@@ -397,7 +420,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         }
 
         const startRadius = 2400; 
-        const finalRadius = 270;
+        const finalRadius = 298; // Ajustado on-demand
         const currentMaskRadius = startRadius - ((startRadius - finalRadius) * easedZoomT);
         
         const startScale = (startRadius / finalRadius) * 1.02;
@@ -807,22 +830,15 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         const framesPattern = path.join(tmpFramesDir, 'frame_%03d.png');
         const absAudioPath = path.resolve(audioPath);
         
-        const camaVideo = path.join(CWD, 'assets', 'cama_sem_mic.mp4');
         statusCallback(`🎬 Gerando Reels Animado_legendado...`);
         await new Promise(r => setTimeout(r, 400));
         
         const args = [
             '-loglevel', 'error', '-y',
-            '-stream_loop', '-1', // Loop adaptável
-            '-r', '30',           // Força CFR no input para zerar o atraso (desync frames do tracking!)
-            '-i', camaVideo,      // [0] Background MP4 local
             '-framerate', FPS.toString(),
             '-start_number', '1', 
-            '-i', framesPattern,  // [1] Overlay gerado (PNGs transparentes)
-            '-i', absAudioPath,   // [2] Origem de áudio
-            '-filter_complex', '[0:v][1:v]overlay=shortest=1[outv]',
-            '-map', '[outv]',
-            '-map', '2:a',
+            '-i', framesPattern,  // [0] Sequência de frames TOTALMENTE RENDERIZADA na memória!
+            '-i', absAudioPath,   // [1] Origem de áudio
             '-c:v', 'libx264', '-preset', 'fast', '-pix_fmt', 'yuv420p',
             '-af', 'adelay=1500|1500', '-c:a', 'aac', '-shortest', outFile
         ];
