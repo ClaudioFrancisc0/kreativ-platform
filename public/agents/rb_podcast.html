@@ -547,6 +547,10 @@
                         
                         if (job.message !== lastMsgObj) {
                             lastMsgObj = job.message;
+                            
+                            let alreadyPrinted = Array.from(rLogs.children).find(el => el.innerText.includes(job.message));
+                            if (alreadyPrinted && !job.message.includes('Rastreando')) return;
+
                             if (job.message.includes('Rastreando')) {
                                 let existingLine = Array.from(rLogs.children).find(el => el.innerText.includes('Rastreando'));
                                 if (existingLine) {

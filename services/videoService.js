@@ -541,13 +541,25 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         
         ctx.font = '700 78px "New-Highway"';
         let guestNameStr = podcastData.guestName || "";
-        let nameSplit = guestNameStr.split(" ");
-        let firstName = nameSplit[0] || "";
-        let lastName = nameSplit.slice(1).join(" ") || "";
-        drawComponent([
-            {txt: firstName, dy: 0},
-            {txt: lastName, dy: 84}
-        ], 0, { left: 69, top: 1474, width: 440, align: "left" }, false, true);
+        let words = guestNameStr.split(" ");
+        let lines = [];
+        let currentLine = "";
+        for (let i = 0; i < words.length; i++) {
+            let testLine = currentLine + words[i] + " ";
+            if (ctx.measureText(testLine.trim()).width > 440 && i > 0) {
+                lines.push(currentLine.trim());
+                currentLine = words[i] + " ";
+            } else {
+                currentLine = testLine;
+            }
+        }
+        lines.push(currentLine.trim());
+        
+        // Ensure max 3 lines (though 440px width usually splits 3 words into max 3 lines anyway)
+        if (lines.length > 3) lines = lines.slice(0, 3);
+        
+        let compLines = lines.map((l, idx) => ({ txt: l, dy: idx * 84 }));
+        drawComponent(compLines, 0, { left: 69, top: 1474, width: 440, align: "left" }, false, true);
         
         // COMPONENTE 3: TITLE
         ctx.font = '400 44px "New-Highway"';
