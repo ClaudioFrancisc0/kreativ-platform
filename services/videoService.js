@@ -525,7 +525,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         // COMPONENTE 2: GUEST LABEL & GUEST NAME
         // O GuestLabel ("CONVIDADO:") está gravado fisicamente no mp4 cama_sem_mic.mp4
         
-        ctx.font = '700 78px "New-Highway"';
+        ctx.font = '700 70px "New-Highway"';
         let guestNameStr = podcastData.guestName || "";
         let words = guestNameStr.split(" ");
         let lines = [];
@@ -544,21 +544,30 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         // Ensure max 3 lines (though 440px width usually splits 3 words into max 3 lines anyway)
         if (lines.length > 3) lines = lines.slice(0, 3);
         
-        let compLines = lines.map((l, idx) => ({ txt: l, dy: idx * 84 }));
+        let compLines = lines.map((l, idx) => ({ txt: l, dy: idx * 76 }));
         drawComponent(compLines, 0, { left: 53, top: 1474, width: 480, align: "left" }, false, true);
         
         // COMPONENTE 3: TITLE
-        ctx.font = '400 44px "New-Highway"';
+        ctx.font = '400 36px "New-Highway"';
         let subj = (podcastData.title || "ASSUNTO AQUI").replace(/\.$/, "");
         let sWords = subj.split(" ");
-        let mid = Math.ceil(sWords.length / 2);
-        let titleLine1 = sWords.slice(0, mid).join(" ");
-        let titleLine2 = sWords.slice(mid).join(" ");
-        if(titleLine2.length > 0) titleLine2 += ".";
-        drawComponent([
-            {txt: titleLine1, dy: 0},
-            {txt: titleLine2, dy: 63.8}
-        ], 0, { right: 1022, top: 1428, width: 482, align: "right" }, true, false);
+        let linesTitle = [];
+        let curLine = "";
+        for (let i = 0; i < sWords.length; i++) {
+            let testLine = curLine + sWords[i] + " ";
+            if (ctx.measureText(testLine.trim()).width > 420 && i > 0) {
+                linesTitle.push(curLine.trim());
+                curLine = sWords[i] + " ";
+            } else {
+                curLine = testLine;
+            }
+        }
+        linesTitle.push(curLine.trim());
+        if (linesTitle.length > 3) linesTitle = linesTitle.slice(0, 3);
+        if (linesTitle.length > 0) linesTitle[linesTitle.length - 1] += ".";
+
+        let titleComps = linesTitle.map((l, idx) => ({ txt: l, dy: idx * 50 }));
+        drawComponent(titleComps, 0, { right: 1022, top: 1428, width: 482, align: "right" }, true, false);
 
         // COMPONENTE 4: ONDAS SONORAS E LEGENDAS!
         // FIXED POSITION AT BOTTOM, NO PARALLAX, WITH FADE IN
@@ -744,6 +753,8 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         const absAudioPath = path.resolve(audioPath);
         
         const camaVideo = path.join(CWD, 'assets', 'cama_sem_mic.mp4');
+        statusCallback(`🎬 Rastreando ${totalFrames} de ${totalFrames} frames...`);
+        await new Promise(r => setTimeout(r, 600));
         statusCallback('Compactando arquivos...');
         const args = [
             '-loglevel', 'error', '-y',
