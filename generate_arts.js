@@ -66,15 +66,43 @@ function drawTextInBox(ctx, text, boxConfig) {
 
     while (currentSize >= 12) {
         ctx.font = fontToCss(font, currentSize);
-        const words = finalString.split(' ');
         let currentLine = '';
         lines = [];
 
+        // Verifica quebra de linha forçada
+        if (finalString.includes('\n')) {
+            const forcedLines = finalString.split('\n');
+            let fits = true;
+            for(let fl of forcedLines) {
+                 if(measureWithSpacing(ctx, fl, spacing) > width) fits = false;
+            }
+            if(fits) {
+                lines = forcedLines;
+            } else {
+                // se usar quebra forçada mas continua excedendo a largura, tenta reduzir a fonte
+                 lines = forcedLines; // vamos manter mas a largura falhou, o loop vai continuar até caber
+            }
+            
+            let exceedsAnyForcedLine = false;
+            for(let fl of forcedLines) {
+                if(measureWithSpacing(ctx, fl, spacing) > width) exceedsAnyForcedLine = true;
+            }
+            
+            if(!exceedsAnyForcedLine) {
+                 // Cabe, usamos direto as forcedLines!
+            } else {
+                // Força o loop continuar sem setar 'lines' como final, ou a gente constroi baseado em 'bestLines' igual.
+                // Na verdade, se estourar, o for loop no else handle it. But we want to explicitly preserve \n.
+                // Let's just process word wrap per explicitly forced line segment!
+            }
+        }
+        
         let bestLines = null;
-        if (boxConfig.balancedWrap) {
+        if (boxConfig.balancedWrap && !finalString.includes('\n')) {
             if (measureWithSpacing(ctx, finalString, spacing) <= width) {
                 bestLines = [finalString];
             } else {
+                const words = finalString.split(' ');
                 let mid = Math.ceil(words.length / 2);
                 let l1 = words.slice(0, mid).join(' ');
                 let l2 = words.slice(mid).join(' ');
@@ -97,17 +125,23 @@ function drawTextInBox(ctx, text, boxConfig) {
         if (bestLines) {
             lines = bestLines;
         } else {
-            for (let i = 0; i < words.length; i++) {
-                const testLine = currentLine + words[i] + ' ';
-                const testWidth = measureWithSpacing(ctx, testLine.trimEnd(), spacing);
-                if (testWidth > width && i > 0) {
-                    lines.push(currentLine.trim());
-                    currentLine = words[i] + ' ';
-                } else {
-                    currentLine = testLine;
+            const rawSegments = finalString.split('\n');
+            lines = [];
+            for (let seq of rawSegments) {
+                const words = seq.split(' ');
+                currentLine = '';
+                for (let i = 0; i < words.length; i++) {
+                    const testLine = currentLine + words[i] + ' ';
+                    const testWidth = measureWithSpacing(ctx, testLine.trimEnd(), spacing);
+                    if (testWidth > width && i > 0) {
+                        lines.push(currentLine.trim());
+                        currentLine = words[i] + ' ';
+                    } else {
+                        currentLine = testLine;
+                    }
                 }
+                lines.push(currentLine.trim());
             }
-            lines.push(currentLine.trim());
         }
 
         textHeight = currentSize * lh;
@@ -115,7 +149,14 @@ function drawTextInBox(ctx, text, boxConfig) {
         if (boxConfig.maxLines) {
             if (lines.length <= boxConfig.maxLines) break;
         } else {
-            if (lines.length * textHeight <= height) break;
+            if (lines.length * textHeight <= height) {
+                 // Confirma que nenhuma das linhas individualmente estourou a largura!
+                 let allFitWidth = true;
+                 for(let l of lines) {
+                      if(measureWithSpacing(ctx, l, spacing) > width + 2) allFitWidth = false; // margem de 2px
+                 }
+                 if(allFitWidth) break;
+            }
         }
         
         currentSize -= 1;

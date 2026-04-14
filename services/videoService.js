@@ -155,7 +155,72 @@ function drawGroup(ctx, elements, basex, text, applyBlur = false, forceLeft = fa
     }
 }
 
-// drawImageWithBlur removido, utilizaremos ctx.filter diretamente.
+// Motor Kawase Blur (Upsampling Iterativo)
+function drawImageWithBlur(ctx, img, currentScale, currentMaskRadius, blurAmount, currentCenterY) {
+    const CANVAS_W = 1080;
+    const CANVAS_H = 1920;
+
+    if (blurAmount < 1) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(CANVAS_W / 2, currentCenterY, currentMaskRadius, 0, Math.PI * 2);
+        ctx.clip();
+        
+        let fw = img.width * currentScale;
+        let fh = img.height * currentScale;
+        let fx = (CANVAS_W / 2) - (fw / 2);
+        let fy = currentCenterY - (fh / 2);
+        
+        ctx.drawImage(img, fx, fy, fw, fh);
+        ctx.restore();
+        return;
+    }
+    
+    const shrinkFactor = Math.max(1, blurAmount / 45);
+    let currentW = Math.max(2, Math.floor(CANVAS_W / shrinkFactor));
+    let currentH = Math.max(2, Math.floor(CANVAS_H / shrinkFactor));
+    
+    let currentCanvas = createCanvas(currentW, currentH);
+    let tCtx = currentCanvas.getContext('2d');
+    tCtx.imageSmoothingEnabled = true;
+    
+    tCtx.save();
+    tCtx.beginPath();
+    tCtx.arc(currentW / 2, (currentCenterY / shrinkFactor), currentMaskRadius / shrinkFactor, 0, Math.PI * 2);
+    tCtx.clip();
+    
+    const dw = img.width * currentScale / shrinkFactor;
+    const dh = img.height * currentScale / shrinkFactor;
+    tCtx.drawImage(img, (currentW/2) - (dw/2), (currentCenterY / shrinkFactor) - (dh/2), dw, dh);
+    tCtx.restore();
+    
+    while (currentW < CANVAS_W && currentW < 800) {
+        let nextW = Math.min(CANVAS_W, Math.floor(currentW * 1.5));
+        let nextH = Math.min(CANVAS_H, Math.floor(currentH * 1.5));
+        
+        let upCanvas = createCanvas(nextW, nextH);
+        let uCtx = upCanvas.getContext('2d');
+        uCtx.imageSmoothingEnabled = true;
+
+        let off = 2;
+        uCtx.globalAlpha = 1.0;
+        uCtx.drawImage(currentCanvas, 0, 0, currentW, currentH, 0, 0, nextW, nextH);
+        uCtx.globalAlpha = 0.5;
+        uCtx.drawImage(currentCanvas, 0, 0, currentW, currentH, -off, 0, nextW + off, nextH);
+        uCtx.globalAlpha = 0.333;
+        uCtx.drawImage(currentCanvas, 0, 0, currentW, currentH, 0, -off, nextW, nextH + off);
+        uCtx.globalAlpha = 0.25;
+        uCtx.drawImage(currentCanvas, 0, 0, currentW, currentH, off, off, nextW - off, nextH - off);
+        
+        currentW = nextW;
+        currentH = nextH;
+        currentCanvas = upCanvas;
+    }
+    
+    ctx.imageSmoothingEnabled = true;
+    ctx.globalAlpha = 1.0;
+    ctx.drawImage(currentCanvas, 0, 0, currentW, currentH, 0, 0, CANVAS_W, CANVAS_H);
+}
 
 // ==== SERVIÇOS EXPORTADOS ====
 
@@ -313,11 +378,22 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         // PERMITE O EVENT LOOP RESPIRAR PARA ENVIAR AS MENSAGENS AO CLIENTE NO SSE
         await new Promise(r => setImmediate(r));
         
-        // Clear globally allocated ctx instead of redefining
         ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
 
-        // Fundo absolutamente transparente para viabilizar Overlay no FFmpeg final
-        ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+        // Fundo nativo obrigatório queimado na malha para evitar desync do tracker!
+        const bgFramePath = path.join(__dirname, '..', 'cama_frames', `frame_${String(frameNumber).padStart(3, '0')}.png`);
+        if (fs.existsSync(bgFramePath)) {
+            const bgImg = await loadImage(bgFramePath);
+            ctx.drawImage(bgImg, 0, 0);
+        } else {
+            // Se passar dos frames extraídos (exemplo > 321), mantém estático com o último frame ou algo neutro.
+            // O ideal é sempre ter o loop da Cama.
+            const staticBgPath = path.join(__dirname, '..', 'cama_frames', `frame_320.png`);
+            if (fs.existsSync(staticBgPath)) {
+                const staticBgImg = await loadImage(staticBgPath);
+                ctx.drawImage(staticBgImg, 0, 0);
+            }
+        }
 
         // Animação Photo (Círculo Central)
         let totalZoomFrames = 45; // 1.5 s
@@ -335,50 +411,31 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
             currentCenterY += yShiftOffset;
         }
 
-        const startRadius = 375 * 1.5; 
-        const finalRadius = 298; // ajustado conforme pedido
+        const startRadius = 2400; 
+        const finalRadius = 270;
         const currentMaskRadius = startRadius - ((startRadius - finalRadius) * easedZoomT);
         
-        let imgScaleX = (currentMaskRadius * 2) / guestImg.width;
-        let imgScaleY = (currentMaskRadius * 2) / guestImg.height;
-        let imgScale = Math.max(imgScaleX, imgScaleY) * 1.02; // padding leve anti-borda preta
+        const startScale = (startRadius / finalRadius) * 1.02;
+        const finalScale = ((finalRadius * 2) + 2) / guestImg.width;
         
-        let drawW = guestImg.width * imgScale;
-        let drawH = guestImg.height * imgScale;
+        const currentScale = startScale - ((startScale - finalScale) * easedZoomT);
+        
+        let easedBlurT = delayedFocusEase(t);
+        const maxBlur = 1700;
+        const currentBlur = Math.max(0, maxBlur - (maxBlur * easedBlurT));
 
-        // --- Desfoque inicial: renderiza em canvas off-screen para evitar vazamento pelo clip ---
-        let blurProgress = 1 - easedZoomT; // Desfoque proporcional ao zoom: começa máximo, termina zero
-        let currentBlurPx = Math.max(0, Math.round(22 * blurProgress));
-        
-        const photoOffCtx = blurPools.baseCtx;
-        const photoOffCanvas = blurPools.baseCanvas;
-        photoOffCtx.clearRect(0, 0, CANVAS_W, CANVAS_H);
-        
-        if (currentBlurPx > 0) {
-            // Reduz a imagem para simular blur pesado sem vazar pelo clip
-            const downFactor = Math.max(1, Math.round(1 + currentBlurPx / 4));
-            const dW2 = Math.max(4, Math.round(drawW / downFactor));
-            const dH2 = Math.max(4, Math.round(drawH / downFactor));
-            const ox = Math.round((CANVAS_W / 2) - (drawW / 2));
-            const oy = Math.round(currentCenterY - (drawH / 2));
-            // Downsample
-            photoOffCtx.imageSmoothingEnabled = true;
-            photoOffCtx.drawImage(guestImg, 0, 0, guestImg.width, guestImg.height, ox, oy, dW2, dH2);
-            // Upsample de volta para simular desfoque
-            photoOffCtx.drawImage(photoOffCanvas, ox, oy, dW2, dH2, ox, oy, drawW, drawH);
+        if (currentBlur > 0.1) {
+            drawImageWithBlur(ctx, guestImg, currentScale, currentMaskRadius, currentBlur, currentCenterY);
         } else {
-            const ox = Math.round((CANVAS_W / 2) - (drawW / 2));
-            const oy = Math.round(currentCenterY - (drawH / 2));
-            photoOffCtx.drawImage(guestImg, ox, oy, drawW, drawH);
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(CANVAS_W / 2, currentCenterY, currentMaskRadius, 0, Math.PI * 2);
+            ctx.clip();
+            const dw = guestImg.width * currentScale;
+            const dh = guestImg.height * currentScale;
+            ctx.drawImage(guestImg, (CANVAS_W/2) - (dw/2), currentCenterY - (dh/2), dw, dh);
+            ctx.restore();
         }
-        
-        // Recorta o resultado já borrado na máscara circular do canvas principal
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(CANVAS_W / 2, currentCenterY, currentMaskRadius, 0, Math.PI * 2);
-        ctx.clip();
-        ctx.drawImage(photoOffCanvas, 0, 0);
-        ctx.restore();
 
 
         // V74 CORE RESTORED
@@ -577,7 +634,8 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         if (linesTitle.length > 0) linesTitle[linesTitle.length - 1] += ".";
 
         let titleComps = linesTitle.map((l, idx) => ({ txt: l, dy: idx * 50 }));
-        drawComponent(titleComps, 0, { right: 1015, top: 1428, width: 482, align: "right" }, true, false);
+        // Ajustamos para 1045 em vez de 1015 para ir mais para a direita conforme pedido!
+        drawComponent(titleComps, 0, { right: 1045, top: 1428, width: 482, align: "right" }, true, false);
 
         // COMPONENTE 4: ONDAS SONORAS E LEGENDAS!
         // FIXED POSITION AT BOTTOM, NO PARALLAX, WITH FADE IN
@@ -768,15 +826,10 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         statusCallback('Compactando arquivos...');
         const args = [
             '-loglevel', 'error', '-y',
-            '-stream_loop', '-1', // Loop infinito adaptável da cama
-            '-i', camaVideo,      // [0] Background
             '-framerate', FPS.toString(),
-            '-start_number', '1', // Evita que o FFmpeg engula o primeiro frame ao procurar o 000
-            '-i', framesPattern,  // [1] Overlay dinâmico transparente do node-canvas
-            '-i', absAudioPath,   // [2] Origem de áudio p/ final
-            '-filter_complex', '[0:v][1:v]overlay=shortest=1[outv]',
-            '-map', '[outv]',
-            '-map', '2:a',
+            '-start_number', '1', 
+            '-i', framesPattern,  // [0] Imagens compostas 
+            '-i', absAudioPath,   // [1] Origem de áudio p/ final
             '-c:v', 'libx264', '-pix_fmt', 'yuv420p',
             '-af', 'adelay=1500|1500', '-c:a', 'aac', '-shortest', outFile
         ];
