@@ -158,7 +158,6 @@ function drawGroup(ctx, elements, basex, text, applyBlur = false, forceLeft = fa
 function drawImageWithBlur(ctx, guestImg, currentScale, currentMaskRadius, currentBlur, currentCenterY, pools) {
     const CANVAS_W = 1080;
     const CANVAS_H = 1920;
-    const passes = Math.max(1, Math.floor(currentBlur / 60));
     
     let baseCanvas = pools.baseCanvas;
     let baseCtx = pools.baseCtx;
@@ -174,45 +173,24 @@ function drawImageWithBlur(ctx, guestImg, currentScale, currentMaskRadius, curre
     baseCtx.drawImage(guestImg, (CANVAS_W/2) - (dw/2), currentCenterY - (dh/2), dw, dh);
     baseCtx.restore();
 
-    if (passes <= 1) {
+    if (currentBlur <= 0.1) {
         ctx.drawImage(baseCanvas, 0, 0);
         return;
     }
 
+    let scaleDiv = Math.max(1.0, Math.min(4.0, 1.0 + (currentBlur / 400.0)));
+    let downW = Math.max(20, Math.floor(CANVAS_W / scaleDiv));
+    let downH = Math.max(35, Math.floor(CANVAS_H / scaleDiv));
+
     let downCanvas = pools.downCanvas;
     let downCtx = pools.downCtx;
     downCtx.clearRect(0, 0, CANVAS_W / 4, CANVAS_H / 4);
-    downCtx.drawImage(baseCanvas, 0, 0, CANVAS_W, CANVAS_H, 0, 0, CANVAS_W / 4, CANVAS_H / 4);
     
-    let currentCanvas = downCanvas;
-    let currentW = CANVAS_W / 4;
-    let currentH = CANVAS_H / 4;
-
-    for (let i = 0; i < passes; i++) {
-        let nextW = currentW;
-        let nextH = currentH;
-        let upCanvas = (i % 2 === 0) ? pools.upCanvas1 : pools.upCanvas2;
-        let uCtx = (i % 2 === 0) ? pools.upCtx1 : pools.upCtx2;
-        uCtx.clearRect(0, 0, nextW, nextH);
-        
-        let off = 2;
-        uCtx.globalAlpha = 1.0;
-        uCtx.drawImage(currentCanvas, 0, 0, currentW, currentH, 0, 0, nextW, nextH);
-        uCtx.globalAlpha = 0.5;
-        uCtx.drawImage(currentCanvas, 0, 0, currentW, currentH, -off, 0, nextW + off, nextH);
-        uCtx.globalAlpha = 0.333;
-        uCtx.drawImage(currentCanvas, 0, 0, currentW, currentH, 0, -off, nextW, nextH + off);
-        uCtx.globalAlpha = 0.25;
-        uCtx.drawImage(currentCanvas, 0, 0, currentW, currentH, off, off, nextW - off, nextH - off);
-        
-        currentW = nextW;
-        currentH = nextH;
-        currentCanvas = upCanvas;
-    }
+    downCtx.imageSmoothingEnabled = true;
+    downCtx.drawImage(baseCanvas, 0, 0, CANVAS_W, CANVAS_H, 0, 0, downW, downH);
     
     ctx.imageSmoothingEnabled = true;
-    ctx.globalAlpha = 1.0;
-    ctx.drawImage(currentCanvas, 0, 0, currentW, currentH, 0, 0, CANVAS_W, CANVAS_H);
+    ctx.drawImage(downCanvas, 0, 0, downW, downH, 0, 0, CANVAS_W, CANVAS_H);
 }
 
 // ==== SERVIÇOS EXPORTADOS ====
@@ -397,7 +375,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         }
 
         const startRadius = 2400; 
-        const finalRadius = 290;
+        const finalRadius = 300;
         const currentMaskRadius = startRadius - ((startRadius - finalRadius) * easedZoomT);
         const startScale = (startRadius / finalRadius) * 1.02;
         const finalScale = ((finalRadius * 2) + 2) / guestImg.width;
@@ -530,7 +508,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
             ctx.font = '600 36px "New-Highway"';
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.fillStyle = '#006BFF'; // Match parameter blue
+            ctx.fillStyle = '#3571FE'; // Match parameter blue for video
             if (blurSteps > 0) {
                 ctx.globalAlpha = 0.8 / blurSteps;
                 for (let i = 0; i < blurSteps; i++) {
@@ -580,7 +558,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         drawComponent([
             {txt: titleLine1, dy: 0},
             {txt: titleLine2, dy: 63.8}
-        ], 0, { right: 1019, top: 1428, width: 482, align: "right" }, true, false);
+        ], 0, { right: 1022, top: 1428, width: 482, align: "right" }, true, false);
 
         // COMPONENTE 4: ONDAS SONORAS E LEGENDAS!
         // FIXED POSITION AT BOTTOM, NO PARALLAX, WITH FADE IN
@@ -672,7 +650,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
             let boxHeight = (lines.length * (fSize + 10)) + padY*2 - 10;
             
             // Fundo Azul
-            ctx.fillStyle = '#006BFF';
+            ctx.fillStyle = '#3571FE';
             drawRoundedRect(ctx, subX - boxWidth/2, subY, boxWidth, boxHeight, 15);
             ctx.fill();
             
