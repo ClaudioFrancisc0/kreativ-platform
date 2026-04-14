@@ -539,7 +539,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         // COMPONENTE 2: GUEST LABEL & GUEST NAME
         // O GuestLabel ("CONVIDADO:") está gravado fisicamente no mp4 cama_sem_mic.mp4
         
-        ctx.font = '700 89px "New-Highway"';
+        ctx.font = '700 78px "New-Highway"';
         let guestNameStr = podcastData.guestName || "";
         let nameSplit = guestNameStr.split(" ");
         let firstName = nameSplit[0] || "";
@@ -547,21 +547,20 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         drawComponent([
             {txt: firstName, dy: 0},
             {txt: lastName, dy: 84}
-        ], 0, { left: 71, top: 1440, width: 940, align: "left" }, false, true);
+        ], 0, { left: 69, top: 1474, width: 440, align: "left" }, false, true);
         
         // COMPONENTE 3: TITLE
         ctx.font = '400 44px "New-Highway"';
         let subj = (podcastData.title || "ASSUNTO AQUI").replace(/\.$/, "");
-        subj = `"${subj}"`; 
         let sWords = subj.split(" ");
         let mid = Math.ceil(sWords.length / 2);
         let titleLine1 = sWords.slice(0, mid).join(" ");
         let titleLine2 = sWords.slice(mid).join(" ");
-        
+        if(titleLine2.length > 0) titleLine2 += ".";
         drawComponent([
             {txt: titleLine1, dy: 0},
-            {txt: titleLine2, dy: 66}
-        ], 0, { left: 73, top: 1640, width: 653, align: "left" }, false, false);
+            {txt: titleLine2, dy: 63.8}
+        ], 0, { right: 1022, top: 1428, width: 482, align: "right" }, true, false);
 
         // COMPONENTE 4: ONDAS SONORAS E LEGENDAS!
         // FIXED POSITION AT BOTTOM, NO PARALLAX, WITH FADE IN
@@ -721,9 +720,10 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         // embutidos no yShiftOffset global para não descolar da Foto em movimento!
         cy_mic += yShiftOffset;
 
-        // Escala manual porque o asset principal é muito maior que o 'menor.png' original
-        let micScale = 0.55;
-        ctx.drawImage(micImg, cx_mic, cy_mic, micImg.width * micScale, micImg.height * micScale);
+        if (micImg) {
+            let micScale = 1.0;
+            ctx.drawImage(micImg, cx_mic, cy_mic, micImg.width * micScale, micImg.height * micScale);
+        }
     }
 
         const frameTitle = String(frameNumber).padStart(3, '0');
