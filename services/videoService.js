@@ -397,7 +397,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         }
 
         const startRadius = 2400; 
-        const finalRadius = 375;
+        const finalRadius = 290;
         const currentMaskRadius = startRadius - ((startRadius - finalRadius) * easedZoomT);
         const startScale = (startRadius / finalRadius) * 1.02;
         const finalScale = ((finalRadius * 2) + 2) / guestImg.width;
@@ -527,19 +527,37 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
             let numExtraX = base_maxX - 131.5;
             let numExtraY = base_maxY - 29.5; 
             ctx.save();
-            ctx.font = '600 36px "New-Highway"';
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillStyle = '#1c7cf3'; // Slightly lighter blue to prevent looking too dark on video
+            let boxW = 156;
+            let boxH = 50;
+            
             if (blurSteps > 0) {
                 ctx.globalAlpha = 0.8 / blurSteps;
                 for (let i = 0; i < blurSteps; i++) {
                     let f = (i / blurSteps) - 0.5;
+                    // Box Blur
+                    ctx.fillStyle = '#FFCD00'; 
+                    drawRoundedRect(ctx, numExtraX - boxW/2 + blur_vx*f, numExtraY - boxH/2 + blur_vy*f + 1, boxW, boxH, boxH/2);
+                    ctx.fill();
+                    // Text Blur
+                    ctx.fillStyle = '#024BE7';
+                    ctx.font = '600 36px "New-Highway"';
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
                     ctx.fillText(rawNum, numExtraX + blur_vx*f, numExtraY + blur_vy*f + 1);
                 }
                 ctx.globalAlpha = 1.0;
             }
+            // Box
+            ctx.fillStyle = '#FFCD00'; 
+            drawRoundedRect(ctx, numExtraX - boxW/2, numExtraY - boxH/2 + 1, boxW, boxH, boxH/2);
+            ctx.fill();
+            // Text
+            ctx.fillStyle = '#024BE7';
+            ctx.font = '600 36px "New-Highway"';
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
             ctx.fillText(rawNum, numExtraX, numExtraY + 1);
+            
             ctx.restore();
         }
 
@@ -566,7 +584,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         if (lines.length > 3) lines = lines.slice(0, 3);
         
         let compLines = lines.map((l, idx) => ({ txt: l, dy: idx * 84 }));
-        drawComponent(compLines, 0, { left: 52, top: 1474, width: 480, align: "left" }, false, true);
+        drawComponent(compLines, 0, { left: 53, top: 1474, width: 480, align: "left" }, false, true);
         
         // COMPONENTE 3: TITLE
         ctx.font = '400 44px "New-Highway"';
@@ -579,7 +597,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         drawComponent([
             {txt: titleLine1, dy: 0},
             {txt: titleLine2, dy: 63.8}
-        ], 0, { right: 1014, top: 1428, width: 482, align: "right" }, true, false);
+        ], 0, { right: 1011, top: 1428, width: 482, align: "right" }, true, false);
 
         // COMPONENTE 4: ONDAS SONORAS E LEGENDAS!
         // FIXED POSITION AT BOTTOM, NO PARALLAX, WITH FADE IN
