@@ -166,7 +166,10 @@ router.post('/rb_podcast/render', verifyToken, express.json(), async (req, res) 
                     job.message = msg;
                 });
 
-                job.message = 'Compactando o ZIP...';
+                job.message = 'Compactando arquivos...';
+                
+                // Delay artificial para que o front-end tenha tempo de buscar a mensagem via polling
+                await new Promise(r => setTimeout(r, 800));
 
                 // 3. Empacota tudo
                 const outputZip = fs.createWriteStream(zipFilePath);
