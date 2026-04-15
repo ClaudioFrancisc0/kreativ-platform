@@ -536,7 +536,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
                     textList.forEach(t => {
                         let subY = dynY + blur_vy*f + t.dy;
                         if(isDiagonalAsc) subY += (dir_blur_vx*f * -0.75);
-                        drawMultilineText(ctx, t.txt, dynX + dir_blur_vx*f, subY, block.width, block.lh || 0);
+                        ctx.fillText(t.txt, dynX + dir_blur_vx*f, subY);
                     });
                 }
                 ctx.globalAlpha = 0.5;
@@ -545,7 +545,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
             }
             ctx.fillStyle = '#FFFFFF'; 
             textList.forEach(t => {
-                drawMultilineText(ctx, t.txt, dynX, dynY + t.dy, block.width, block.lh || 0);
+                ctx.fillText(t.txt, dynX, dynY + t.dy);
             });
             ctx.restore();
         };
