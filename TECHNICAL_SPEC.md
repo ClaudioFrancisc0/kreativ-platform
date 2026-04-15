@@ -74,7 +74,7 @@ O sistema lê este JSON. Nunca gere quebras puras de matemática para custom tex
 
 ### Vídeo Animado (`videoService.js`)
 *(Medidas em coordenadas flutuantes nativas amarradas ao `box_tracking_true.json`)*
-*   **Box de Assunto (Title):** Atrelado estritamente à âncora `right: 1022`, preenchendo um quadro flutuante de `w:482` movendo-se lateral e verticalmente via cálculos `dynY = block.top - bg_scrollY + yOffset` de paralaxe fotográfica simulada.
+*   **Box de Assunto (Title):** Atrelado estritamente à âncora `right: 1033` (afastado 12px da margem direita original por segurança do design), preenchendo um quadro flutuante de `w:482` movendo-se lateral e verticalmente via cálculos `dynY = block.top - bg_scrollY + yOffset` de paralaxe fotográfica simulada.
 *   **Caixa do Número:** Crava precisamente em `numExtraX = base_maxX - 131.5` e `numExtraY = base_maxY - 29.5`. Fonte `36px New-Highway-Bold`. Usa cor `#3571FE` (Azul da paleta).
 *   **Microfone Físico:** Recebe a mesma regra gravitacional base, ancorando-se fixo com offset `yShiftOffset` global de +80px gerado pela variável `standardEaseEase` no segundo 2 da animação.
 
