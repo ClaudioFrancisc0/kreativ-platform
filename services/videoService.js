@@ -644,8 +644,8 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         if (linesTitle.length > 0) linesTitle[linesTitle.length - 1] += ".";
 
         let titleComps = linesTitle.map((l, idx) => ({ txt: l, dy: idx * 50 }));
-        // Ajustamos para 1045 em vez de 1015 para ir mais para a direita conforme pedido!
-        drawComponent(titleComps, 0, { right: 1045, top: 1428, width: 482, align: "right" }, true, false);
+        // Ajustamos para 1033 em vez de 1045 para ir mais 12px para a esquerda conforme pedido!
+        drawComponent(titleComps, 0, { right: 1033, top: 1428, width: 482, align: "right" }, true, false);
 
         // COMPONENTE 4: ONDAS SONORAS E LEGENDAS!
         // FIXED POSITION AT BOTTOM, NO PARALLAX, WITH FADE IN
