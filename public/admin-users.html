@@ -448,9 +448,11 @@
                     <tr>
                         <td>${user.email}</td>
                         <td>
-                            ${user.role === 'admin'
-                        ? '<span class="badge-admin">Admin</span>'
-                        : '<span style="color: #999;">Usuário</span>'}
+                            ${user.role === 'dev'
+                                ? '<span class="badge-admin" style="background:#dc3545;">Dev</span>'
+                                : user.role === 'admin'
+                                    ? '<span class="badge-admin">Admin</span>'
+                                    : '<span style="color: #999;">Usuário</span>'}
                         </td>
                         <td>
                             ${user.is_active
@@ -464,7 +466,7 @@
                         </td>
                         <td>${createdDate}</td>
                         <td>
-                            ${!isCurrentUser ? `
+                            ${user.role === 'dev' || user.email === 'claudio.meneghetti@studiome.com.br' ? '<em style="color: #666; font-size:12px;">🔒 Protegido</em>' : !isCurrentUser ? `
                                 <div class="action-btns">
                                     <button class="btn btn-sm btn-secondary" onclick="toggleRole(${user.id}, '${user.role}')">
                                         ${user.role === 'admin' ? '👤 Remover Admin' : '🔑 Tornar Admin'}

@@ -113,6 +113,11 @@ router.patch('/:id/role', [
             return res.status(403).json({ error: 'Você não pode alterar sua própria role' });
         }
 
+        // Proteção do usuário Dev
+        if (user.role === 'dev' || user.email === 'claudio.meneghetti@studiome.com.br') {
+            return res.status(403).json({ error: 'Operação não permitida neste tipo de usuário.' });
+        }
+
         // Atualizar role
         await updateUserRole(userId, role);
 
@@ -135,6 +140,11 @@ router.patch('/:id/reset-password', verifyToken, requireAdmin, async (req, res) 
         const user = await findUserById(userId);
         if (!user) {
             return res.status(404).json({ error: 'Usuário não encontrado' });
+        }
+
+        // Proteção do usuário Dev
+        if (user.role === 'dev' || user.email === 'claudio.meneghetti@studiome.com.br') {
+            return res.status(403).json({ error: 'Operação não permitida neste tipo de usuário.' });
         }
 
         // Forçar reset de senha
@@ -177,6 +187,11 @@ router.patch('/:id/toggle-active', [
             return res.status(403).json({ error: 'Você não pode desativar sua própria conta' });
         }
 
+        // Proteção do usuário Dev
+        if (user.role === 'dev' || user.email === 'claudio.meneghetti@studiome.com.br') {
+            return res.status(403).json({ error: 'Operação não permitida neste tipo de usuário.' });
+        }
+
         // Toggle active
         await toggleUserActive(userId, isActive);
 
@@ -208,6 +223,11 @@ router.patch('/:id/agents', [
         const user = await findUserById(userId);
         if (!user) {
             return res.status(404).json({ error: 'Usuário não encontrado' });
+        }
+
+        // Proteção do usuário Dev
+        if (user.role === 'dev' || user.email === 'claudio.meneghetti@studiome.com.br') {
+            return res.status(403).json({ error: 'Operação não permitida neste tipo de usuário.' });
         }
 
         const validAgents = ['rb_podcast'];

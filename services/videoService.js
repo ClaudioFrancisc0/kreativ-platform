@@ -576,22 +576,26 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         // O GuestLabel ("CONVIDADO:") está gravado fisicamente no mp4 cama_sem_mic.mp4
         
         ctx.font = '700 70px "New-Highway"';
-        let guestNameStr = podcastData.guestName || "";
-        let words = guestNameStr.split(" ");
+        let guestNameStr = (podcastData.guestName || "").replace(/\r\n/g, '\n');
+        let rawSegments = guestNameStr.split('\n');
         let lines = [];
-        let currentLine = "";
-        for (let i = 0; i < words.length; i++) {
-            let testLine = currentLine + words[i] + " ";
-            if (ctx.measureText(testLine.trim()).width > 440 && i > 0) {
-                lines.push(currentLine.trim());
-                currentLine = words[i] + " ";
-            } else {
-                currentLine = testLine;
-            }
-        }
-        lines.push(currentLine.trim());
         
-        // Ensure max 3 lines (though 440px width usually splits 3 words into max 3 lines anyway)
+        for (let seq of rawSegments) {
+            let words = seq.split(" ");
+            let currentLine = "";
+            for (let i = 0; i < words.length; i++) {
+                let testLine = currentLine + words[i] + " ";
+                if (ctx.measureText(testLine.trim()).width > 440 && i > 0) {
+                    lines.push(currentLine.trim());
+                    currentLine = words[i] + " ";
+                } else {
+                    currentLine = testLine;
+                }
+            }
+            if (currentLine.trim()) lines.push(currentLine.trim());
+        }
+        
+        // Ensure max 3 lines
         if (lines.length > 3) lines = lines.slice(0, 3);
         
         let compLines = lines.map((l, idx) => ({ txt: l, dy: idx * 76 }));
