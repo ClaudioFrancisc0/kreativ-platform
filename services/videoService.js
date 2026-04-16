@@ -603,34 +603,12 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
         
         // COMPONENTE 3: TITLE
         ctx.font = '400 36px "New-Highway"';
-        let subj = (podcastData.title || "ASSUNTO AQUI").replace(/\.$/, "");
-        let sWords = subj.split(" ");
-        let linesTitle = null;
-        let finalTitleString = sWords.join(" ");
+        let subj = (podcastData.title || "ASSUNTO AQUI").replace(/\.$/, "").replace(/\r\n/g, '\n');
+        let titleSegments = subj.split('\n');
+        let linesTitle = [];
         
-        if (ctx.measureText(finalTitleString).width <= 482) {
-            linesTitle = [finalTitleString];
-        } else {
-            let mid = Math.ceil(sWords.length / 2);
-            let l1 = sWords.slice(0, mid).join(" ");
-            let l2 = sWords.slice(mid).join(" ");
-            if (ctx.measureText(l1).width <= 482 && ctx.measureText(l2).width <= 482) {
-                linesTitle = [l1, l2];
-            } else {
-                let third = Math.ceil(sWords.length / 3);
-                let l1_3 = sWords.slice(0, third).join(" ");
-                let l2_3 = sWords.slice(third, third * 2).join(" ");
-                let l3_3 = sWords.slice(third * 2).join(" ");
-                if (ctx.measureText(l1_3).width <= 482 && 
-                    ctx.measureText(l2_3).width <= 482 && 
-                    ctx.measureText(l3_3).width <= 482) {
-                    linesTitle = [l1_3, l2_3, l3_3].filter(l => l.length > 0);
-                }
-            }
-        }
-        
-        if (!linesTitle) {
-            linesTitle = [];
+        for (let seq of titleSegments) {
+            let sWords = seq.split(" ");
             let curLine = "";
             for (let i = 0; i < sWords.length; i++) {
                 let testLine = curLine + sWords[i] + " ";
@@ -641,7 +619,7 @@ async function generateAnimatedVideo(podcastData, photoPath, audioPath, subtitle
                     curLine = testLine;
                 }
             }
-            linesTitle.push(curLine.trim());
+            if (curLine.trim()) linesTitle.push(curLine.trim());
         }
 
         if (linesTitle.length > 3) linesTitle = linesTitle.slice(0, 3);
