@@ -55,6 +55,7 @@ function drawTextInBox(ctx, text, boxConfig) {
 
     let finalString = text;
     if (uppercase) finalString = finalString.toUpperCase();
+    if (boxConfig.maxLines === 1) finalString = finalString.replace(/[\r\n]+/g, ' ').trim();
     // addQuotes: NÃO inclui " no wrapping — é desenhado separadamente após a última linha
 
     const spacing = letterSpacing || 0;

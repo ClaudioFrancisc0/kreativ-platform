@@ -7,7 +7,7 @@
       "number":     { "left": 109, "top": 96, "width": 168, "height": 48,  "font": "new-highway-semibold", "baselineSize": 48, "color": "#006BFF", "align": "center", "verticalAlign": "middle" },
       "guestLabel": { "left": 79,  "top": 258, "width": 260, "height": 45,  "font": "new-highway-regular",  "baselineSize": 42, "color": "#FFFFFF", "uppercase": true, "letterSpacing": 1.0 },
       "guestName":  { "left": 75,  "top": 307, "width": 450, "height": 420, "font": "new-highway-bold",     "baselineSize": 110,"color": "#FFFFFF", "lineHeight": 0.98, "letterSpacing": -1.1 },
-      "title":      { "left": 80,  "top": 725, "width": 809, "height": 130, "font": "new-highway-regular",  "baselineSize": 40, "color": "#FFFFFF", "addQuotes": true, "lineHeight": 1.45, "balancedWrap": true }
+      "title":      { "left": 80,  "top": 725, "width": 809, "height": 190, "font": "new-highway-regular",  "baselineSize": 40, "color": "#FFFFFF", "addQuotes": true, "lineHeight": 1.45, "balancedWrap": true }
     }
   },
   "BannerSite_1440x780": {
@@ -43,7 +43,7 @@
     "elements": {
       "number":     { "left": 71,  "top": 197,  "width": 206, "height": 76,  "font": "new-highway-semibold", "baselineSize": 40, "color": "#024BE7", "align": "center", "verticalAlign": "middle" },
       "guestLabel": { "left": 71,  "top": 1383, "width": 286, "height": 42,  "font": "new-highway-light",    "baselineSize": 42, "color": "#FFFFFF", "uppercase": true, "letterSpacing": 3 },
-      "guestName":  { "left": 71,  "top": 1440, "width": 940, "height": 180, "font": "new-highway-bold",     "baselineSize": 89, "color": "#FFFFFF", "lineHeight": 0.95, "maxLines": 3 },
+      "guestName":  { "left": 71,  "top": 1440, "width": 940, "height": 150, "font": "new-highway-bold",     "baselineSize": 89, "color": "#FFFFFF", "lineHeight": 0.95, "maxLines": 1 },
       "title":      { "left": 73,  "top": 1640, "width": 930, "height": 200, "font": "new-highway-regular",  "baselineSize": 44, "color": "#FFFFFF", "lineHeight": 1.5, "addQuotes": true, "balancedWrap": true }
     }
   }
