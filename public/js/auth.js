@@ -53,7 +53,7 @@ async function checkAuth(requireAdmin = false) {
         }
 
         // Verificar se requer admin
-        if (requireAdmin && data.user.role !== 'admin') {
+        if (requireAdmin && data.user.role !== 'admin' && data.user.role !== 'dev') {
             window.location.href = '/agents.html';
             return false;
         }

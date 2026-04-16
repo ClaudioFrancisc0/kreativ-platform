@@ -47,7 +47,7 @@ router.post('/', [
     verifyToken,
     requireAdmin,
     body('email').isEmail().withMessage('Email inválido'),
-    body('role').isIn(['user', 'admin']).withMessage('Role deve ser user ou admin')
+    body('role').isIn(['user', 'admin', 'dev']).withMessage('Role deve ser user ou admin ou dev')
 ], async (req, res) => {
     try {
         // Validar dados
@@ -90,7 +90,7 @@ router.post('/', [
 router.patch('/:id/role', [
     verifyToken,
     requireAdmin,
-    body('role').isIn(['user', 'admin']).withMessage('Role deve ser user ou admin')
+    body('role').isIn(['user', 'admin', 'dev']).withMessage('Role deve ser user, admin ou dev')
 ], async (req, res) => {
     try {
         // Validar dados
