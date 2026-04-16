@@ -9,7 +9,8 @@ const {
     forcePasswordReset,
     toggleUserActive,
     updateUserAgents,
-    findUserById
+    findUserById,
+    deleteUser
 } = require('../database/userModel');
 
 /**
@@ -243,6 +244,46 @@ router.patch('/:id/agents', [
     } catch (error) {
         console.error('Erro ao atualizar agentes:', error);
         res.status(500).json({ error: 'Erro ao atualizar agentes' });
+    }
+});
+
+/**
+ * DELETE /api/users/:id
+ * Exclui conta inativa (admin only)
+ */
+router.delete('/:id', [
+    verifyToken,
+    requireAdmin
+], async (req, res) => {
+    try {
+        const userId = parseInt(req.params.id);
+
+        // Verificar se usuário existe
+        const user = await findUserById(userId);
+        if (!user) {
+            return res.status(404).json({ error: 'Usuário não encontrado' });
+        }
+
+        // Não permitir que usuário exclua a si mesmo
+        if (userId === req.user.id) {
+            return res.status(403).json({ error: 'Você não pode excluir sua própria conta' });
+        }
+
+        // Proteção do usuário Dev
+        if (user.role === 'dev' || user.email === 'claudio.meneghetti@studiome.com.br') {
+            return res.status(403).json({ error: 'Operação proibida: Usuário protegido pelo sistema.' });
+        }
+
+        // Exigir inativação primeira
+        if (user.is_active) {
+            return res.status(400).json({ error: 'Acesso Negado: O usuário precisa ser DESATIVADO antes de ser completamente excluído.' });
+        }
+
+        await deleteUser(userId);
+        res.json({ message: 'Usuário excluído com sucesso' });
+    } catch (error) {
+        console.error('Erro ao excluir usuário:', error);
+        res.status(500).json({ error: 'Erro ao excluir usuário' });
     }
 });
 

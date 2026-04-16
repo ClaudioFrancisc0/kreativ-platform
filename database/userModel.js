@@ -203,6 +203,23 @@ const updateUserAgents = (userId, enabledAgents) => {
     });
 };
 
+/**
+ * Exclui fisicamente o usuário do banco
+ */
+const deleteUser = (userId) => {
+    return new Promise((resolve, reject) => {
+        const sql = 'DELETE FROM users WHERE id = ?';
+
+        db.run(sql, [userId], function (err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(this.changes > 0);
+            }
+        });
+    });
+};
+
 module.exports = {
     hasAnyUsers,
     createUser,
@@ -214,5 +231,6 @@ module.exports = {
     updatePassword,
     toggleUserActive,
     updateUserAgents,
-    verifyPassword
+    verifyPassword,
+    deleteUser
 };

@@ -482,6 +482,10 @@
                                     <button class="btn btn-sm btn-secondary" onclick="manageAgents(${user.id}, ${JSON.stringify(user.enabled_agents || ['rb_podcast']).replace(/"/g, '&quot;')})">
                                         🎯 Agentes
                                     </button>
+                                    ${!user.is_active && user.role !== 'dev' ? `
+                                    <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})" style="background-color: #dc3545; color: white;">
+                                        🗑️ Excluir
+                                    </button>` : ''}
                                 </div>
                             ` : '<em style="color: #999;">Você</em>'}
                         </td>
@@ -559,6 +563,20 @@
                 loadUsers();
             } catch (error) {
                 showAlert(error.message || 'Erro ao alterar status', 'error');
+            }
+        }
+
+        async function deleteUser(userId) {
+            if (!confirm(`ATENÇÃO! Tem certeza que deseja DELETAR PERMANENTEMENTE este usuário? Esta ação não pode ser desfeita.`)) return;
+
+            try {
+                await apiRequest(`/api/users/${userId}`, {
+                    method: 'DELETE'
+                });
+                showAlert('Usuário excluído com sucesso!', 'success');
+                loadUsers();
+            } catch (error) {
+                showAlert(error.message || 'Erro ao excluir usuário', 'error');
             }
         }
 
